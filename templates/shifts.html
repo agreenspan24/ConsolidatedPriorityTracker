@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div>
+        <a href='/'>Back</a>
+    </div>
+
+    {% for shift in shifts %}
+    
+    <table>
+        <tr>
+            <td>{{shift.volunteer.first_name}}</td>
+            <td>{{shift.volunteer.last_name}}</td>
+            <td>{{shift.volunteer.phone_number}}</td>
+            <td>{{shift.event.event_type}}</td>
+            <td>{{shift.time}}</td>
+            <td>
+
+                <select>
+                        <option va></option>
+                </select>
+                
+            </td>
+        </tr>
+    </table>
+    {% endfor %}
+
+{% endblock %}
