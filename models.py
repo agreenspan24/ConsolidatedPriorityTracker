@@ -1,71 +1,68 @@
 from app import app, db
 
-class Volunteer(db.Model):
+class KPH(db.Model):
+    __table_args__ = {'schema':'consolidated'}
 
-    #id = db.Column(db.Integer, primary_key=True)
-    van_id = db.Column(db.Integer, primary_key=True)
-    knocks = db.Column(db.Integer)
-    first_name = db.Column(db.String(120))
-    last_name = db.Column(db.String(120))
-    phone_number = db.Column(db.String(120))
-    is_intern = db.Column(db.Boolean)
-    shifts = db.relationship('Shift', backref='volunteer')
-
-    def __init__(self, van_id, first_name, last_name, phone_number, is_intern=False, knocks=0,):
-        
-        self.van_id = van_id
-        self.first_name = first_name
-        self.last_name = last_name
-        self.phone_number = phone_number
-        self.knocks = 0
-        self.is_intern = is_intern
-
-class Location(db.Model):
-
-    #id = db.Column(db.Integer, primary_key=True)
-    location_id = db.Column(db.Integer, primary_key=True)
+    position = db.Column(db.String(120))
     name = db.Column(db.String(120))
-    region = db.Column(db.String(120))
-    shifts = db.relationship('Shift', backref='location')
+    goal = db.Column(db.Integer)
+    has_returned = db.Column(db.Boolean)
+    time_of_departure = db.Column(db.Date)
+    phone_number = db.Column(db.String(50))
+    next_check_in = db.Column(db.Date)
+    final_amount = db.Column(db.Integer)
 
-    def __init__(self, location_id, name, region):
+    packets = relationship('KPHPacket', secondary=post_keywords)
+    check_ins = relationship('KPHCheckIn', secondary=post_keywords)
 
-        self.location_id = location_id
-        self.name = name
-        self.region = region
+    def actual(self):
+        return self.final_amount or sum(c.doors_knocked for c in self.check_ins)
 
-class Event(db.Model):
-    
-    #id = db.Column(db.Integer, primary_key=True)
-    event_id = db.Column(db.Integer, primary_key=True)
-    event_type = db.Column(db.String(120))
-    date = db.Column(db.String(120))
-    shifts = db.relationship('Shift', backref='event')
-    
-    def __init__(self, event_id, event_type, date):
-        
-        self.event_id = event_id
-        self.event_type = event_type
-        self.date = date
+class KPHPacket(db.Model):
+    __table_args__ = {'schema':'consolidated'}
 
-class Shift(db.Model):
+    packet_number = db.Column(db.String(120))
 
-    event_signup_id = db.Column(db.Integer, primary_key=True)
-    event_shift_id = db.Column(db.Integer)
+class KPHCheckIn(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+
+    doors_knocked = db.Column(db.Integer)
+    time = db.Column(db.Date)
+    qualitative = db.Column(db.String(240))
+
+class EventParticipant(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+
+    van_id = db.Column(db.BigInteger)
+    name = db.Column(db.String(120))
+    phone_number = db.Column(db.String(50))
+    cell_number = db.Column(db.String(50))
+    location = db.Column(db.String(120))
     time = db.Column(db.String(120))
-    date = db.Column(db.String(120))
-    status = db.Column(db.String(120))
-    event_id = db.Column(db. Integer, db.ForeignKey('event.event_id'))
-    person = db.Column(db.Integer, db.ForeignKey('volunteer.van_id'))
-    shift_location = db.Column(db.Integer, db.ForeignKey('location.location_id'))
+    role = db.Column(db.String(50))
+    event = db.Column(db.String(120))
+    status = db.Column(db.String(50))
+    same_day_status = db.Column(db.String(50))
+    flake_result = db.Column(db.String(50))
 
-    def __init__(self, event_signup_id, event_shift_id, time, date, status, event_id, person, shift_location):
+    passes = relationship('EventParticipantPasses', secondary=post_keywords)
 
-        self.event_signup_id = event_signup_id
-        self.event_shift_id = event_shift_id
-        self.time = time
-        self.date = date
-        self.status = status
-        self.event_id = event_id
-        self.person = person
-        self.shift_location = shift_location
+    def same_day_confirmed(self):
+        return any(passes.completed)
+    
+class EventParticipantPasses(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+
+    note = db.Column(db.String(240))
+
+    def completed(self):
+        return "conf" in self.note
+
+class EventParticipantStats:
+    vol_confirmed
+    vol_completed
+    vol_declined
+    vol_unflipped
+    vol_flaked
+    intern_completed
+    intern_declined

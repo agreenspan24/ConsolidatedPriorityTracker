@@ -1,0 +1,109 @@
+{% extends "base.html" title="Same Day Confirms" %}
+
+{% block content %}
+    <form action="/" method="post">
+        <select name='office'>
+
+        {% for office in offices %}
+
+            <option value='{{office.location_id}}'>{{office.name}}</option>
+        
+        {% endfor %}
+
+        </select>
+        <input type='submit' value='Select'>
+    </form>
+
+    {% if stats %}
+        <ul class="stat-board stat-board-four">
+            <li class="stat-item">
+              <div class="stat-info">
+                <div class="stat-data">{{stats.vol_confirmed}}</div>
+                <div class="stat-title">Vol Shifts Same Day Confirmed</div>
+              </div>
+            </li>
+            <li class="stat-item">
+              <div class="stat-info">
+                <div class="stat-data">{{status.vol_completed}}</div>
+                <div class="stat-title">Volunteer Shifts Completed</div>
+              </div>
+            </li>
+            <li class="stat-item">
+              <div class="stat-info">
+                <div class="stat-data">{{stats.vol_declined}}</div>
+                <div class="stat-title">Volunteer Shifts Declined</div>
+              </div>
+            </li>
+            <li class="stat-item">
+              <div class="stat-info">
+                <div class="stat-data">{{stats.vol_unflipped}}</div>
+                <div class="stat-title">Vol Canvass Yet to Complete</div>
+              </div>
+            </li>
+            <li class="stat-item">
+                <div class="stat-info">
+                    <div class="stat-data">{{status.vol_flaked}}</div>
+                    <div class="stat-title">Volunteer Canvass Flaked</div>
+                </div>
+            </li>
+            <li class="stat-item">
+                <div class="stat-info">
+                    <div class="stat-data">{{stats.intern_completed}}</div>
+                    <div class="stat-title">Intern Shifts Completed</div>
+                </div>
+            </li>
+            <li class="stat-item">
+                <div class="stat-info">
+                    <div class="stat-data">{{stats.intern_declined}}</div>
+                    <div class="stat-title">Intern Shifts Declined</div>
+                </div>
+            </li>
+          </ul>
+    {% endif %}
+    {% if confirms %}        
+        <table class="table">
+            <thead class="thead">
+                <tr>
+                    <th>Final Van Status</th>
+                    <th>VanID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Cell Phone</th>
+                    <th>Location</th>
+                    <th>Time</th>
+                    <th>Role</th>
+                    <th>Event</th>
+                    <th>Status</th>
+                    <th>Same Day Status</th>
+                    <th>Passes</th>
+                </tr>
+            </thead>
+            <tbody class="tbody">
+                {% for index, confirm in confirms %}
+                    <tr>
+                        <td>{{confirm.final_van_status}}</td>
+                        <td>{{confirm.van_id}}</td>
+                        <td>{{confirm.name</td>
+                        <td>{{confirm.phone_number}}</td>
+                        <td>{{confirm.cell_number}}</td>
+                        <td>{{confirm.location}}</td>
+                        <td>{{confirm.time}}</td>
+                        <td>{{confirm.role}}</td>
+                        <td>{{confirm.event}}</td>
+                        <td>{{confirm.status}}</td>
+                        <td>
+                            <label class="input-label" for="same_day_status-{{index}}">Input Label</label>
+                            <div class="input-control">
+                                <select class="input-element input-element-base select" id="same_day_status-{{index}}" value="{{confirm.same_day_status}}">
+                                <option>Completed</option>
+                                <option>Flaked</option>
+                                <option>Declined</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

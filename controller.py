@@ -22,10 +22,10 @@ def index():
         shifts = Shift.query.filter_by(shift_location=office, date=date).all()
 
 
-        return render_template('filter.html', api=g.api, offices=offices, shifts=shifts)
+        return render_template('same_day_confirms.html', api=g.api, offices=offices, confirms=shifts, )
 
 
-    return render_template('filter.html', api=g.api, offices=offices, shifts=None)
+    return render_template('filter.html', api=g.api, offices=offices, confirms=None, stats=None)
 
 @app.route('/shifts', methods=['GET','POST'])
 def test():

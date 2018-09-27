@@ -4,8 +4,25 @@
 
     </head>
     <body>
-        {% block content %}
-
-        {% endblock %} 
+        
     </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <link type="text/css" rel="stylesheet" href="http://progress.ngpvan.com/stylesheets/progress.min.css">
+    <title>{% title %}</title>
+  </head>
+  <body>
+    <div class="app-wrapper">
+      <div class="app-header">{% title %}</div>
+      <div class="app-content">
+            {% block content %}{% endblock %} 
+      </div>
+    </div>
+  </body>
+</html>
+
