@@ -3,6 +3,7 @@ from app import app, db
 class KPH(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
+    id = db.Column(db.Integer, primary_key=True)
     position = db.Column(db.String(120))
     name = db.Column(db.String(120))
     goal = db.Column(db.Integer)
@@ -36,6 +37,7 @@ class KPH(db.Model):
 class KPHPacket(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
+    id = db.Column(db.Integer, primary_key=True)
     packet_number = db.Column(db.String(120))
 
     def __init__ (self, packet_number):
@@ -45,6 +47,7 @@ class KPHPacket(db.Model):
 class KPHCheckIn(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
+    id = db.Column(db.Integer, primary_key=True)
     doors_knocked = db.Column(db.Integer)
     time = db.Column(db.Date)
     qualitative = db.Column(db.String(240))
@@ -58,6 +61,7 @@ class KPHCheckIn(db.Model):
 class EventParticipant(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
+    id = db.Column(db.Integer, primary_key=True)
     van_id = db.Column(db.BigInteger)
     name = db.Column(db.String(120))
     phone_number = db.Column(db.String(50))
@@ -93,6 +97,7 @@ class EventParticipant(db.Model):
 class EventParticipantPasses(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
+    id = db.Column(db.Integer, primary_key=True)
     note = db.Column(db.String(240))
 
     def __init__(self, note):
