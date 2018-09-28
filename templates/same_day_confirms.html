@@ -2,16 +2,15 @@
 
 {% block content %}
     <form action="/" method="post">
-        <select name='office'>
-
-        {% for office in offices %}
-
-            <option value='{{office.location_id}}'>{{office.name}}</option>
-        
-        {% endfor %}
-
-        </select>
-        <input type='submit' value='Select'>
+        <label class="input-label" for="office">Office</label>
+        <div class="input-control">
+            <select class="input-element input-element-base select" id="office" name="office">
+                {% for office in offices %}
+                    <option value='{{office.location_id}}'>{{office.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <input type='submit' class="btn btn-gray" value='Select'>
     </form>
 
     {% if stats %}

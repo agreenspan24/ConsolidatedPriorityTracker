@@ -1,19 +1,5 @@
 from app import app, db
 
-class Location(db.Model):
-
-    #id = db.Column(db.Integer, primary_key=True)
-    location_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120))
-    region = db.Column(db.String(120))
-    shifts = db.relationship('Shift', backref='location')
-
-    def __init__(self, location_id, name, region):
-
-        self.location_id = location_id
-        self.name = name
-        self.region = region
-
 class KPH(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
@@ -102,36 +88,27 @@ class EventParticipant(db.Model):
         self.passes = passes
 
     def same_day_confirmed(self):
-<<<<<<< HEAD
-        return any(passes.confirmed)
-=======
         return any(self.passes.completed)
->>>>>>> c56661d27c27d17677e0c9ce36c56c573a3922b1
     
 class EventParticipantPasses(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
     note = db.Column(db.String(240))
 
-<<<<<<< HEAD
-    def confirmed(self):
-=======
     def __init__(self, note):
         self.note = note
 
-    def completed(self):
->>>>>>> c56661d27c27d17677e0c9ce36c56c573a3922b1
+    def confirmed(self):
         return "conf" in self.note
 
 
-"""class EventParticipantStats:
+class EventParticipantStats:
     vol_confirmed
     vol_completed
     vol_declined
     vol_unflipped
     vol_flaked
     intern_completed
-<<<<<<< HEAD
     intern_declined
 
     def __init__(self, confirms):
@@ -160,6 +137,3 @@ class EventParticipantPasses(db.Model):
                     self.intern_completed += 1
                 if c.same_day_status == "Declined":
                     self.intern_declined += 1
-=======
-    intern_declined"""
->>>>>>> c56661d27c27d17677e0c9ce36c56c573a3922b1
