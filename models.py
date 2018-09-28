@@ -103,15 +103,42 @@ class EventParticipantPasses(db.Model):
     def __init__(self, note):
         self.note = note
 
-    def completed(self):
+    def confirmed(self):
         return "conf" in self.note
 
 
-"""class EventParticipantStats:
+class EventParticipantStats:
     vol_confirmed
     vol_completed
     vol_declined
     vol_unflipped
     vol_flaked
     intern_completed
-    intern_declined"""
+    intern_declined
+
+    def __init__(self, confirms):
+        self.vol_confirmed = 0
+        self.vol_completed = 0
+        self.vol_declined = 0
+        self.vol_unflipped = 0
+        self.vol_flaked = 0
+        self.intern_completed = 0
+        self.intern_declined = 0
+
+        for c in confirms:
+            if c.event == "Volunteer DVC":
+                if c.same_day_confirmed():
+                    self.vol_confirmed += 1
+                if c.same_day_status == "Completed":
+                    self.vol_completed += 1
+                if c.same_day_status == "Declined":
+                    self.vol_declined += 1
+                if c.same_day_status is None or c.same_day_status = '':
+                    self.vol_unflipped += 1
+                if c.same_day_status == "Flaked":
+                    self.vol_flaked += 1
+            if c.event == "Intern DVC":
+                if c.same_day_status == "Completed":
+                    self.intern_completed += 1
+                if c.same_day_status == "Declined":
+                    self.intern_declined += 1
