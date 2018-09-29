@@ -5,24 +5,27 @@ from flask import flash, g, redirect, render_template, request, session
 from app import app
 from config import settings
 from cptvanapi import CPTVANAPI
-from models import EventParticipant, EventParticipantStats
+from models import Event, Location, Shift, Volunteer
 
 
 @app.before_request
 def api():
     g.api = CPTVANAPI(settings)
     g.api.get_shifts_date()
-
 @app.route('/', methods=['POST','GET'])
 def index():
-    offices = map(lambda x: x.location, EventParticipant.query(func.count(distinct(location))))
+
+    offices = Location.query.all()
     if request.method == 'POST':
         office = request.form.get('office')
-        confirms = EventParticipant.query.filter_by(location=office).all()
-        stats = EventParticipantStats(confirms)
-        return render_template('same_day_confirms.html', api=g.api, offices=offices, confirms=confirms, stats=stats)
+        date = g.api.get_shifts_date()
+        shifts = Shift.query.filter_by(shift_location=office, date=date).all()
 
-    return render_template('same_day_confirms.html', api=g.api, offices=offices, confirms=None, stats=None)
+
+        return render_template('filter.html', api=g.api, offices=offices, shifts=shifts)
+
+
+    return render_template('filter.html', api=g.api, offices=offices, shifts=None)
 
 @app.route('/shifts', methods=['GET','POST'])
 def test():

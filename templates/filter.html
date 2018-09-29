@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form action="/" method="post">
+        <select name='office'>
+
+        {% for office in offices %}
+
+            <option value='{{office.location_id}}'>{{office.name}}</option>
+        
+        {% endfor %}
+
+        </select>
+        <input type='submit' value='Select'>
+    </form>
+
+    {% if shifts %}
+    <br>
+    {% for shift in shifts %}
+    
+    <table>
+        <tr>
+            <td>{{shift.volunteer.first_name}}</td>
+            <td>{{shift.volunteer.last_name}}</td>
+            <td>{{shift.volunteer.phone_number}}</td>
+            <td>{{shift.event.event_type}}</td>
+            <td>{{shift.time}}</td>
+            <td>
+
+                    <select>
+                        <option value="SDConf">Same Day Confirmed</option>
+                        <option value="in">Checked In</option>
+                        {% for status_key, status_value in api.event_status.items() %}
+                            {% if status_key == shift.status %}
+                                <option value={{status_value}} selected>{{shift.status}}</option>
+                            {% else %}
+                                <option value={{status_value}}>{{status_key}}</option>
+                            {% endif %}
+                        {% endfor %}
+                        
+                    </select>
+                    
+                </td>
+            <td></td>
+        </tr>
+    </table>
+    {% endfor %}
+    {% endif %}
+{% endblock %}
