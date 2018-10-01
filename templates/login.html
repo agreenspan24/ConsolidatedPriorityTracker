@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="hero-unit">
+        <h2>Sign in</h2>
+        {% for message in get_flashed_messages() %}
+            <div class="alert alert-error">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <p>This service requires a Google account (that includes azdem.org).</p>
+        <form action="" method=post>
+            {% if error %}<p class=error><strong>Error:</strong> {{ error }}</p>{% endif %}
+            <input type="hidden" name="openid" value="https://accounts.google.com/o/oauth2/auth">
+            <input type=hidden name=next value="{{ next }}">
+            <button type="submit" class="btn btn-large btn-primary">Sign in with Google Accounts</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

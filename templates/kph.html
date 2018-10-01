@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <table>
+        <tr>
+            <td>Name</td>
+            <td>Goal</td>
+            <td>Cell</td>
+            <td>Actual</td>
+            <td>% to Goal</td>
+            <td>Returned</td>
+            <td>Time of Departure</td>
+            <td># Packets Out</td>
+            <td>Packet</td>
+            <td>Phone Number</td>
+            <td>Next Check In</td>
+            <td>Last Check In</td>
+        </tr>
+        {% for shift in shifts %}
+            {% if shift.status == "In" and shift.returned == False and shift.role == "Canvassing" %}
+        <tr>
+            <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
+            <td>{{shift.volunteer.cellphone}}</td>
+            <td>{{shift.goal}}</td>
+            <td>{{shift.actual}}</td>
+            <td>{{shift.returned}}</td>
+            <td>{{shift.departure}}</td>
+            <td>{{shift.packets_given}}</td>
+            <td>{{shift.packet_names}}</td>
+            <td>{{shift.departure}}</td>
+            <td>{{shift.last_contact}}</td>
+        </tr>
+            {% endif %}
+        {% endfor %}
+    
+    </table>
+
+
+{% endblock %}
+
+

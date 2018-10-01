@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table>
+    <tr>
+        <td>Name</td>
+        <td>Phone</td>
+        <td>Cell</td>
+        <td>Time</td>
+        <td>Role</td>
+        <td>Event</td>
+        <td>Result</td>
+        <td># of Passes</td>
+        <td>Time of Last Pass</td>
+    </tr>
+    {% for shift in shifts %}
+        {% if shift.flake == False %}
+        <tr>
+            <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
+            <td>{{shift.volunteer.phone_number}}</td>
+            <td>{{shift.volunteer.cellphone}}</td>
+            <td>{{shift.time}}</td>
+            <td>{{shift.role}}</td>
+            <td>{{shift.eventype}}</td>
+            <td>{{shift.flake}}</td>
+            <td>{{shift.flake_passes}}</td>
+            <td>{{shift.last_contact}}</td>
+        </tr>
+        {% endif %}
+    {% endfor%}
+
+    </table>
+
+{% endblock %}
