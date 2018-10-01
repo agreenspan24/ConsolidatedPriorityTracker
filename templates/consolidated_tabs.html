@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <header class="panel-tabs functional">
+        <div class="tab {{'active' if active_tab == 'sdc'}}">
+            <a href="{{'/consolidated/' + location + '/samedayconfirms' if active_tab != 'sdc'}}">
+                <h6>Same Day Confirms</h6>
+            </a>
+        </div>
+        <div class="tab {{'active' if active_tab == 'kph'}}">
+            <a href="{{'/consolidated/' + location + '/kph' if active_tab != 'kph'}}">  
+                <h6>KPH</h6>
+            </a>
+        </div>
+        <div class="tab {{'active' if active_tab == 'flake'}}">
+            <a href="{{'/consolidated/' + location + '/flake' if active_tab != 'flake'}}">  
+                <h6>Flake Chase</h6>
+            </a>
+        </div>
+    </header>
+    <section class="panel-content table-wrapper">       
+        <table class="table table-panel table-striped table-small">
+            {% block table %}
+
+            {% endblock %}
+        </table>    
+    </section>
+{% endblock %}
