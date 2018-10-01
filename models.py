@@ -120,6 +120,11 @@ class Shift(db.Model):
         self.person = person
         self.shift_location = shift_location
 
+    def mark_as_flake(self):
+        self.status = 'No Show'
+        self.flake = True
+
+
     
 
 

@@ -1,22 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{email}}</h1>
-
-    <form action="/consolidated" method="post">
-        <select name='office'>
-
-    
-
-        {% for office in offices %}
-
-            <option value='{{office.locationname}}'>{{office.locationname}}</option>
-        
-        {% endfor %}
-
-        </select>
-        <input type='submit' value='Select'>
-    </form>
 
     {% if shifts %}
     <br>
@@ -44,7 +28,7 @@
             <td>{{shift.volunteer.last_name}}</td>
             <td>{{shift.volunteer.phone_number}}</td>
             <td>{{shift.eventname}}</td>
-            <td>{{shift.starttime}}</td>
+            <td>{{shift.time}}</td>
             <td>{{shift.role}}</td>
             <td>
                 <select>

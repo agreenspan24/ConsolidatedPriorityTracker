@@ -81,9 +81,9 @@ def consolidated():
     offices = Location.query.order_by(asc(Location.locationname)).all()
     if request.method == 'POST':
         office = request.form.get('office')
-        office = Location.query.filter_by(locationid=office).first()
+        #office = Location.query.filter_by(locationname=office).first()
 
-        return redirect('/consolidated/' + str(office.locationname)[0:3] + '/samedayconfirms')
+        return redirect('/consolidated/' + str(office)[0:3] + '/samedayconfirms')
 
     return render_template('index.html', offices=offices)
 
@@ -91,23 +91,28 @@ def consolidated():
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
 def office(office, page):
     date = datetime.today().strftime('%Y-%m-%d')
-    location = Location.query.filter(Location.locationname.like(office + '%')).first()
-    if not location:
+    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
+    print(locations)
+    if not locations:
         return redirect('/consolidated')
-    shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).all()
+    all_shifts = []
+    for location in locations:
+        shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).all()
+        for shift in shifts:
+            all_shifts.append(shift)
     
 
     if page == 'samedayconfirms':
         #TODO samedayconfirms.html
-        return render_template('same_day_confirms.html', shifts=shifts)
+        return render_template('same_day_confirms.html', shifts=all_shifts)
 
     elif page == 'kph':
 
-        return render_template('kph.html', shifts=shifts)
+        return render_template('kph.html', shifts=all_shifts)
 
     elif page == 'flake':
 
-        return render_template('flake.html', shifts=shifts)
+        return render_template('flake.html', shifts=all_shifts)
 
     else:
         return redirect('/consolidated/' + str(location.locationname)[0:3])
