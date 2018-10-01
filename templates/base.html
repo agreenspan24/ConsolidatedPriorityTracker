@@ -1,12 +1,3 @@
-<!doctype html>
-<html>
-    <head>
-
-    </head>
-    <body>
-        
-    </body>
-</html>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -16,13 +7,28 @@
     <link type="text/css" rel="stylesheet" href="http://progress.ngpvan.com/stylesheets/progress.min.css">
     <!--<title></title>-->
   </head>
-  <body>
+  <body class="bg-gray-pale">
     <div class="app-wrapper">
-     <!-- <div class="app-header"></div>-->
-      <div class="app-content">
+        <header class="app-header">
+          <section class="app-nav-header">
+              <div class="app-nav-container">
+                  <div class="app-branding app-title bg-blue6">
+                    <a class="app-image" href="/">
+                      <img src="https://pbs.twimg.com/profile_images/875384839280640000/cvuD5Ovd_400x400.jpg" alt='mdplogo' height='40' />
+                    </a>
+                    <div class="app-user-controls ">
+                        <a href="/logout">Log Out</a>
+                    </div>
+                  </div>
+            </div>
+          </section>
+        </header>
+      <div class="app-content" style="padding-top:80px">
+        <div class="panel panel-default">
             {% block content %}
             
             {% endblock %} 
+        </div>
       </div>
     </div>
   </body>

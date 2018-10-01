@@ -6,7 +6,7 @@ from sqlalchemy import and_
 
 from app import app, oid
 from config import settings
-from cptvanapi import CPTVANAPI
+##from cptvanapi import CPTVANAPI
 from models import *
 from datetime import datetime
 
@@ -76,8 +76,6 @@ def logout():
 @oid.require_login
 @app.route('/', methods=['POST','GET'])
 def index():
-    email = g.user.email
-    print(email)
     offices = Location.query.all()
     if request.method == 'POST':
         office = request.form.get('office')
@@ -88,7 +86,7 @@ def index():
         return render_template('flake.html', offices=offices, shifts=shifts)
 
 
-    return render_template('filter.html', offices=offices, email=email, shifts=None)
+    return render_template('index.html', offices=offices, user=g.user, shifts=None)
 
 @oid.require_login
 @app.route('/shifts', methods=['GET','POST'])

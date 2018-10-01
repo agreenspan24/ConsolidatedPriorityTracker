@@ -1,21 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{email}}</h1>
-
-    <form action="/" method="post">
-        <select name='office'>
+    <div class="panel-header">
+        <h1>Welcome, {{user.email}}!</h1>
+    </div>
 
     
-
-        {% for office in offices %}
-
-            <option value='{{office.locationid}}'>{{office.locationname}}</option>
-        
-        {% endfor %}
-
-        </select>
-        <input type='submit' value='Select'>
+    <form action="/" method="post">
+        <div class="panel-content align-center">
+            <label class="input-label" for="office"></label>
+            <div class="input-control">
+                <select class="input-element input-element-base select" id="office" name="office">
+                    {% for office in offices %}
+                        <option value='{{office.location_id}}'>{{office.locationname}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <input type='submit' class="btn btn-blue btn-full" value='Select'>
+        </div>
     </form>
 
     {% if shifts %}
