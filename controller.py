@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import flash, g, redirect, render_template, request, session
 
-from sqlalchemy import and_
+from sqlalchemy import and_, asc
 
 from app import app, oid
 from config import settings
@@ -74,37 +74,46 @@ def logout():
     return redirect('/login')
 
 @oid.require_login
-@app.route('/', methods=['POST','GET'])
-def index():
+@app.route('/consolidated', methods=['POST','GET'])
+def consolidated():
     email = g.user.email
     print(email)
-    offices = Location.query.all()
+    offices = Location.query.order_by(asc(Location.locationname)).all()
     if request.method == 'POST':
         office = request.form.get('office')
-        date = datetime.today().strftime('%Y-%m-%d')
-        shifts = Shift.query.filter_by(shift_location=office, date=date).all()
+        office = Location.query.filter_by(locationid=office).first()
 
+        return redirect('/consolidated/' + str(office.locationname)[0:3] + '/samedayconfirms')
 
-        return render_template('flake.html', offices=offices, shifts=shifts)
-
-
-    return render_template('filter.html', offices=offices, email=email, shifts=None)
+    return render_template('index.html', offices=offices)
 
 @oid.require_login
-@app.route('/shifts', methods=['GET','POST'])
-def test():
-    office = request.args.get('office')
+@app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
+def office(office, page):
     date = datetime.today().strftime('%Y-%m-%d')
+    location = Location.query.filter(Location.locationname.like(office + '%')).first()
+    if not location:
+        return redirect('/consolidated')
+    shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).all()
+    
 
-    if office:
-            
-        shifts = Shift.query.filter(and_(Shift.locationname.like(office +'%'),Shift.startdate==date)).all()   
-        return render_template('filter.html', shifts=shifts)
+    if page == 'samedayconfirms':
+        #TODO samedayconfirms.html
+        return render_template('same_day_confirms.html', shifts=shifts)
 
-@oid.require_login
-@app.route('/kph', methods=['GET', 'POST'])
-def kph():
-    office = request.args.get('office')
+    elif page == 'kph':
+
+        return render_template('kph.html', shifts=shifts)
+
+    elif page == 'flake':
+
+        return render_template('flake.html', shifts=shifts)
+
+    else:
+        return redirect('/consolidated/' + str(location.locationname)[0:3])
+    
+
+
 
     
 
