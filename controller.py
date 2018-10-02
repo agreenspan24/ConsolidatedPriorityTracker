@@ -128,7 +128,7 @@ def office(office, page):
         return render_template('office_totals.html', active_tab="stats", location=location, stats=stats)
 
     else:
-        return redirect('/consolidated' + str(location.locationname)[0:3] + '/sdc')
+        return redirect('/consolidated' + office + '/sdc')
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/pass', methods=['POST'])
