@@ -10,8 +10,6 @@ from config import settings
 from models import *
 from datetime import datetime
 
-import urllib.parse
-
 oid.init_app(app)
 
 @app.before_request
@@ -83,9 +81,9 @@ def consolidated():
     offices = Location.query.order_by(asc(Location.locationname)).all()
     if request.method == 'POST':
         office = request.form.get('office')
-        office = Location.query.filter_by(locationid=office).first()
 
         return redirect('/consolidated/' + str(office.locationid) + '/sdc')
+
 
     return render_template('index.html', user=g.user, offices=offices)
 
@@ -93,10 +91,18 @@ def consolidated():
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
 def office(office, page):
     date = datetime.today().strftime('%Y-%m-%d')
+
     location = Location.query.get(office)
-    if not location:
+    locations = Location.query.filter(Location.locationname.like(location.locationname + '%')).all()
+
+    if not locations:
         return redirect('/consolidated')
-    shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).all()
+
+    all_shifts = []
+    for location in locations:
+        shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).all()
+        for shift in shifts:
+            all_shifts.append(shift)
 
     if page == 'sdc':
         return render_template('same_day_confirms.html', active_tab="sdc", location=location, shifts=shifts)

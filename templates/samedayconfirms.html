@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    {% if shifts %}
+    <br>
+    
+    
+    <table>
+        <tr>
+            <td>First Name</td>
+            <td>Last Name</td>
+            <td>Phone Number</td>
+            <td>Event Name</td>
+            <td>Start Time</td>
+            <td>Role</td>
+            <td>Status</td>
+            <td>Same Day Pass 1</td>
+            <td>Same Day Pass 2</td>
+            <td>Same Day Pass 3</td>
+            <td>Same Day Pass 4</td>
+            <td>Same Day Pass 5</td>
+        </tr>
+    {% for shift in shifts %}
+    {% if shift.status in ['Scheduled', 'Invited', 'Confirmed', 'Left Msg'] %}
+        <tr>
+            <td>{{shift.volunteer.first_name}}</td>
+            <td>{{shift.volunteer.last_name}}</td>
+            <td>{{shift.volunteer.phone_number}}</td>
+            <td>{{shift.eventname}}</td>
+            <td>{{shift.time}}</td>
+            <td>{{shift.role}}</td>
+            <td>
+                <select>
+                    <option value ={{shift.status}} selected>{{shift.status}}</option>
+                    <option value='Completed'>Completed</option>
+                    <option value='Declined'>Declined</option>
+                    <option value='No Show'>Flaked</option>
+                </select>
+
+            </td>
+            
+            <!--
+                maybe literally a button that records the time and a text box at the end for notes?
+            -->
+            <td>SAME DAY CONFIRM PASSES GO HERE</td>
+            <td>SAME DAY CONFIRM PASSES GO HERE</td>
+            <td>SAME DAY CONFIRM PASSES GO HERE</td>
+            <td>SAME DAY CONFIRM PASSES GO HERE</td>
+            <td>SAME DAY CONFIRM PASSES GO HERE</td>
+        </tr>
+    {% endif %}
+    {% endfor %}
+    </table>
+    
+    {% endif %}
+{% endblock %}
