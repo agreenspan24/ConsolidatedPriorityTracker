@@ -93,9 +93,9 @@ class Shift(db.Model):
     departure = db.Column(db.Time)
     last_contact = db.Column(db.Time)
     returned = db.Column(db.Boolean)
-    notes = db.Column(db.String(255))
     person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.van_id'))
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
+    notes = db.relationship('Note', backref='shift')
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -115,7 +115,6 @@ class Shift(db.Model):
         self.departure = None
         self.last_contact = None
         self.returned = False
-        self.notes = ''
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
@@ -123,6 +122,22 @@ class Shift(db.Model):
     def mark_as_flake(self):
         self.status = 'No Show'
         self.flake = True
+
+class Note(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+
+    id = db.Column(db.Integer, primary_key=True)
+    time = db.Column(db.Time)
+    text = db.Column(db.String(255))
+    volunteer = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.van_id'))
+    note_shift = db.Column(db.Integer, db.ForeignKey('consolidated.shift.id'))
+
+    def __init__(self, time, text, volunteer, note_shift):
+
+        self.time = time
+        self.text = text
+        self.volunteer = volunteer
+        self.note_shift = note_shift
 
 
     

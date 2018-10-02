@@ -2,7 +2,7 @@
 
 {% set modal_title = 'Add Confirmation Pass' %}
 {% set modal_dropdown_label = 'Confirmation Result' %}
-{% set modal_dropdown_options = ['Completed', 'Flaked' , 'Declined'] %}
+{% set modal_dropdown_options = ['Not Home', 'Same Day Confirmed' , 'Declined'] %}
 
 {% include "add_shift_pass_modal.html" %}
 
@@ -16,8 +16,8 @@
                 <th>Cell Phone</th>
                 <th>Location</th>
                 <th>Time</th>
-                <th>Role</th>
                 <th>Event</th>
+                <th>Role</th>
                 <th>Status</th>
                 <th></th>
             </tr>
@@ -32,8 +32,8 @@
                     <td>{{shift.volunteer.cellphone}}</td>
                     <td>{{shift.shift_location.locationname}}</td>
                     <td>{{shift.time}}</td>
-                    <td>{{shift.role}}</td>
                     <td>{{shift.eventtype}}</td>
+                    <td>{{shift.role}}</td>
                     <td>{{shift.status}}</td>
                     <td>
                         <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Pass</a>

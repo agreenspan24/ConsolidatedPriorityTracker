@@ -7,7 +7,7 @@ from sqlalchemy import and_, asc
 from app import app, oid
 from config import settings
 ##from cptvanapi import CPTVANAPI
-from models import *
+from models import db, Volunteer, Location, Shift, Note, User
 from datetime import datetime
 
 oid.init_app(app)
@@ -122,7 +122,7 @@ def add_pass(office, page):
     shift_id = request.form.get('shift_id')
     shift = Shift.query.get(shift_id).all()
 
-    if page == 'kph':
+    if page == 'flake':
         shift.flake_pass += 1
         shift.notes += request.form.get('note')
 
