@@ -82,7 +82,7 @@ def consolidated():
     if request.method == 'POST':
         office = request.form.get('office')
 
-        return redirect('/consolidated/' + str(office.locationid) + '/sdc')
+        return redirect('/consolidated/' + str(office) + '/sdc')
 
 
     return render_template('index.html', user=g.user, offices=offices)
