@@ -112,8 +112,22 @@ def office(office, page):
         return render_template('flake.html', active_tab="flake", location=location.locationname, shifts=shifts)
 
     else:
-        return redirect('/consolidated' + str(location.locationname)[0:3])
+        return redirect('/consolidated' + str(location.locationname)[0:3] + '/samedayconfirms')
+
+
+@app.errorhandler(404)
+def page_not_found():
+    return redirect('/consolidated')
+
+@app.errorhandler(500)
+def internal_service_error():
     
+
+
+
+
+
+
 
 
 
