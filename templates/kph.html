@@ -1,5 +1,11 @@
 {% extends "consolidated_tabs.html" %}
 
+{% set modal_title = 'Add Check In' %}
+{% set modal_dropdown_label = 'Returned' %}
+{% set modal_dropdown_options = ['Yes', 'Not Yet', 'Thief'] %}
+
+{% include "add_shift_pass_modal.html" %}
+
 {% block table %}
 {% if shifts %}
     <thead class="thead">
@@ -16,6 +22,7 @@
             <th>Phone Number</th>
             <th>Next Check In</th>
             <th>Last Check In</th>
+            <th></th>
         </tr>
     </thead>
     <tbody class="tbody">
@@ -34,7 +41,9 @@
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>{{shift.departure}}</td>
                     <td>{{shift.last_contact}}</td>
-                </tr>
+                    <td>
+                        <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Check In</a></td>
+                    </tr>
             {% endif %}
         {% endfor %}
     </tbody>

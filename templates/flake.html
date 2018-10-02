@@ -1,5 +1,13 @@
 {% extends "consolidated_tabs.html" %}
 
+
+{% set modal_title = 'Add Flake Pass' %}
+{% set modal_dropdown_label = 'Flake Result' %}
+{% set modal_dropdown_options = ['Not Contacted', 'Rescheduled' , 'Completed - Not Rescheduled', 'Completed - Completed Today'] %}
+
+{% include "add_shift_pass_modal.html" %}
+
+
 {% block table %}
     {% if shifts %}
         <thead class="thead">
@@ -10,9 +18,9 @@
                 <th>Time</th>
                 <th>Role</th>
                 <th>Event</th>
-                <th>Result</th>
                 <th># of Passes</th>
                 <th>Time of Last Pass</th>
+                <th></th>
             </tr>
         </thead>
         <tbody class="tbody">
@@ -25,12 +33,15 @@
                     <td>{{shift.time}}</td>
                     <td>{{shift.role}}</td>
                     <td>{{shift.eventype}}</td>
-                    <td>{{shift.flake}}</td>
-                    <td>{{shift.flake_passes}}</td>
+                    <td>{{shift.flake_passed}}</td>
                     <td>{{shift.last_contact}}</td>
+                    <td>
+                        <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Pass</a>
+                    </td>
                 </tr>
                 {% endif %}
             {% endfor%}
         </tbody>
     {% endif %}
 {% endblock %}
+

@@ -10,6 +10,8 @@ from config import settings
 from models import *
 from datetime import datetime
 
+import urllib.parse
+
 oid.init_app(app)
 
 @app.before_request
@@ -83,7 +85,7 @@ def consolidated():
         office = request.form.get('office')
         office = Location.query.filter_by(locationid=office).first()
 
-        return redirect('/consolidated/' + str(office.locationname)[0:3] + '/samedayconfirms')
+        return redirect('/consolidated/' + str(office.locationid) + '/sdc')
 
     return render_template('index.html', user=g.user, offices=offices)
 
@@ -91,29 +93,37 @@ def consolidated():
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
 def office(office, page):
     date = datetime.today().strftime('%Y-%m-%d')
-    location = Location.query.filter(Location.locationname.like(office + '%')).first()
+    location = Location.query.get(office)
     if not location:
         return redirect('/consolidated')
     shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).all()
-    
 
-    if page == 'samedayconfirms':
-        return render_template('same_day_confirms.html', active_tab="sdc", location=location.locationname, shifts=shifts)
+    if page == 'sdc':
+        return render_template('same_day_confirms.html', active_tab="sdc", location=location, shifts=shifts)
 
     elif page == 'kph':
-        return render_template('kph.html', active_tab="kph", location=location.locationname, shifts=shifts)
+        return render_template('kph.html', active_tab="kph", location=location, shifts=shifts)
 
     elif page == 'flake':
-        return render_template('flake.html', active_tab="flake", location=location.locationname, shifts=shifts)
+        return render_template('flake.html', active_tab="flake", location=location, shifts=shifts)
 
     else:
-        return redirect('/consolidated' + str(location.locationname)[0:3])
+        return redirect('/consolidated/' + str(location.locationname)[0:3])
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/pass', methods=['POST'])
+def add_pass(office, page):
+    shift_id = request.form.get('shift_id')
+    shift = Shift.query.get(shift_id)
+
+    if page == 'kph':
+        shift.flake_passed += 1
+        shift.notes += request.form.get('note')
+
+        db.session.add(shift)
+        db.session.commit()
     
-
-
-
-    
-
+    return redirect('/consolidated/' + office + '/' + page)
 
 if __name__ == "__main__":
     app.run()

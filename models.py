@@ -111,7 +111,7 @@ class Shift(db.Model):
         self.packets_given = 0
         self.packet_names = ''
         self.flake = False
-        self.flake_passes = 0
+        self.flake_passed = 0
         self.departure = None
         self.last_contact = None
         self.returned = False
@@ -119,11 +119,3 @@ class Shift(db.Model):
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
-
-    
-
-
-
-
-
-

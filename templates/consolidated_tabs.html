@@ -3,17 +3,17 @@
 {% block content %}
     <header class="panel-tabs functional">
         <div class="tab {{'active' if active_tab == 'sdc'}}">
-            <a href="{{'/consolidated/' + location + '/samedayconfirms' if active_tab != 'sdc'}}">
+            <a href="{{'/consolidated/' + location.locationid|string + '/sdc' if active_tab != 'sdc'}}">
                 <h6>Same Day Confirms</h6>
             </a>
         </div>
         <div class="tab {{'active' if active_tab == 'kph'}}">
-            <a href="{{'/consolidated/' + location + '/kph' if active_tab != 'kph'}}">  
+            <a href="{{'/consolidated/' + location.locationid|string + '/kph' if active_tab != 'kph'}}">  
                 <h6>KPH</h6>
             </a>
         </div>
         <div class="tab {{'active' if active_tab == 'flake'}}">
-            <a href="{{'/consolidated/' + location + '/flake' if active_tab != 'flake'}}">  
+            <a href="{{'/consolidated/' + location.locationid|string + '/flake' if active_tab != 'flake'}}">  
                 <h6>Flake Chase</h6>
             </a>
         </div>
