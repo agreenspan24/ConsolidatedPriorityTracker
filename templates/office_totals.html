@@ -1,0 +1,50 @@
+{% extends "consolidated_tabs.html" %}
+
+{% block stats %}
+{% if stats %}
+    <ul class="stat-board stat-board-four">
+        <li class="stat-item">
+          <div class="stat-info">
+            <div class="stat-data">{{stats.vol_confirmed}}</div>
+            <div class="stat-title">Vol Shifts Same Day Confirmed</div>
+          </div>
+        </li>
+        <li class="stat-item">
+          <div class="stat-info">
+            <div class="stat-data">{{stats.vol_completed}}</div>
+            <div class="stat-title">Volunteer Shifts Completed</div>
+          </div>
+        </li>
+        <li class="stat-item">
+          <div class="stat-info">
+            <div class="stat-data">{{stats.vol_declined}}</div>
+            <div class="stat-title">Volunteer Shifts Declined</div>
+          </div>
+        </li>
+        <li class="stat-item">
+          <div class="stat-info">
+            <div class="stat-data">{{stats.vol_unflipped}}</div>
+            <div class="stat-title">Vol Canvass Yet to Complete</div>
+          </div>
+        </li>
+        <li class="stat-item">
+            <div class="stat-info">
+                <div class="stat-data">{{stats.vol_flaked}}</div>
+                <div class="stat-title">Volunteer Canvass Flaked</div>
+            </div>
+        </li>
+        <li class="stat-item">
+            <div class="stat-info">
+                <div class="stat-data">{{stats.intern_completed}}</div>
+                <div class="stat-title">Intern Shifts Completed</div>
+            </div>
+        </li>
+        <li class="stat-item">
+            <div class="stat-info">
+                <div class="stat-data">{{stats.intern_declined}}</div>
+                <div class="stat-title">Intern Shifts Declined</div>
+            </div>
+        </li>
+      </ul>
+{% endif %}
+{% endblock %}

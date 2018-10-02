@@ -125,6 +125,34 @@ class Shift(db.Model):
         self.flake = True
 
 
+class ShiftStats:
+    def __init__(self, shifts):
+        self.vol_confirmed = 0
+        self.vol_completed = 0
+        self.vol_declined = 0
+        self.vol_unflipped = 0
+        self.vol_flaked = 0
+        self.intern_completed = 0
+        self.intern_declined = 0
+
+        for s in shifts:
+            if s.eventtype == "Volunteer DVC":
+                if s.status == "Confirmed":
+                    self.vol_confirmed += 1
+                if s.status == "Completed":
+                    self.vol_completed += 1
+                if s.status == "Declined":
+                    self.vol_declined += 1
+                if s.status == "Scheduled":
+                    self.vol_unflipped += 1
+                if s.status == "No Show":
+                    self.vol_flaked += 1
+            elif s.eventtype == "Intern DVC":
+                if s.status == "Completed":
+                    self.intern_completed += 1
+                if s.status == "Declined":
+                    self.intern_declined += 1
+
     
 
 

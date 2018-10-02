@@ -7,17 +7,37 @@
     
     <form action="/consolidated" method="post">
         <div class="panel-content align-center">
-            <label class="input-label" for="office"></label>
-            <div class="input-control">
-                <select class="input-element input-element-base select" id="office" name="office">
-                    {% for office in offices %}
-                        <option value='{{office.locationname}}'>{{office.locationname}}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            {% if show_dashboard %}
+                <input type='submit' name='target' class="btn btn-blue btn-full" value='Dashboard'>
+                <hr>
+            {% endif %}
+            <ul class="input-list">
+                <li class="input-unit">
+                    <label class="input-label" for="office">Office</label>
+                    <div class="input-control">
+                        <select class="input-element input-element-base select" id="office" name="office">
+                            {% for office in offices %}
+                                <option value='{{office.locationname}}'>{{office.locationname}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </li>
+                <li class="input-unit">
+                    <label class="input-label" for="page">Page</label>
+                    <div class="input-control">
+                        <select class="input-element input-element-base select" id="page" name="page">
+                            <option value='sdc'>Same Day Confirms</option>
+                            <option value='kph'>KPH</option>
+                            <option value='flake'>Flake Chase</option>
+                            <option value='stats'>Office Totals</option>
+                        </select>
+                    </div>
+                </li>
+                
+            </ul>
         </div>
         <div class="panel-footer">
-            <input type='submit' class="btn btn-blue btn-full" value='Select'>
+            <input type='submit' name='target' class="btn btn-blue btn-full" value='Open'>
         </div>
     </form>
     
