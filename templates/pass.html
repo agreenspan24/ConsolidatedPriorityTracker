@@ -1,0 +1,54 @@
+<script>
+    function updateStatus(shift_id) {
+        hideAlert();
+
+        var statusElem = $('#status-' + shift_id);
+        var status = statusElem.val();
+        var name = $('#name-' + shift_id).html();
+
+        showAlert('info', 'Updating status for ' + name);
+        
+        statusElem.prop('disabled', 'disabled');
+
+        $.ajax({
+            type: 'POST', 
+            url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
+            data: {
+                shift_id: shift_id,
+                status: status
+            }
+        }).done(function(){
+            showAlert('success', 'Status for ' + name + ' has been updated');
+            statusElem.prop('disabled', false);
+        }).fail(function(){
+            showAlert('error', 'Status for ' + name + ' has NOT been updated');
+            statusElem.prop('disabled', false);
+        });
+    }
+
+    function addNote(shift_id) {
+        hideAlert();
+
+        var noteElem = $('#note-' + shift_id);
+        var note = noteElem.val();
+        var name = $('#name-' + shift_id).html();
+
+        showAlert('info', 'Adding note for ' + name);
+        noteElem.prop('disabled', 'disabled');
+
+        $.ajax({
+            type: 'POST', 
+            url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
+            data: {
+                shift_id: shift_id,
+                note: note
+            }
+        }).done(function(){
+            showAlert('success', 'Note for ' + name + ' has been added');
+            noteElem.prop('disabled', false);
+        }).fail(function(){
+            showAlert('error', 'Note for ' + name + ' has NOT been added');
+            noteElem.prop('disabled', false);
+        });
+    }
+</script>

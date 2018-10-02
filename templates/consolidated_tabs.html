@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
+    {% include 'pass.html' %}
+    {% block pass %}
+
+    {% endblock %}
     <header class="panel-tabs functional">
         <div class="tab {{'active' if active_tab == 'sdc'}}">
             <a href="{{'/consolidated/' + location.locationname[0:3] + '/sdc' if active_tab != 'sdc'}}">
@@ -34,3 +38,6 @@
         </table>    
     </section>
 {% endblock %}
+
+
+

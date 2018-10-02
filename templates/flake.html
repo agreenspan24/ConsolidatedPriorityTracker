@@ -20,14 +20,14 @@
                 <th>Event</th>
                 <th># of Passes</th>
                 <th>Time of Last Pass</th>
-                <th></th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
                 {% if shift.flake == False %}
                 <tr>
-                    <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
+                    <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>{{shift.volunteer.cellphone}}</td>
                     <td>{{shift.time}}</td>
@@ -36,7 +36,20 @@
                     <td>{{shift.flake_passed}}</td>
                     <td>{{shift.last_contact}}</td>
                     <td>
-                        <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Pass</a>
+                        <select id='status-{{shift.id}}' onchange="updateStatus({{shift.id}})" value='{{shift.status}}'>
+                            <option value={{shift.status}}>{{shift.status}}</option>
+                            <option value='Same Day Confirmed'>Same Day Confirmed</option>
+                            <option value='In'>In</option>
+                            <option value='Completed'>Completed</option>
+                            <option value='Declined'>Declined</option>
+                            <option value='No Show'>No Show</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input id='note-{{shift.id}}' type='text'>
+                    </td>
+                    <td>
+                        <a href="#" onclick="addNote({{shift.id}})">Add Note</a>
                     </td>
                 </tr>
                 {% endif %}
