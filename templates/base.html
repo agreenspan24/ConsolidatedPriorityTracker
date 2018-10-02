@@ -26,16 +26,25 @@
                 <span aria-hidden="true" class="menu-icon glyphicons glyphicons-menu-hamburger x1" style="color:#fff"></span>
               </button>
               <ul id="header_menu" class="dropdown-menu dropdown-menu-right left">
-                <li class="user-title">Logged in to {{g.user.email}}</li>
-                </li>
-                  {% if g.user.rank == "DATA" or g.user.rank =="FD" %}
-                    <li>
-                      <a href="/dashboard">Dashboard</a>
-                    </li>
-                  {% endif %}
+                {% if g.user %}
+                  <li class="user-title">
+                    Logged in to {{g.user.email}}
+                  </li>
+                {% endif %}
+                {% if g.user.rank == "DATA" or g.user.rank =="FD" %}
+                  <li>
+                    <a href="/dashboard">Dashboard</a>
+                  </li>
+                {% endif %}
+                {% if g.user %}
                   <li>
                     <a href="/logout">Log Out</a>
                   </li>
+                {% else %}
+                  <li>
+                    <a href="/login">Log In</a>
+                  </li>
+                {% endif %}
                 </ul>
             </div>
           </div>
@@ -43,6 +52,11 @@
       </section>
     </header>
     <div class="app-content" style="padding:24px; padding-top:96px">
+      {% include 'alert.html' %}
+      {% block alerts %}
+
+      {% endblock %}
+      
       <article class="panel panel-default">
         {% block content %}
 
