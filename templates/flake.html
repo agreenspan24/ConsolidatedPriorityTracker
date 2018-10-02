@@ -1,13 +1,5 @@
 {% extends "consolidated_tabs.html" %}
 
-
-{% set modal_title = 'Add Flake Pass' %}
-{% set modal_dropdown_label = 'Flake Result' %}
-{% set modal_dropdown_options = ['Not Contacted', 'Rescheduled' , 'Completed - Not Rescheduled', 'Completed - Completed Today'] %}
-
-{% include "add_shift_pass_modal.html" %}
-
-
 {% block table %}
     {% if shifts %}
         <thead class="thead">
@@ -21,6 +13,8 @@
                 <th># of Passes</th>
                 <th>Time of Last Pass</th>
                 <th>Status</th>
+                <th>New Note</th>
+                <th></th>
             </tr>
         </thead>
         <tbody class="tbody">
@@ -38,11 +32,10 @@
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateStatus({{shift.id}})" value='{{shift.status}}'>
                             <option value={{shift.status}}>{{shift.status}}</option>
-                            <option value='Same Day Confirmed'>Same Day Confirmed</option>
-                            <option value='In'>In</option>
-                            <option value='Completed'>Completed</option>
-                            <option value='Declined'>Declined</option>
-                            <option value='No Show'>No Show</option>
+                            <option value='Not Contacted'>Not Contacted</option>
+                            <option value='Rescheduled'>Rescheduled</option>
+                            <option value='Completed - Not Rescheduled'>Completed - Not Rescheduled</option>
+                            <option value='Completed - Completed Today'>Completed - Completed Today</option>
                         </select>
                     </td>
                     <td>
