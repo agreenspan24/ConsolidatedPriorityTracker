@@ -89,7 +89,7 @@ class Shift(db.Model):
     packets_given = db.Column(db.Integer)
     packet_names = db.Column(db.String(255))
     flake = db.Column(db.Boolean)
-    flake_passed = db.Column(db.Integer)
+    flake_pass = db.Column(db.Integer)
     departure = db.Column(db.Time)
     last_contact = db.Column(db.Time)
     returned = db.Column(db.Boolean)
@@ -111,7 +111,7 @@ class Shift(db.Model):
         self.packets_given = 0
         self.packet_names = ''
         self.flake = False
-        self.flake_passes = 0
+        self.flake_pass = 0
         self.departure = None
         self.last_contact = None
         self.returned = False
