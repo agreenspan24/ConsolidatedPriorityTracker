@@ -1,0 +1,19 @@
+{% block alerts %}
+<script>
+    function showAlert(type, text) {
+        $('.alert').removeClass('hide success info warn error').addClass(type);
+        $('#alert-text').html(text);
+    }
+
+    function hideAlert() {
+        $('.alert').addClass('hide');
+    }
+</script>
+<div class="alert hide">
+    <span id="alert-text"></span>
+    <a class="dismiss" onclick="hideAlert()">
+        <span class="glyphicons glyphicons-remove" aria-hidden="true"></span>
+        <span class="reader-only">Dismiss Alert</span>
+    </a>
+</div>
+{% endblock %}

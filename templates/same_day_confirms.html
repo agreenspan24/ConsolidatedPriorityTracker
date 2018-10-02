@@ -19,7 +19,8 @@
                 <th>Event</th>
                 <th>Role</th>
                 <th>Status</th>
-                <th></th>
+                <th>New Note</th>
+                <th>Add Note</th>
             </tr>
         </thead>
         <tbody class="tbody">
@@ -27,7 +28,7 @@
             {% if shift.status in ['Scheduled', 'Invited', 'Confirmed', 'Left Msg'] %}
                 <tr>
                     <td>{{shift.person}}</td>
-                    <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
+                    <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>{{shift.volunteer.cellphone}}</td>
                     <td>{{shift.shift_location.locationname}}</td>
@@ -35,21 +36,75 @@
                     <td>{{shift.eventtype}}</td>
                     <td>{{shift.role}}</td>
                     <td>
-                        <form action='/consolidated/{{shift.location.locationname[0:3]}}/sdc' method='POST'>
-                            <select name='status' onchange="this.form.submit()">
-                                    <option selected value='{{shift.status}}'>{{shift.status}}</option>
-                                    <option value='Same Day Confirmed'>Same Day Confirmed</option>
-                                    <option value='In'>In</option>
-                                    <option value='Completed'>Completed</option>
-                                    <option value='Declined'>Declined</option>
-                                    <option value='No Show'>No Show</option>
-                            </select>
-                        </form>
-                        
+                        <select id='status-{{shift.id}}' onchange="updateStatus({{shift.id}})" value='{{shift.status}}'>
+                            <option value={{shift.status}}>{{shift.status}}</option>
+                            <option value='Same Day Confirmed'>Same Day Confirmed</option>
+                            <option value='In'>In</option>
+                            <option value='Completed'>Completed</option>
+                            <option value='Declined'>Declined</option>
+                            <option value='No Show'>No Show</option>
+                        </select>
                     </td>
                     <td>
-                        <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Pass</a>
+                        <input id='note-{{shift.id}}' type='text'>
                     </td>
+                    <td>
+                        <a href="#" onclick="addNote({{shift.id}})">Add Note</a>
+                    </td>
+                    <script>
+                        function updateStatus(shift_id) {
+                            hideAlert();
+
+                            var statusElem = $('#status-' + shift_id);
+                            var status = statusElem.val();
+                            var name = $('#name-' + shift_id).html();
+
+                            showAlert('info', 'Updating status for ' + name);
+                            
+                            statusElem.prop('disabled', 'disabled');
+
+                            $.ajax({
+                                type: 'POST', 
+                                url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
+                                data: {
+                                    shift_id: shift_id,
+                                    status: status
+                                }
+                            }).done(function(){
+                                showAlert('success', 'Status for ' + name + ' has been updated');
+                                statusElem.prop('disabled', false);
+                            }).fail(function(){
+                                showAlert('error', 'Status for ' + name + ' has NOT been updated');
+                                statusElem.prop('disabled', false);
+                            });
+                        }
+
+                        function addNote(shift_id) {
+                            hideAlert();
+
+                            var noteElem = $('#note-' + shift_id);
+                            var note = noteElem.val();
+                            var name = $('#name-' + shift_id).html();
+
+                            showAlert('info', 'Adding note for ' + name);
+                            noteElem.prop('disabled', 'disabled');
+
+                            $.ajax({
+                                type: 'POST', 
+                                url: '/consolidated/{{shift.location.locationname[0:3]}}/{{active_tab}}/pass',
+                                data: {
+                                    shift_id: shift_id,
+                                    note: note
+                                }
+                            }).done(function(){
+                                showAlert('success', 'Note for ' + name + ' has been added');
+                                noteElem.prop('disabled', false);
+                            }).fail(function(){
+                                showAlert('error', 'Note for ' + name + ' has NOT been added');
+                                noteElem.prop('disabled', false);
+                            });
+                        }
+                    </script>
                     <!-- TODO:
 
                         Make moving users to KPH deliberate (create another table with "walkins to kph", backend combines them)
