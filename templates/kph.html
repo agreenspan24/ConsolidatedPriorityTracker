@@ -11,15 +11,15 @@
     <thead class="thead">
         <tr>
             <th>Name</th>
-            <th>Goal</th>
-            <th>Cell</th>
-            <th>Actual</th>
-            <th>% to Goal</th>
-            <th>Returned</th>
-            <th>Time of Departure</th>
-            <th># Packets Out</th>
-            <th>Packet</th>
             <th>Phone Number</th>
+            <th>Cell</th>
+            <th>Time of Departure</th>
+            <th>Actual</th>
+            <th>Goal</th>
+            <th>% to Goal</th>
+            <th># Packets Out</th>
+            <th>Packets</th>
+            <th>Returned?</th>
             <th>Next Check In</th>
             <th>Last Check In</th>
             <th></th>
@@ -30,17 +30,18 @@
             {% if shift.status == "In" and shift.returned == False and shift.role == "Canvassing" %}
                 <tr>
                     <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
-                    <td>{{shift.goal}}</td>
+                    <td>{{shift.volunteer.phone_number}}</td>
                     <td>{{shift.volunteer.cellphone}}</td>
-                    <td>{{shift.actual}}</td>
-                    <td>{{shift.actual / shift.goal}}</td>
-                    <td>{{shift.returned}}</td>
                     <td>{{shift.departure}}</td>
+                    <td>{{shift.actual}}</td>
+                    <td>{{shift.goal}}</td>
+                    <td>{{shift.actual / shift.goal}}</td>
+                    
                     <td>{{shift.packets_given}}</td>
                     <td>{{shift.packet_names}}</td>
-                    <td>{{shift.volunteer.phone_number}}</td>
-                    <td>{{shift.departure}}</td>
-                    <td>{{shift.last_contact}}</td>
+                    <td>{{shift.returned}}</td>
+                    <td><!-- Literally just last check in + (some timedelta value 1 hr default)--></td>
+                    <td>{{shift.last_contact}}</td> <!--display most recent contact + note, create another window that allows you to view all check ins-->
                     <td>
                         <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Check In</a></td>
                     </tr>

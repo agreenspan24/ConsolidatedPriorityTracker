@@ -17,8 +17,16 @@
                 <h6>Flake Chase</h6>
             </a>
         </div>
+        <div class="tab {{'active' if active_tab == 'stats'}}">
+            <a href="{{'/consolidated/' + location.locationname[0:3] + '/stats' if active_tab != 'stats'}}">  
+                <h6>Office Totals</h6>
+            </a>
+        </div>
     </header>
     <section class="panel-content table-wrapper">       
+        {% block stats %} 
+
+        {% endblock %}
         <table class="table table-panel table-striped table-small">
             {% block table %}
 

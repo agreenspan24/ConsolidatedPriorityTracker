@@ -90,6 +90,7 @@ class Shift(db.Model):
     packet_names = db.Column(db.String(255))
     flake = db.Column(db.Boolean)
     flake_pass = db.Column(db.Integer)
+    confirm_pass = db.Column(db.Integer)
     departure = db.Column(db.Time)
     last_contact = db.Column(db.Time)
     returned = db.Column(db.Boolean)
@@ -112,6 +113,7 @@ class Shift(db.Model):
         self.packet_names = ''
         self.flake = False
         self.flake_pass = 0
+        self.confirm_pass = 0
         self.departure = None
         self.last_contact = None
         self.returned = False
@@ -127,18 +129,48 @@ class Note(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
     id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(7))
     time = db.Column(db.Time)
     text = db.Column(db.String(255))
     volunteer = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.van_id'))
     note_shift = db.Column(db.Integer, db.ForeignKey('consolidated.shift.id'))
 
-    def __init__(self, time, text, volunteer, note_shift):
+    def __init__(self, type, time, text, volunteer, note_shift):
 
+        self.type
         self.time = time
         self.text = text
         self.volunteer = volunteer
         self.note_shift = note_shift
 
+
+class ShiftStats:
+    def __init__(self, shifts):
+        self.vol_confirmed = 0
+        self.vol_completed = 0
+        self.vol_declined = 0
+        self.vol_unflipped = 0
+        self.vol_flaked = 0
+        self.intern_completed = 0
+        self.intern_declined = 0
+
+        for s in shifts:
+            if s.eventtype == "Volunteer DVC":
+                if s.status == "Confirmed":
+                    self.vol_confirmed += 1
+                if s.status == "Completed":
+                    self.vol_completed += 1
+                if s.status == "Declined":
+                    self.vol_declined += 1
+                if s.status == "Scheduled":
+                    self.vol_unflipped += 1
+                if s.status == "No Show":
+                    self.vol_flaked += 1
+            elif s.eventtype == "Intern DVC":
+                if s.status == "Completed":
+                    self.intern_completed += 1
+                if s.status == "Declined":
+                    self.intern_declined += 1
 
     
 

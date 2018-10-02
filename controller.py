@@ -64,7 +64,7 @@ def login_auth():
             g.user = user
             print(user)
             return redirect('/consolidated')    
-        
+@oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
     return redirect('/consolidated')    
@@ -80,13 +80,21 @@ def logout():
 def consolidated():
     offices = Location.query.order_by(asc(Location.locationname)).all()
     if request.method == 'POST':
+        option = request.form.get('target')
+
+        print('option')
+        if option == "Dashboard":
+            redirect('/dashboard')
+
         office = request.form.get('office')
-        print(office)
+        page = request.form.get('page')
+        print(office, page)
+        return redirect('/consolidated/' + str(office)[0:3] + '/' + page)
 
-        return redirect('/consolidated/' + str(office)[0:3] + '/sdc')
+    user = User.query.filter_by(email=g.user.email).first()
+    dashboard_permission = user.rank == 'DATA' or user.rank == 'FD'
 
-
-    return render_template('index.html', user=g.user, offices=offices)
+    return render_template('index.html', user=g.user, offices=offices, show_dashboard=dashboard_permission)
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
@@ -113,8 +121,14 @@ def office(office, page):
     elif page == 'flake':
         return render_template('flake.html', active_tab="flake", location=location, shifts=shifts)
 
+    elif page == 'stats':
+        stats = ShiftStats(shifts)
+        print(stats.vol_confirmed)
+        print(location)
+        return render_template('office_totals.html', active_tab="stats", location=location, stats=stats)
+
     else:
-        return redirect('/consolidated' + str(location.locationname)[0:3] + '/samedayconfirms')
+        return redirect('/consolidated' + str(location.locationname)[0:3] + '/sdc')
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/pass', methods=['POST'])
@@ -130,6 +144,17 @@ def add_pass(office, page):
         db.session.commit()
     
     return redirect('/consolidated/' + office + '/' + page)
+
+@oid.require_login
+@app.route('/dashboard')
+def dashboard():
+    user = User.query.filter_by(email=g.user.email).first()
+    dashboard_permission = user.rank == 'DATA' or user.rank == 'Field Director'
+
+    if not dashboard_permission:
+        redirect('/consolidated')
+    
+    redirect('/consolidated')
 
 @app.errorhandler(404)
 def page_not_found(e):
