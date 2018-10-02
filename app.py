@@ -8,7 +8,7 @@ from flask_oidc import OpenIDConnect
 
 app = Flask(__name__)
 app.config['DEBUG'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@reporting.czrfudjhpfwo.us-east-2.rds.amazonaws.com:5432/mcc'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server')
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['OIDC_CLIENT_SECRETS'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'client_secrets.json')
 app.config['OIDC_SCOPES'] = ['openid', 'email', 'profile']

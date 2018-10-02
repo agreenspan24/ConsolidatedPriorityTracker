@@ -2,12 +2,14 @@ from app import app, db
 from config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
 
-engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@reporting.czrfudjhpfwo.us-east-2.rds.amazonaws.com:5432/mcc')
+engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'syncshifts'
+
     id = db.Column('sync_id', db.Integer, primary_key=True)
     vanid = db.Column('vanid', db.Integer)
     eventtype = db.Column('eventtype', db.String(50))
@@ -89,8 +91,7 @@ class Shift(db.Model):
     packets_given = db.Column(db.Integer)
     packet_names = db.Column(db.String(255))
     flake = db.Column(db.Boolean)
-    flake_pass = db.Column(db.Integer)
-    confirm_pass = db.Column(db.Integer)
+    call_pass = db.Column(db.Integer)
     departure = db.Column(db.Time)
     last_contact = db.Column(db.Time)
     returned = db.Column(db.Boolean)
@@ -112,8 +113,7 @@ class Shift(db.Model):
         self.packets_given = 0
         self.packet_names = ''
         self.flake = False
-        self.flake_pass = 0
-        self.confirm_pass = 0
+        self.call_pass = 0
         self.departure = None
         self.last_contact = None
         self.returned = False
@@ -121,9 +121,27 @@ class Shift(db.Model):
         self.person = person
         self.shift_location = shift_location
 
-    def mark_as_flake(self):
-        self.status = 'No Show'
-        self.flake = True
+    def flip(self, status):
+        
+        if self.flake and status == 'Completed' or status == 'Same Day Confirmed':
+            self.flake = False
+        
+        if status == 'Flake':
+            self.flake = True
+
+        self.status = status
+
+    def add_call_pass(self, page, text):
+       
+        self.call_pass += 1
+        self.last_contact = datetime.now().time().strftime('%I:%M %p')
+        note = Note(page, self.last_contact, text, self.id, self.person)
+
+        db.session.add(note)
+
+    
+
+    #TODO - CREATE NEW TABLE FOR SPECIFICALLY FOR KPH?
 
 class Note(db.Model):
     __table_args__ = {'schema':'consolidated'}
