@@ -1,73 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{email}}</h1>
-
+    <div class="panel-header">
+        <h1>Welcome, {{user.email}}!</h1>
+    </div>
+    
     <form action="/consolidated" method="post">
-        <select name='office'>
-
-    
-
-        {% for office in offices %}
-
-            <option value='{{office.locationname}}'>{{office.locationname}}</option>
-        
-        {% endfor %}
-
-        </select>
-        <input type='submit' value='Select'>
-    </form>
-
-    {% if shifts %}
-    <br>
-    
-    
-    <table>
-        <tr>
-            <td>First Name</td>
-            <td>Last Name</td>
-            <td>Phone Number</td>
-            <td>Event Name</td>
-            <td>Start Time</td>
-            <td>Role</td>
-            <td>Status</td>
-            <td>Same Day Pass 1</td>
-            <td>Same Day Pass 2</td>
-            <td>Same Day Pass 3</td>
-            <td>Same Day Pass 4</td>
-            <td>Same Day Pass 5</td>
-        </tr>
-    {% for shift in shifts %}
-    {% if shift.status in ['Scheduled', 'Invited', 'Confirmed', 'Left Msg'] %}
-        <tr>
-            <td>{{shift.volunteer.first_name}}</td>
-            <td>{{shift.volunteer.last_name}}</td>
-            <td>{{shift.volunteer.phone_number}}</td>
-            <td>{{shift.eventname}}</td>
-            <td>{{shift.starttime}}</td>
-            <td>{{shift.role}}</td>
-            <td>
-                <select>
-                    <option value ={{shift.status}} selected>{{shift.status}}</option>
-                    <option value='Completed'>Completed</option>
-                    <option value='Declined'>Declined</option>
-                    <option value='No Show'>Flaked</option>
+        <div class="panel-content align-center">
+            <label class="input-label" for="office"></label>
+            <div class="input-control">
+                <select class="input-element input-element-base select" id="office" name="office">
+                    {% for office in offices %}
+                        <option value='{{office.locationid}}'>{{office.locationname}}</option>
+                    {% endfor %}
                 </select>
-
-            </td>
-            
-            <!--
-                maybe literally a button that records the time and a text box at the end for notes?
-            -->
-            <td>SAME DAY CONFIRM PASSES GO HERE</td>
-            <td>SAME DAY CONFIRM PASSES GO HERE</td>
-            <td>SAME DAY CONFIRM PASSES GO HERE</td>
-            <td>SAME DAY CONFIRM PASSES GO HERE</td>
-            <td>SAME DAY CONFIRM PASSES GO HERE</td>
-        </tr>
-    {% endif %}
-    {% endfor %}
-    </table>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <input type='submit' class="btn btn-blue btn-full" value='Select'>
+        </div>
+    </form>
     
-    {% endif %}
 {% endblock %}

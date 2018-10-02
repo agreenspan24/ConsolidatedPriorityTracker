@@ -6,7 +6,7 @@ from sqlalchemy import and_, asc
 
 from app import app, oid
 from config import settings
-from cptvanapi import CPTVANAPI
+##from cptvanapi import CPTVANAPI
 from models import *
 from datetime import datetime
 
@@ -42,7 +42,7 @@ def login_page():
 def login_auth():
     if 'user' in g:
         if g.user is not None:
-            return redirect('/')
+            return redirect('/consolidated')
     if g.oidc_id_token is None: # Token is stale
         print('Something wicked, no token in g')
     elif 'oidc_id_token' in g:
@@ -63,9 +63,11 @@ def login_auth():
             db.session.commit()
             g.user = user
             print(user)
-            return redirect('/')    
+            return redirect('/consolidated')    
         
-        
+@app.route('/', methods=['GET'])    
+def index():
+    return redirect('/consolidated')    
 
 @app.route('/logout', methods=['GET'])
 def logout():
@@ -76,8 +78,6 @@ def logout():
 @oid.require_login
 @app.route('/consolidated', methods=['POST','GET'])
 def consolidated():
-    email = g.user.email
-    print(email)
     offices = Location.query.order_by(asc(Location.locationname)).all()
     if request.method == 'POST':
         office = request.form.get('office')
@@ -85,7 +85,7 @@ def consolidated():
 
         return redirect('/consolidated/' + str(office)[0:3] + '/samedayconfirms')
 
-    return render_template('index.html', offices=offices)
+    return render_template('index.html', user=g.user, offices=offices)
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
@@ -103,19 +103,16 @@ def office(office, page):
     
 
     if page == 'samedayconfirms':
-        #TODO samedayconfirms.html
-        return render_template('same_day_confirms.html', shifts=all_shifts)
+        return render_template('same_day_confirms.html', active_tab="sdc", location=location.locationname, shifts=shifts)
 
     elif page == 'kph':
-
-        return render_template('kph.html', shifts=all_shifts)
+        return render_template('kph.html', active_tab="kph", location=location.locationname, shifts=shifts)
 
     elif page == 'flake':
-
-        return render_template('flake.html', shifts=all_shifts)
+        return render_template('flake.html', active_tab="flake", location=location.locationname, shifts=shifts)
 
     else:
-        return redirect('/consolidated/' + str(location.locationname)[0:3])
+        return redirect('/consolidated' + str(location.locationname)[0:3])
     
 
 

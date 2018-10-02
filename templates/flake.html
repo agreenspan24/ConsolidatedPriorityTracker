@@ -1,34 +1,36 @@
-{% extends "base.html" %}
+{% extends "consolidated_tabs.html" %}
 
-{% block content %}
-    <table>
-    <tr>
-        <td>Name</td>
-        <td>Phone</td>
-        <td>Cell</td>
-        <td>Time</td>
-        <td>Role</td>
-        <td>Event</td>
-        <td>Result</td>
-        <td># of Passes</td>
-        <td>Time of Last Pass</td>
-    </tr>
-    {% for shift in shifts %}
-        {% if shift.flake == False %}
-        <tr>
-            <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
-            <td>{{shift.volunteer.phone_number}}</td>
-            <td>{{shift.volunteer.cellphone}}</td>
-            <td>{{shift.time}}</td>
-            <td>{{shift.role}}</td>
-            <td>{{shift.eventype}}</td>
-            <td>{{shift.flake}}</td>
-            <td>{{shift.flake_passes}}</td>
-            <td>{{shift.last_contact}}</td>
-        </tr>
-        {% endif %}
-    {% endfor%}
-
-    </table>
-
+{% block table %}
+    {% if shifts %}
+        <thead class="thead">
+            <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Cell</th>
+                <th>Time</th>
+                <th>Role</th>
+                <th>Event</th>
+                <th>Result</th>
+                <th># of Passes</th>
+                <th>Time of Last Pass</th>
+            </tr>
+        </thead>
+        <tbody class="tbody">
+            {% for shift in shifts %}
+                {% if shift.flake == False %}
+                <tr>
+                    <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
+                    <td>{{shift.volunteer.phone_number}}</td>
+                    <td>{{shift.volunteer.cellphone}}</td>
+                    <td>{{shift.time}}</td>
+                    <td>{{shift.role}}</td>
+                    <td>{{shift.eventype}}</td>
+                    <td>{{shift.flake}}</td>
+                    <td>{{shift.flake_passes}}</td>
+                    <td>{{shift.last_contact}}</td>
+                </tr>
+                {% endif %}
+            {% endfor%}
+        </tbody>
+    {% endif %}
 {% endblock %}

@@ -1,28 +1,35 @@
-<!doctype html>
-<html>
-    <head>
-
-    </head>
-    <body>
-        
-    </body>
-</html>
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <link type="text/css" rel="stylesheet" href="http://progress.ngpvan.com/stylesheets/normalize.css">
     <link type="text/css" rel="stylesheet" href="http://progress.ngpvan.com/stylesheets/progress.min.css">
-    <!--<title></title>-->
+    <title>Consolidated</title>
   </head>
-  <body>
+  <body class="bg-gray-pale">
     <div class="app-wrapper">
-     <!-- <div class="app-header"></div>-->
-      <div class="app-content">
+        <header class="app-header">
+          <section class="app-nav-header">
+              <div class="app-nav-container">
+                  <div class="app-branding app-title bg-blue6">
+                    <a class="app-image" href="/">
+                      <img src="https://pbs.twimg.com/profile_images/875384839280640000/cvuD5Ovd_400x400.jpg" alt='mdplogo' height='40' />
+                    </a>
+                    <div class="app-user-controls ">
+                        <a href="/logout">Log Out</a>
+                    </div>
+                  </div>
+            </div>
+          </section>
+        </header>
+      <div class="app-content" style="padding:24px; padding-top:96px">
+        <article class="panel panel-default">
             {% block content %}
             
             {% endblock %} 
+        </article>
       </div>
     </div>
   </body>
