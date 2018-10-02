@@ -1,5 +1,11 @@
 {% extends "consolidated_tabs.html" %}
 
+{% set modal_title = 'Add Confirmation Pass' %}
+{% set modal_dropdown_label = 'Confirmation Result' %}
+{% set modal_dropdown_options = ['Completed', 'Flaked' , 'Declined'] %}
+
+{% include "add_shift_pass_modal.html" %}
+
 {% block table %}
     {% if shifts %}
         <thead class="thead">
@@ -13,7 +19,7 @@
                 <th>Role</th>
                 <th>Event</th>
                 <th>Status</th>
-                <th>Same Day Status</th>
+                <th></th>
             </tr>
         </thead>
         <tbody class="tbody">
@@ -30,14 +36,13 @@
                     <td>{{shift.eventtype}}</td>
                     <td>{{shift.status}}</td>
                     <td>
-                        <div class="input-control">
-                            <select class="input-element input-element-base select" id="same_day_status-{{shift.id}}" value="{{shift.status}}">
-                                <option>Completed</option>
-                                <option>Flaked</option>
-                                <option>Declined</option>
-                            </select>
-                        </div>
+                        <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Pass</a>
                     </td>
+                    <!-- TODO: 
+
+                        ADD PASS RESULTS
+                    
+                    -->
                 </tr>
             {% endif %}
             {% endfor %}
