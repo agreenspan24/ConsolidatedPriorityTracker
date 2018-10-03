@@ -40,6 +40,11 @@
                     <td>
                         <input id='note-{{shift.id}}' name="note" type='text' placeholder="Hit Enter to Save">
                     </td>
+                    {% if shift.notes != 0 %}
+                        {% for note in shift.notes[::-1] %}
+                            <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                        {% endfor %}
+                    {% endif %}
                 </tr>
                 {% endif %}
             {% endfor%}
