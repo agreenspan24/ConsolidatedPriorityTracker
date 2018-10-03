@@ -136,6 +136,8 @@ def add_pass(office, page):
     shift_id = request.form.get('shift_id')
     status = request.form.get('status')
     note_text = request.form.get('note')
+    volunteer_id = request.form.get('van_id')
+    cellphone = request.form.get('cellphone')
 
     if status:
         shift = Shift.query.filter_by(id=shift_id).first()
@@ -144,6 +146,10 @@ def add_pass(office, page):
     if note_text:
         shift = Shift.query.filter_by(id=shift_id).first()
         shift.add_call_pass(page, note_text)
+
+    if cellphone:
+        volunteer = Volunteer.query.filter_by(van_id=volunteer_id).first()
+        volunteer.cellphone = cellphone
 
     db.session.commit()
 
