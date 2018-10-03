@@ -1,10 +1,18 @@
 <script>
+    function getShiftIdFromId(id) {
+        return id.split('-').pop();
+    }
+
+    function getName(shift_id) {
+        return  $('#name-' + shift_id).html();
+    }
+
     function updateStatus(shift_id) {
         hideAlert();
 
         var statusElem = $('#status-' + shift_id);
         var status = statusElem.val();
-        var name = $('#name-' + shift_id).html();
+        var name = getName(shift_id);
 
         showAlert('info', 'Updating status for ' + name);
         
@@ -32,8 +40,8 @@
         var noteElem = $('#' + note_id);
         var note = noteElem.val();
 
-        var shift_id = note_id.split('-').pop();
-        var name = $('#name-' + shift_id).html();
+        var shift_id = getShiftIdFromId(note_id);
+        var name = getName(shift_id);
 
         showAlert('info', 'Adding note for ' + name);
         noteElem.prop('disabled', 'disabled');
@@ -67,17 +75,46 @@
         });
     }
 
+    function updateCellPhone(phone_id) {
+        hideAlert();
+
+        phoneElem = $('#' + phone_id);
+        var phone = phoneElem.val();
+
+        var shift_id = getShiftIdFromId(phone_id);
+        var name = getName(shift_id);
+        var van_id = $('#vanid-' + shift_id).html();
+        console.log(shift_id, van_id);
+
+        showAlert('info', 'Updating cell phone for ' + name);
+        phoneElem.prop('disabled', 'disabled');
+
+        $.ajax({
+            type: 'POST', 
+            url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
+            data: {
+                van_id: van_id,
+                cellphone: phone
+            }
+        }).done(function(){
+            showAlert('success', 'Cell Phone for ' + name + ' has been added');
+            phoneElem.prop('disabled', false);
+        }).fail(function(){
+            showAlert('error', 'Cell Phone for ' + name + ' has NOT been added');
+            phoneElem.prop('disabled', false);
+        });
+    }
+
     $('body').on('keyup', function(e) {
-        console.log('in', e, e.target.attributes['name'].nodeValue, e.target.attributes, e.keyCode);
         e.preventDefault();
 
-        if (e.target.attributes['name'].nodeValue == 'note' && e.keyCode == 13) {
-            console.log('adding')
-            addNote(event.target.id);
+        if (e.keyCode == 13) {
+            if (e.target.attributes['name'].nodeValue == 'note') {
+                addNote(event.target.id);
+            } else if (e.target.attributes['name'].nodeValue == 'cellphone') {
+                updateCellPhone(event.target.id);
+            }
         }
     });
-
-
-
 
 </script>
