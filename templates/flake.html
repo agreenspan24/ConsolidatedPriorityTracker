@@ -14,7 +14,6 @@
                 <th>Time of Last Pass</th>
                 <th>Status</th>
                 <th>New Note</th>
-                <th></th>
             </tr>
         </thead>
         <tbody class="tbody">
@@ -39,10 +38,7 @@
                         </select>
                     </td>
                     <td>
-                        <input id='note-{{shift.id}}' type='text'>
-                    </td>
-                    <td>
-                        <a href="#" onclick="addNote({{shift.id}})">Add Note</a>
+                        <input id='note-{{shift.id}}' name="note" type='text'>
                     </td>
                 </tr>
                 {% endif %}
