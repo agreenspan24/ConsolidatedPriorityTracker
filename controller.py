@@ -7,7 +7,7 @@ from sqlalchemy import and_, asc
 from app import app, oid
 from config import settings
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup
 from datetime import datetime
 
 oid.init_app(app)

@@ -92,7 +92,7 @@ class Shift(db.Model):
     person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.van_id'))
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
     notes = db.relationship('Note', backref='shift')
-    canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvassgroup.id'))
+    canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'))
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -147,7 +147,6 @@ class Note(db.Model):
         self.volunteer = volunteer
         self.note_shift = note_shift
 
-
 class ShiftStats:
     def __init__(self, shifts):
         self.vol_confirmed = 0
@@ -175,14 +174,9 @@ class ShiftStats:
                     self.vol_unflipped += 1
                 if s.flake:
                     self.vol_flaked += 1
-            elif s.eventtype == "Intern DVC":
-                if s.status == "Completed":
-                    self.intern_completed += 1
-                if s.status == "Declined":
-                    self.intern_declined += 1
-
-
-class CanvassGroup(db.model):
+    
+class CanvassGroup(db.Model):
+    __table_args__ = {'schema':'consolidated'}
 
     id = db.Column(db.Integer, primary_key = True)
     actual = db.Column(db.Integer)
