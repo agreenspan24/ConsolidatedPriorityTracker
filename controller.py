@@ -107,24 +107,28 @@ def office(office, page):
         return redirect('/consolidated')
 
     all_shifts = []
+    extra_shifts = []
     for location in locations:
-        shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).order_by(asc(Shift.time)).all()
+        shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).order_by(asc(Shift.time), asc(Shift.person)).all()
         for shift in shifts:
+            if shift.status in ['Completed', 'Declined'] or shift.flake == True:
+                extra_shifts.append(shift)
+            else: 
+                all_shifts.append(shift)
+        for shift in extra_shifts:
             all_shifts.append(shift)
 
     if page == 'sdc':
-        return render_template('same_day_confirms.html', active_tab="sdc", location=location, shifts=shifts)
+        return render_template('same_day_confirms.html', active_tab="sdc", location=location, shifts=all_shifts)
 
     elif page == 'kph':
-        return render_template('kph.html', active_tab="kph", location=location, shifts=shifts)
+        return render_template('kph.html', active_tab="kph", location=location, shifts=all_shifts)
 
     elif page == 'flake':
-        return render_template('flake.html', active_tab="flake", location=location, shifts=shifts)
+        return render_template('flake.html', active_tab="flake", location=location, shifts=all_shifts)
 
     elif page == 'stats':
-        stats = ShiftStats(shifts)
-        print(stats.vol_confirmed)
-        print(location)
+        stats = ShiftStats(all_shifts)
         return render_template('office_totals.html', active_tab="stats", location=location, stats=stats)
 
     else:
@@ -140,15 +144,16 @@ def add_pass(office, page):
     cellphone = request.form.get('cellphone')
 
     if status:
-        shift = Shift.query.filter_by(id=shift_id).first()
+        shift = Shift.query.get(shift_id)
         shift.flip(status)
 
     if note_text:
-        shift = Shift.query.filter_by(id=shift_id).first()
+        shift = Shift.query.get(shift_id)
         shift.add_call_pass(page, note_text)
 
     if cellphone:
-        volunteer = Volunteer.query.filter_by(van_id=volunteer_id).first()
+        print(volunteer_id, cellphone)
+        volunteer = Volunteer.query.get(volunteer_id)
         volunteer.cellphone = cellphone
 
     db.session.commit()

@@ -19,12 +19,13 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-            {% if shift.status in ['Scheduled', 'Invited', 'Confirmed', 'Left Msg', 'Same Day Confirmed'] %}
-                <tr>
-                    <td>{{shift.person}}</td>
+                <tr id="row-{{shift.id}}">
+                    <td id="vanid-{{shift.id}}">{{shift.person}}</td>
                     <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
                     <td>{{shift.volunteer.phone_number}}</td>
-                    <td>{{shift.volunteer.cellphone}}</td>
+                    <td>
+                        <input id='note-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                    </td>
                     <td>{{shift.shift_location.locationname}}</td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.eventtype}}</td>
@@ -41,7 +42,7 @@
                     </td>
                     <td>{{shift.call_pass}}</td>
                     <td>
-                        <input id='note-{{shift.id}}' name="note" type='text'>
+                        <input id='note-{{shift.id}}' name="note" type='text' placeholder="Hit Enter To Save">
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
@@ -75,7 +76,6 @@
                     
                     -->
                 </tr>
-            {% endif %}
             {% endfor %}
         </tbody>
     {% endif %}

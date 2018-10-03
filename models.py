@@ -159,8 +159,13 @@ class ShiftStats:
         self.intern_declined = 0
 
         for s in shifts:
-            if s.eventtype == "Volunteer DVC":
-                if s.status == "Confirmed":
+            if s.eventtype == "Intern DVC":
+                if s.status == "Completed":
+                    self.intern_completed += 1
+                if s.status == "Declined":
+                    self.intern_declined += 1
+            else:
+                if s.status == "Same Day Confirmed":
                     self.vol_confirmed += 1
                 if s.status == "Completed":
                     self.vol_completed += 1
@@ -168,7 +173,7 @@ class ShiftStats:
                     self.vol_declined += 1
                 if s.status == "Scheduled":
                     self.vol_unflipped += 1
-                if s.status == "No Show":
+                if s.flake:
                     self.vol_flaked += 1
             elif s.eventtype == "Intern DVC":
                 if s.status == "Completed":
