@@ -19,7 +19,7 @@
         <tbody class="tbody">
             {% for shift in shifts %}
                 {% if shift.flake == True %}
-                <tr>
+                <tr id="row-{{shift.id}}">
                     <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>{{shift.volunteer.cellphone}}</td>
@@ -38,7 +38,7 @@
                         </select>
                     </td>
                     <td>
-                        <input id='note-{{shift.id}}' name="note" type='text'>
+                        <input id='note-{{shift.id}}' name="note" type='text' placeholder="Hit Enter to Save">
                     </td>
                 </tr>
                 {% endif %}
