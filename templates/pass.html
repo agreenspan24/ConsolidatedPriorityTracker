@@ -26,10 +26,10 @@
         });
     }
 
-    function addNote(shift_id) {
+    function addNote(id) {
         hideAlert();
 
-        var noteElem = $('#note-' + shift_id);
+        var noteElem = $(id);
         var note = noteElem.val();
         var name = $('#name-' + shift_id).html();
 
@@ -51,4 +51,16 @@
             noteElem.prop('disabled', false);
         });
     }
+
+    $('input[name=note]').keyup(function(e) {
+        e.preventDefault();
+
+        if (e.keyCode == 13) {
+            addNote(event.target.id);
+        }
+    });
+
+
+
+
 </script>
