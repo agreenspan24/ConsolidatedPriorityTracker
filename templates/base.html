@@ -28,10 +28,10 @@
               <ul id="header_menu" class="dropdown-menu dropdown-menu-right left">
                 {% if g.user %}
                   <li class="user-title">
-                    Logged in to {{g.user.email}}
+                    Logged in as {{g.user.email}}
                   </li>
                 {% endif %}
-                {% if g.user.rank == "DATA" or g.user.rank =="FD" %}
+                {% if g.user.rank == "DATA" or g.user.rank == "FD" %}
                   <li>
                     <a href="/dashboard">Dashboard</a>
                   </li>
@@ -64,9 +64,6 @@
       </article>
     </div>
   </div>
-  {% block modals %}
-
-  {% endblock %}
 </body>
 
 </html>

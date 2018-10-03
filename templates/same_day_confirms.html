@@ -1,11 +1,5 @@
 {% extends "consolidated_tabs.html" %}
 
-{% set modal_title = 'Add Confirmation Pass' %}
-{% set modal_dropdown_label = 'Confirmation Result' %}
-{% set modal_dropdown_options = ['Not Home', 'Same Day Confirmed' , 'Declined'] %}
-
-{% include "add_shift_pass_modal.html" %}
-
 {% block table %}
     {% if shifts %}
         <thead class="thead">
@@ -20,7 +14,7 @@
                 <th>Role</th>
                 <th>Status</th>
                 <th>New Note</th>
-                <th>Add Note</th>
+                <th></th>
             </tr>
         </thead>
         <tbody class="tbody">

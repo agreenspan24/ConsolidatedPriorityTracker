@@ -1,13 +1,5 @@
 {% extends "consolidated_tabs.html" %}
 
-
-{% set modal_title = 'Add Flake Pass' %}
-{% set modal_dropdown_label = 'Flake Result' %}
-{% set modal_dropdown_options = ['Not Contacted', 'Rescheduled' , 'Completed - Not Rescheduled', 'Completed - Completed Today'] %}
-
-{% include "add_shift_pass_modal.html" %}
-
-
 {% block table %}
     {% if shifts %}
         <thead class="thead">
@@ -20,6 +12,8 @@
                 <th>Event</th>
                 <th># of Passes</th>
                 <th>Time of Last Pass</th>
+                <th>Status</th>
+                <th>New Note</th>
                 <th></th>
             </tr>
         </thead>
@@ -27,7 +21,7 @@
             {% for shift in shifts %}
                 {% if shift.flake == True %}
                 <tr>
-                    <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
+                    <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>{{shift.volunteer.cellphone}}</td>
                     <td>{{shift.time}}</td>
@@ -36,7 +30,19 @@
                     <td>{{shift.flake_passed}}</td>
                     <td>{{shift.last_contact}}</td>
                     <td>
-                        <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Pass</a>
+                        <select id='status-{{shift.id}}' onchange="updateStatus({{shift.id}})" value='{{shift.status}}'>
+                            <option value={{shift.status}}>{{shift.status}}</option>
+                            <option value='Not Contacted'>Not Contacted</option>
+                            <option value='Rescheduled'>Rescheduled</option>
+                            <option value='Completed - Not Rescheduled'>Completed - Not Rescheduled</option>
+                            <option value='Completed - Completed Today'>Completed - Completed Today</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input id='note-{{shift.id}}' type='text'>
+                    </td>
+                    <td>
+                        <a href="#" onclick="addNote({{shift.id}})">Add Note</a>
                     </td>
                 </tr>
                 {% endif %}
