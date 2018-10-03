@@ -25,14 +25,14 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-            {% if shift.status in ['Scheduled', 'Invited', 'Confirmed', 'Left Msg'] %}
+            {% if shift.status in ['Scheduled', 'Invited', 'Confirmed', 'Left Msg', 'Same Day Confirmed'] %}
                 <tr>
                     <td>{{shift.person}}</td>
                     <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>{{shift.volunteer.cellphone}}</td>
                     <td>{{shift.shift_location.locationname}}</td>
-                    <td>{{shift.time}}</td>
+                    <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.eventtype}}</td>
                     <td>{{shift.role}}</td>
                     <td>
@@ -42,7 +42,7 @@
                             <option value='In'>In</option>
                             <option value='Completed'>Completed</option>
                             <option value='Declined'>Declined</option>
-                            <option value='No Show'>No Show</option>
+                            <option value='Flake'>Flake</option>
                         </select>
                     </td>
                     <td>
@@ -51,6 +51,11 @@
                     <td>
                         <a href="#" onclick="addNote({{shift.id}})">Add Note</a>
                     </td>
+                    {% if shift.notes != 0 %}
+                        {% for note in shift.notes[::-1] %}
+                            <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                        {% endfor %}
+                    {% endif %}
                     <script>
                         function updateStatus(shift_id) {
                             hideAlert();

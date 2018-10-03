@@ -135,7 +135,7 @@ class Shift(db.Model):
        
         self.call_pass += 1
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
-        note = Note(page, self.last_contact, text, self.id, self.person)
+        note = Note(page, self.last_contact, text, self.person, self.id)
 
         db.session.add(note)
 

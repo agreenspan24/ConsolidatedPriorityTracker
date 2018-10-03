@@ -25,7 +25,7 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                {% if shift.flake == False %}
+                {% if shift.flake == True %}
                 <tr>
                     <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
                     <td>{{shift.volunteer.phone_number}}</td>

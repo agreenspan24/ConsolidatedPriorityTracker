@@ -7,7 +7,7 @@ from sqlalchemy import and_, asc
 from app import app, oid
 from config import settings
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats
 from datetime import datetime
 
 oid.init_app(app)
@@ -108,7 +108,7 @@ def office(office, page):
 
     all_shifts = []
     for location in locations:
-        shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).all()
+        shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).order_by(asc(Shift.time)).all()
         for shift in shifts:
             all_shifts.append(shift)
 
@@ -134,14 +134,20 @@ def office(office, page):
 @app.route('/consolidated/<office>/<page>/pass', methods=['POST'])
 def add_pass(office, page):
     shift_id = request.form.get('shift_id')
-    shift = Shift.query.get(shift_id).all()
+    status = request.form.get('status')
+    note_text = request.form.get('note')
 
-    if page == 'flake':
-        shift.flake_pass += 1
-        shift.notes += request.form.get('note')
+    if status:
+        shift = Shift.query.filter_by(id=shift_id).first()
+        shift.flip(status)
 
-        db.session.add(shift)
-        db.session.commit()
+    if note_text:
+        shift = Shift.query.filter_by(id=shift_id).first()
+        shift.add_call_pass(page, note_text)
+
+    db.session.commit()
+
+
     
     return redirect('/consolidated/' + office + '/' + page)
 
