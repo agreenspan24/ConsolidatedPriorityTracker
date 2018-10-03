@@ -63,6 +63,7 @@ class Volunteer(db.Model):
     phone_number = db.Column(db.String(120))
     cellphone = db.Column(db.String(120))
     shifts = db.relationship('Shift', backref='volunteer')
+    notes = db.relationship('Note', backref='note')
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -86,18 +87,12 @@ class Shift(db.Model):
     status = db.Column(db.String(120))
     role = db.Column(db.String(120))
     knocks = db.Column(db.Integer)
-    actual = db.Column(db.Integer)
-    goal = db.Column(db.Integer)
-    packets_given = db.Column(db.Integer)
-    packet_names = db.Column(db.String(255))
     flake = db.Column(db.Boolean)
     call_pass = db.Column(db.Integer)
-    departure = db.Column(db.Time)
-    last_contact = db.Column(db.Time)
-    returned = db.Column(db.Boolean)
     person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.van_id'))
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
     notes = db.relationship('Note', backref='shift')
+    canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvassgroup.id'))
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -108,15 +103,6 @@ class Shift(db.Model):
         self.date = date
         self.status = status
         self.role = role
-        self.actual = 0
-        self.goal = 0
-        self.packets_given = 0
-        self.packet_names = ''
-        self.flake = False
-        self.call_pass = 0
-        self.departure = None
-        self.last_contact = None
-        self.returned = False
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
@@ -189,6 +175,50 @@ class ShiftStats:
                     self.intern_completed += 1
                 if s.status == "Declined":
                     self.intern_declined += 1
+
+
+class CanvassGroup(db.model):
+
+    id = db.Column(db.Integer, primary_key = True)
+    actual = db.Column(db.Integer)
+    goal = db.Column(db.Integer)
+    packets_given = db.Column(db.Integer)
+    packet_names = db.Column(db.String(255))
+    returned = db.Column(db.Boolean)
+    departure = db.Column(db.Time)
+    last_check_in = db.Column(db.Time)
+    check_in_time = db.Column(db.Time)
+    check_ins = db.Column(db.Integer)
+    canvass_shifts = db.relationship('Shift', backref='group')
+
+    def __init__(self):
+
+        self.actual = 0
+        self.goal = 0
+        self.packets_given = 0
+        self.packet_names = ''
+        self.returned = False
+        self.departure = "Hasn't left"
+        self.last_contact = "Never"
+        self.check_in_time = "Nothing Yet"
+        self.check_ins = 0
+
+    def add_shifts(self, shift):
+    
+        self.canvass_shifts.append(shift)
+
+    def check_in(self, time):
+
+        self.last_check_in = time
+        self.next_check_in = self.last_check_in.timedelta(hours=1)
+        self.check_ins += 1
+
+    def returned(self):
+
+        self.returned = True
+
+        for shift in self.canvass_shifts:
+            shift.status = 'Completed'
 
     
 

@@ -13,6 +13,7 @@
                 <th>Event</th>
                 <th>Role</th>
                 <th>Status</th>
+                <th>Passes Made</th>
                 <th>New Note</th>
             </tr>
         </thead>
@@ -38,6 +39,7 @@
                             <option value='Flake'>Flake</option>
                         </select>
                     </td>
+                    <td>{{shift.call_pass}}</td>
                     <td>
                         <input id='note-{{shift.id}}' name="note" type='text'>
                     </td>
