@@ -33,7 +33,7 @@
                     <td>{{shift.last_contact}}</td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateStatus({{shift.id}})" value='{{shift.status}}'>
-                            <option value={{shift.status}}>{{shift.status}}</option>
+                            <option value="Flake">Flake</option>
                             <option value='Not Contacted'>Not Contacted</option>
                             <option value='Rescheduled'>Rescheduled</option>
                             <option value='Completed - Not Rescheduled'>Completed - Not Rescheduled</option>
