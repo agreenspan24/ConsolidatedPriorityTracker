@@ -152,14 +152,16 @@ def add_pass(office, page):
         packets_given = request.form.get('packets_given')
         packet_names = request.form.get('packet_names')
 
-
+        return_var = ""
         if parent_id:
+            print(parent_id)
             group = CanvassGroup.query.get(parent_id)
 
             if returned:
                 group.returned()
 
             if checked_in:
+                print(parent_id)
                 group = group.check_in()
 
             if note_text:
@@ -182,10 +184,10 @@ def add_pass(office, page):
                 group.packet_names = packet_names
             
             db.session.commit()
-            return group
+            return return_var
     else: 
         status = request.form.get('status')
-        return_var = ""
+        
         if status:
             shift = Shift.query.get(parent_id)
             shift.flip(status)     
@@ -259,7 +261,7 @@ def add_walk_in(office, page):
 @oid.require_login
 @app.route('/dashboard')
 def dashboard():
-    user = User.query.filter_by(email=g.users.email).first()
+    user = User.query.filter_by(email=g.user.email).first()
     dashboard_permission = user.rank == 'DATA' or user.rank == 'Field Director'
 
     if not dashboard_permission:
@@ -275,7 +277,7 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_service_error(e):
     if request.endpoint == 'pass':
-        return render_template('500.html', e=e)
+        return e
 
     return redirect('/consolidated')
 

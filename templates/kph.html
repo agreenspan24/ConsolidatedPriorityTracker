@@ -88,7 +88,7 @@
                         </p>
                     {% endfor %}
                 </td>
-                <td>{{group.departure if group.departure != None else ''}}</td>
+                <td>{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}</td>
                 <td>
                     <input id="actual-{{group.id}}" name="actual" type="text" value="{{group.actual if not group.actual == None}}" />
                 </td>
@@ -105,8 +105,8 @@
                 <td>
                     <input id='returned-{{group.id}}' onclick="updateElem('check-in-{{group.id}}', 'returned', null)" type="checkbox" class="checkbox" value="{{group.returned}}" />
                 </td>
-                <td id='next-check-{{group.id}}'>{{group.check_in_time if group.check_in_time != None else ''}}</td> 
-                <td id='last-check-{{group.id}}'>{{group.last_check_in if group.last_check_in != None else ''}}</td>
+                <td id='next-check-{{group.id}}'>{{group.check_in_time.strftime('%I:%M %p') if group.check_in_time != None else ''}}</td> 
+                <td id='last-check-{{group.id}}'>{{group.last_check_in.strftime('%I:%M %p') if group.last_check_in != None else ''}}</td>
                 <td>
                     <a id="check-in-{{group.id}}" value="true" onclick="updateElem('check-in-{{group.id}}', 'checked_in', updateCheckIns)">{{'Check In' if group.departure != None else 'Depart'}}</a>
                 </td>

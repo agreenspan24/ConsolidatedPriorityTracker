@@ -61,7 +61,7 @@
         }).done(function(res){
             showAlert('success', elem_name + ' for ' + name + ' has been added');
             elem.prop('disabled', false);
-            
+
             if (success_callback) {
                 success_callback(parent_id, res, elem);
             }
@@ -84,8 +84,6 @@
 
     function updateCheckIns(parent_id, res, elem) {
         console.log(res);
-
-
 
         getRowElem(parent_id, 'next-check').html(res.check_in_time);
         getRowElem(parent_id, 'last-check').html(res.last_check_in);

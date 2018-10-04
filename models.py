@@ -123,6 +123,7 @@ class Shift(db.Model):
         self.date = date
         self.status = status
         self.role = role
+        self.flake = False
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
@@ -188,7 +189,7 @@ class CanvassGroup(db.Model):
     goal = db.Column(db.Integer)
     packets_given = db.Column(db.Integer)
     packet_names = db.Column(db.String(255))
-    returned = db.Column("returned", db.Boolean)
+    is_returned = db.Column(db.Boolean)
     departure = db.Column(db.Time)
     last_check_in = db.Column(db.Time)
     check_in_time = db.Column(db.Time)
@@ -200,7 +201,7 @@ class CanvassGroup(db.Model):
         self.goal = 0
         self.packets_given = 0
         self.packet_names = ''
-        self.returned = False
+        self.is_returned = False
         self.departure = None
         self.last_contact = None
         self.check_in_time = None
@@ -232,6 +233,8 @@ class CanvassGroup(db.Model):
         for shift in self.canvass_shifts:
             shift.status = 'Completed'
 
+        return self
+
     def add_note(self, page, text):
         self.canvass_shifts[0].add_call_pass(page, text)
 
@@ -255,8 +258,8 @@ class DashboardTotal(db.Model):
     phone_declined = db.Column('phone_declined', db.Integer)
     phone_flaked = db.Column('phone_flaked', db.Integer)
     flake_total = db.Column('flake_total', db.Integer)
-    flake_attempted = db.Column('flake_attempted', db.Integer)
-    flake_attempted_perc = db.Column('flake_attempted_perc', db.Integer)
+    flake_attempts = db.Column('flake_attempts', db.Integer)
+    flake_attempts_perc = db.Column('flake_attempts_perc', db.Integer)
     flake_rescheduled = db.Column('flake_rescheduled', db.Integer)
     flake_rescheduled_perc = db.Column('flake_rescheduled_perc', db.Integer)
     flake_chase_remaining = db.Column('flake_chase_remaining', db.Integer)
@@ -264,7 +267,7 @@ class DashboardTotal(db.Model):
     canvassers_all_day = db.Column('canvassers_all_day', db.Integer)
     actual_all_day = db.Column('actual_all_day', db.Integer)
     goal_all_day = db.Column('goal_all_day', db.Integer)
-    packets_all_day = db.Column('packets_all_day', db.Integer)
+    packets_out_all_day = db.Column('packets_out_all_day', db.Integer)
     kps = db.Column('kps', db.Integer)
     canvassers_out_now = db.Column('canvassers_out_now', db.Integer)
     actual_out_now = db.Column('actual_out_now', db.Integer)
