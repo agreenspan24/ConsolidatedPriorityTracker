@@ -1,90 +1,19 @@
 <script>
-    function getShiftIdFromId(id) {
+    function getParentIdFromId(id) {
         return id.split('-').pop();
     }
 
-    function getName(shift_id) {
-        return  $('#name-' + shift_id).html();
-    }
-
-    function updateStatus(shift_id) {
-        hideAlert();
-
-        var statusElem = $('#status-' + shift_id);
-        var status = statusElem.val();
-        var name = getName(shift_id);
-
-        showAlert('info', 'Updating status for ' + name);
-        
-        statusElem.prop('disabled', 'disabled');
-
-        $.ajax({
-            type: 'POST', 
-            url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
-            data: {
-                shift_id: shift_id,
-                status: status
-            }
-        }).done(function(){
-            showAlert('success', 'Status for ' + name + ' has been updated');
-            statusElem.prop('disabled', false);
-        }).fail(function(){
-            showAlert('error', 'Status for ' + name + ' has NOT been updated');
-            statusElem.prop('disabled', false);
-        });
-    }
-
-    function addNote(note_id) {
-        hideAlert();
-
-        var noteElem = $('#' + note_id);
-        var note = noteElem.val();
-
-        var shift_id = getShiftIdFromId(note_id);
-        var name = getName(shift_id);
-
-        showAlert('info', 'Adding note for ' + name);
-        noteElem.prop('disabled', 'disabled');
-
-        $.ajax({
-            type: 'POST', 
-            url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
-            data: {
-                shift_id: shift_id,
-                note: note
-            }
-        }).done(function(){
-            showAlert('success', 'Note for ' + name + ' has been added');
-            noteElem.prop('disabled', false);
-
-            var date = new Date();
-            var hour = date.getHours();
-            var pm = hour > 12;
-
-            var min = date.getMinutes();
-            var minutes = min.length < 2 ? "0" + min : min;
-
-            var child = document.createElement('td');
-            child.innerText = (pm ? hour - 12 : hour) + ":" + minutes + (pm ? ' PM' : ' AM') +  ": " + note;
-            $('#row-' + shift_id).append(child);
-            noteElem.val('');
-
-        }).fail(function(){
-            showAlert('error', 'Note for ' + name + ' has NOT been added');
-            noteElem.prop('disabled', false);
-        });
+    function getName(parent_id) {
+        return  $('#name-' + parent_id).html();
     }
 
     function updateCellPhone(phone_id) {
-        hideAlert();
-
         phoneElem = $('#' + phone_id);
         var phone = phoneElem.val();
 
-        var shift_id = getShiftIdFromId(phone_id);
-        var name = getName(shift_id);
-        var van_id = $('#vanid-' + shift_id).html();
-        console.log(shift_id, van_id);
+        var parent_id = getParentIdFromId(phone_id);
+        var name = getName(parent_id);
+        var van_id = $('#vanid-' + parent_id).html();
 
         showAlert('info', 'Updating cell phone for ' + name);
         phoneElem.prop('disabled', 'disabled');
@@ -96,7 +25,7 @@
                 van_id: van_id,
                 cellphone: phone
             }
-        }).done(function(){
+        }).done(function(d){
             showAlert('success', 'Cell Phone for ' + name + ' has been added');
             phoneElem.prop('disabled', false);
         }).fail(function(){
@@ -105,14 +34,58 @@
         });
     }
 
+    function updateElem(elem_id, elem_name, success_callback) {
+        elem = $('#' + elem_id);
+        var val = elem.val();
+
+        var parent_id = getParentIdFromId(elem_id);
+        var name = getName(parent_id);
+
+        showAlert('info', 'Updating ' + elem_name + ' for ' + name);
+        elem.prop('disabled', 'disabled');
+
+        var data = {
+            parent_id: parent_id
+        };
+
+        data[elem_name] = val;
+
+        $.ajax({
+            type: 'POST', 
+            url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
+            data: data
+        }).done(function(res){
+            showAlert('success', elem_name + ' for ' + name + ' has been added');
+            elem.prop('disabled', false);
+
+            success_callback(parent_id, res, elem);
+        }).fail(function(){
+            showAlert('error', elem_name + ' for ' + name + ' has NOT been added');
+            elem.prop('disabled', false);
+        });
+    }
+
+    function updateNote(parent_id, res, elem) {
+        console.log('callback', parent_id);
+        var child = document.createElement('td');
+        child.innerText = res;
+        $('#row-' + parent_id).append(child);
+        elem.val('');
+    }
+
     $('body').on('keyup', function(e) {
         e.preventDefault();
 
         if (e.keyCode == 13) {
-            if (e.target.attributes['name'].nodeValue == 'note') {
-                addNote(event.target.id);
-            } else if (e.target.attributes['name'].nodeValue == 'cellphone') {
-                updateCellPhone(event.target.id);
+            var name = e.target.attributes['name'].nodeValue;
+            var id = event.target.id;
+
+            if (name == 'note') {
+                updateElem(id, name, updateNote);
+            } else if (name == 'cellphone') {
+                updateCellPhone(id, name, null);
+            } else if (name == 'actual') {
+                updateElem(id, name, null)
             }
         }
     });

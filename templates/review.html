@@ -1,6 +1,6 @@
 {% extends "consolidated_tabs.html" %}
 
-{% block stats %}
+{% block above_table %}
 {% if stats %}
     <ul class="stat-board stat-board-four">
         <li class="stat-item">
@@ -46,5 +46,45 @@
             </div>
         </li>
       </ul>
+{% endif %}
+{% endblock %}
+
+{% block table %}
+  {% if shifts %}
+    <form action="" method="POST">
+      <thead class="thead">
+          <tr>
+              <th>VanID</th>
+              <th>Name</th>
+              <th>Event</th>
+              <th>Status</th>
+          </tr>
+      </thead>
+      <tbody class="tbody">
+        {% for shift in shifts %}
+            <tr>
+                <td>
+                    <input name="vanid-{{shift.id}}" value="{{shift.person}}" type="hidden" />
+                    {{shift.person}}
+                </td>
+                <td>
+                    {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
+                </td>
+                <td>{{shift.eventtype}}</td>
+                <td>
+                    <input name="status-{{shift.id}}" value="{{shift.status}}" type="hidden" />
+                    {{shift.status}}
+                </td>
+            </tr>
+            {% endfor %}
+      </tbody>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+{% if g.user.rank == "DATA" or g.user.rank == "FD" %}
+  <p>By clicking this button, you will sync all of these shifts to the status on the right.</p>
+  <button class="btn btn-full btn-blue">Sync Shifts To VAN</button>
 {% endif %}
 {% endblock %}

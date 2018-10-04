@@ -1,6 +1,8 @@
 {% block alerts %}
 <script>
     function showAlert(type, text) {
+        hideAlert();
+
         $('.alert').removeClass('hide success info warn error').addClass(type);
         $('#alert-text').html(text);
     }

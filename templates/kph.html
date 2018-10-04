@@ -1,13 +1,53 @@
 {% extends "consolidated_tabs.html" %}
 
-{% set modal_title = 'Add Check In' %}
-{% set modal_dropdown_label = 'Returned' %}
-{% set modal_dropdown_options = ['Yes', 'Not Yet', 'Thief'] %}
+{% block above_table %}
+<link src="http://select2.github.io/select2/select2-3.5.1/select2.css" rel="stylesheet" />
+<script src="http://select2.github.io/select2/select2-3.5.1/select2.js" type="text/javascript"></script>
+<script>
+    $(document).ready(
+        function () {
+            $('#shift_id').select2();
+        }
+    );
+</script>
+<form action="/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/add_group" method="POST">
+    <table class="table">
+        <tbody class="tbody">
+            <tr>
+                <td>
+                    <label class="input-label" for="shift_id">Volunteer</label>
+                    <select class="input-element" name="shift_id" id="shift_id" multiple>
+                        <option></option>
+                        {% for shift in shifts %}
+                            <option value={{shift.id}}>
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <label class="input-label" for="goal">Goal</label>
+                    <input class="input-element" type="number" id="goal" name="goal"/>
+                </td>
+                <td>
+                    <label class="input-label" for="packets_given"># Packets Given</label>
+                    <input class="input-element" type="number" name="packets_given" id="packets_given" />
+                </td>
+                <td>
+                    <label class="input-label" for="packet_names">Packets</label>
+                    <input class="input-element" type="text" name="packet_names" id="packet_names"/> 
+                </td>
+                <td>
+                    <input class="btn btn-blue" style="margin-top:30px" type="submit" value="Create Canvass Group" />
+                </td> 
+            </td>
+        </tbody>
+    </table>
+</form>
 
-{% include "add_shift_pass_modal.html" %}
+{% endblock %}
 
 {% block table %}
-{% if shifts %}
     <thead class="thead">
         <tr>
             <th>Name</th>
@@ -23,34 +63,58 @@
             <th>Next Check In</th>
             <th>Last Check In</th>
             <th></th>
+            <th>Notes</th>
         </tr>
     </thead>
     <tbody class="tbody">
-        {% for shift in shifts %}
-            {% if shift.status == "In" and shift.returned == False and shift.role == "Canvassing" %}
-                <tr>
-                    <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
-                    <td>{{shift.volunteer.phone_number}}</td>
-                    <td>
-                        <input id='note-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
-                    </td>
-                    <td>{{shift.departure}}</td>
-                    <td>{{shift.actual}}</td>
-                    <td>{{shift.goal}}</td>
-                    <td>{{shift.actual / shift.goal}}</td>
-                    
-                    <td>{{shift.packets_given}}</td>
-                    <td>{{shift.packet_names}}</td>
-                    <td>{{shift.returned}}</td>
-                    <td><!-- Literally just last check in + (some timedelta value 1 hr default)--></td>
-                    <td>{{shift.last_contact}}</td> <!--display most recent contact + note, create another window that allows you to view all check ins-->
-                    <td>
-                        <a href="#" onclick="openModal('add_modal', 'modal_shift_id', {{shift.id}})">Add Check In</a></td>
-                    </tr>
-            {% endif %}
+        {% if groups %}
+        {% for group in groups %}
+            <tr>
+                <td>
+                    {% for shift in group.canvass_shifts %}
+                        <span id="vanid-{{shift.id}}" class="hide">{{shift.person}}</span>
+                        <p id='name-{{shift.id}}'>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</p>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for shift in group.canvass_shifts %}
+                        <p>{{shift.volunteer.phone_number}}</p>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for shift in group.canvass_shifts %}
+                        <p>
+                            <input id='phone-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        </p>
+                    {% endfor %}
+                </td>
+                <td>{{group.departure}}</td>
+                <td>
+                    <input id="actual-{{group.id}}" name="actual" type="text" value="{{group.actual if not group.actual == None}}" />
+                </td>
+                <td>
+                    {{group.goal}}
+                </td>
+                <td>{{group.actual / group.goal}}</td>
+                <td>{{group.packets_given}}</td>
+                <td>{{group.packet_names}}</td>
+                <td>
+                    <input id='returned-{{group.id}}' onclick="updateElem('check-in-{{group.id}}', 'returned')" type="checkbox" class="checkbox" value="{{group.returned}}" />
+                </td>
+                <td>{{group.check_in_time}}</td> 
+                <td>{{group.last_check_in}}</td>
+                <td>
+                    <a id="check-in-{{group.id}}" onclick="updateElem('check-in-{{group.id}}', 'checked_in')">{{'Check In' if departure != None else 'Depart'}}</a>
+                </td>
+                {% if group.canvass_shifts[0].notes != 0 %}
+                    {% for note in group.canvass_shifts[0].notes[::-1] %}
+                        <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                    {% endfor %}
+                {% endif %}
+            </tr>
         {% endfor %}
+        {% endif %}
     </tbody>
-{% endif %}
 {% endblock %}
 
 

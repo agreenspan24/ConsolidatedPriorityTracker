@@ -5,6 +5,11 @@
     {% block pass %}
 
     {% endblock %}
+
+    {% include "add_walk_in_modal.html" %}
+    {% block modals %}
+
+    {% endblock %}
     <header class="panel-tabs functional">
         <div class="tab {{'active' if active_tab == 'sdc'}}">
             <a href="{{'/consolidated/' + location.locationname[0:3] + '/sdc' if active_tab != 'sdc'}}">
@@ -21,14 +26,19 @@
                 <h6>Flake Chase</h6>
             </a>
         </div>
-        <div class="tab {{'active' if active_tab == 'stats'}}">
-            <a href="{{'/consolidated/' + location.locationname[0:3] + '/stats' if active_tab != 'stats'}}">  
-                <h6>Office Totals</h6>
+        <div class="tab {{'active' if active_tab == 'review'}}">
+            <a href="{{'/consolidated/' + location.locationname[0:3] + '/review' if active_tab != 'review'}}">  
+                <h6>Review</h6>
+            </a>
+        </div>
+        <div class="tab add" style="display:block">
+            <a title="Add Walk In" onclick="open_modal('add_modal')">  
+                <span class="glyphicons glyphicons-plus"></span>
             </a>
         </div>
     </header>
     <section class="panel-content table-wrapper">       
-        {% block stats %} 
+        {% block above_table %} 
 
         {% endblock %}
         <table class="table table-panel table-striped table-small">
@@ -37,6 +47,11 @@
             {% endblock %}
         </table>    
     </section>
+    <footer class="panel-footer">
+        {% block footer %}
+
+        {% endblock %}
+    </footer>
 {% endblock %}
 
 

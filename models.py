@@ -55,8 +55,8 @@ class Volunteer(db.Model):
     __table_args__ = {'schema':'consolidated'}
     #__tablename__ = 'volunteer'
 
-    #id = db.Column(db.Integer, primary_key=True)
-    van_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    van_id = db.Column(db.Integer)
     knocks = db.Column(db.Integer)
     first_name = db.Column(db.String(120))
     last_name = db.Column(db.String(120))
@@ -75,6 +75,26 @@ class Volunteer(db.Model):
         self.knocks = 0
         self.is_intern = is_intern
 
+
+class Note(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(7))
+    time = db.Column(db.Time)
+    text = db.Column(db.String(255))
+    volunteer = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
+    note_shift = db.Column(db.Integer, db.ForeignKey('consolidated.shift.id'))
+
+    def __init__(self, type, time, text, volunteer, note_shift):
+
+        self.type
+        self.time = time
+        self.text = text
+        self.volunteer = volunteer
+        self.note_shift = note_shift
+
+
 class Shift(db.Model):
     __table_args__ = {'schema':'consolidated'}
     #__tablename__ = 'shift'
@@ -89,7 +109,7 @@ class Shift(db.Model):
     knocks = db.Column(db.Integer)
     flake = db.Column(db.Boolean)
     call_pass = db.Column(db.Integer)
-    person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.van_id'))
+    person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
     notes = db.relationship('Note', backref='shift')
     canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'))
@@ -106,6 +126,7 @@ class Shift(db.Model):
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
+        self.call_pass = 0
 
     def flip(self, status):
         
@@ -118,34 +139,21 @@ class Shift(db.Model):
         self.status = status
 
     def add_call_pass(self, page, text):
-       
-        self.call_pass += 1
+        if self.call_pass == None:
+            self.call_pass = 1
+        else:
+            self.call_pass += 1
+
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
         note = Note(page, self.last_contact, text, self.person, self.id)
 
         db.session.add(note)
 
+        return self.last_contact + ": " + text
+
     
 
     #TODO - CREATE NEW TABLE FOR SPECIFICALLY FOR KPH?
-
-class Note(db.Model):
-    __table_args__ = {'schema':'consolidated'}
-
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(7))
-    time = db.Column(db.Time)
-    text = db.Column(db.String(255))
-    volunteer = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.van_id'))
-    note_shift = db.Column(db.Integer, db.ForeignKey('consolidated.shift.id'))
-
-    def __init__(self, type, time, text, volunteer, note_shift):
-
-        self.type
-        self.time = time
-        self.text = text
-        self.volunteer = volunteer
-        self.note_shift = note_shift
 
 class ShiftStats:
     def __init__(self, shifts):
@@ -206,11 +214,17 @@ class CanvassGroup(db.Model):
     
         self.canvass_shifts.append(shift)
 
-    def check_in(self, time):
+    def check_in(self):
+        if self.departure == "Hasn't left":
+            self.departure = datetime.now().time()
+            self.check_in_time = self.departure.timedelta(hours=1)
 
-        self.last_check_in = time
-        self.next_check_in = self.last_check_in.timedelta(hours=1)
-        self.check_ins += 1
+        else:
+            self.last_check_in = datetime.now().time()
+            self.check_in_time = self.last_check_in.timedelta(hours=1)
+            self.check_ins += 1
+
+        return self
 
     def returned(self):
 
@@ -218,6 +232,9 @@ class CanvassGroup(db.Model):
 
         for shift in self.canvass_shifts:
             shift.status = 'Completed'
+
+    def add_note(self, page, text):
+        self.canvass_shifts[0].add_call_pass(page, text)
 
     
 
