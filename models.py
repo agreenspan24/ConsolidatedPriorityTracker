@@ -151,9 +151,6 @@ class Shift(db.Model):
 
         return self.last_contact + ": " + text
 
-    
-
-    #TODO - CREATE NEW TABLE FOR SPECIFICALLY FOR KPH?
 
 class ShiftStats:
     def __init__(self, shifts):

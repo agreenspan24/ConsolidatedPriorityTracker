@@ -273,7 +273,9 @@ def page_not_found(e):
 
 @app.errorhandler(500)
 def internal_service_error(e):
-    print(e)
+    if request.endpoint == 'pass':
+        return render_template('500.html', e=e)
+
     return redirect('/consolidated')
 
 if __name__ == "__main__":
