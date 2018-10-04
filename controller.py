@@ -150,7 +150,7 @@ def add_pass(office, page):
     van_id = request.form.get('van_id')
 
     if not parent_id:
-        return abort(404)
+        return abort(400)
 
     if page == 'kph':
         returned = request.form.get('returned')
@@ -164,7 +164,7 @@ def add_pass(office, page):
         group = CanvassGroup.query.get(parent_id)
 
         if not group:
-            return abort(404, 'Group Not Found')
+            return abort(400, 'Group Not Found')
 
         if returned:
             if not isinstance(returned, bool):
@@ -230,7 +230,7 @@ def add_pass(office, page):
         shift = Shift.query.get(parent_id)
 
         if not shift:
-            return abort(404, 'Shift not found')
+            return abort(400, 'Shift not found')
         
         if status:
             status = escape(status)
@@ -333,7 +333,7 @@ def add_walk_in(office, page):
     vol = Volunteer(None, firstname, lastname, phone, None)
     db.session.add(vol)
     db.session.commit()
-    
+
     vol = Volunteer.query.filter_by(first_name=firstname, last_name=lastname, van_id=None).first()
 
     shift.person = vol.id

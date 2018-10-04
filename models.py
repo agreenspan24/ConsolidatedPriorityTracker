@@ -217,7 +217,7 @@ class CanvassGroup(db.Model):
             shift = Shift.query.get(id)
 
             if not shift:
-                return abort(404, 'Shift not found')
+                return abort(400, 'Shift not found')
 
             self.canvass_shifts.append(shift)
 

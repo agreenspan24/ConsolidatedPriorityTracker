@@ -26,7 +26,7 @@
                     </td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>
-                        <input id='phone-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td>{{shift.time}}</td>
                     <td>{{shift.role}}</td>
@@ -42,7 +42,7 @@
                         </select>
                     </td>
                     <td>
-                        <input id='note-{{shift.id}}' name="note" type='text' placeholder="Hit Enter to Save">
+                        <input id='note-{{shift.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter to Save">
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}

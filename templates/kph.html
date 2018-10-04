@@ -35,7 +35,7 @@
                 </td>
                 <td>
                     <label class="input-label" for="packet_names">Packets</label>
-                    <input class="input-element" type="text" name="packet_names" id="packet_names"/> 
+                    <input class="input-element" type="text" name="packet_names" id="packet_names" maxlength="255"/> 
                 </td>
                 <td>
                     <input class="btn btn-blue" style="margin-top:30px" type="submit" value="Create Canvass Group" />
@@ -84,7 +84,7 @@
                 <td>
                     {% for shift in group.canvass_shifts %}
                         <p>
-                            <input id='phone-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                            <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                         </p>
                     {% endfor %}
                 </td>
@@ -97,10 +97,10 @@
                 </td>
                 <td id="perc-{{group.id}}">{{((group.actual / (group.goal if group.goal != 0 else 1))*100)|round(2)|string + '%'}}</td>
                 <td>
-                    <input id="packets_given-{{group.id}}" name="packets_given" type="text" value="{{group.packets_given if not group.packets_given == None}}" />
+                    <input id="packets_given-{{group.id}}" name="packets_given" type="number" value="{{group.packets_given if not group.packets_given == None}}" />
                 </td>
                 <td>
-                    <input id="packet_names-{{group.id}}" name="packet_names" type="text" value="{{group.packet_names if not group.packet_names == None}}" />
+                    <input id="packet_names-{{group.id}}" name="packet_names" type="text" maxlength="255" value="{{group.packet_names if not group.packet_names == None}}" />
                 </td>
                 <td>
                     <input id='returned-{{group.id}}' onclick="updateElem('check-in-{{group.id}}', 'returned', null)" type="checkbox" class="checkbox" value="{{group.returned}}" />
@@ -110,6 +110,11 @@
                 <td>
                     <a id="check-in-{{group.id}}" value="true" onclick="updateElem('check-in-{{group.id}}', 'checked_in', updateCheckIns)">{{'Check In' if group.departure != None else 'Depart'}}</a>
                 </td>
+                {% if group.canvass_shift[:0].notes != 0 %}
+                    {% for note in group.canvass_shift[:0].notes[::-1] %}
+                        <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                    {% endfor %}
+                {% endif %}
             </tr>
         {% endfor %}
         {% endif %}
