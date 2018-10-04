@@ -188,7 +188,7 @@ class CanvassGroup(db.Model):
     goal = db.Column(db.Integer)
     packets_given = db.Column(db.Integer)
     packet_names = db.Column(db.String(255))
-    returned = db.Column(db.Boolean)
+    returned = db.Column("returned", db.Boolean)
     departure = db.Column(db.Time)
     last_check_in = db.Column(db.Time)
     check_in_time = db.Column(db.Time)
@@ -237,6 +237,42 @@ class CanvassGroup(db.Model):
 
     
 
+class DashboardTotal(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+    __tablename__ = 'dashboard_totals'
+
+    id = db.Column('id', db.Integer, primary_key=True)
+    region = db.Column('region', db.String(10))
+    office = db.Column('office', db.String(50))
+    canvass_total_scheduled = db.Column('canvass_total_scheduled', db.Integer)
+    canvass_same_day_confirmed = db.Column('canvass_same_day_confirmed', db.Integer)
+    canvass_completed = db.Column('canvass_completed', db.Integer)
+    canvass_declined = db.Column('canvass_declined', db.Integer)
+    canvass_flaked = db.Column('canvass_flaked', db.Integer)
+    phone_total_scheduled = db.Column('phone_total_scheduled', db.Integer)
+    phone_same_day_confirmed = db.Column('phone_same_day_confirmed', db.Integer)
+    phone_completed = db.Column('phone_completed', db.Integer)
+    phone_declined = db.Column('phone_declined', db.Integer)
+    phone_flaked = db.Column('phone_flaked', db.Integer)
+    flake_total = db.Column('flake_total', db.Integer)
+    flake_attempted = db.Column('flake_attempted', db.Integer)
+    flake_attempted_perc = db.Column('flake_attempted_perc', db.Integer)
+    flake_rescheduled = db.Column('flake_rescheduled', db.Integer)
+    flake_rescheduled_perc = db.Column('flake_rescheduled_perc', db.Integer)
+    flake_chase_remaining = db.Column('flake_chase_remaining', db.Integer)
+    flake_chase_remaining_perc = db.Column('flake_chase_remaining_perc', db.Integer)
+    canvassers_all_day = db.Column('canvassers_all_day', db.Integer)
+    actual_all_day = db.Column('actual_all_day', db.Integer)
+    goal_all_day = db.Column('goal_all_day', db.Integer)
+    packets_all_day = db.Column('packets_all_day', db.Integer)
+    kps = db.Column('kps', db.Integer)
+    canvassers_out_now = db.Column('canvassers_out_now', db.Integer)
+    actual_out_now = db.Column('actual_out_now', db.Integer)
+    goal_out_now = db.Column('goal_out_now', db.Integer)
+    packets_out_now = db.Column('packets_out_now', db.Integer)
+    kph = db.Column('kph', db.Integer)
+    overdue_check_ins = db.Column('overdue_check_ins', db.Integer)
+    
 
 
 

@@ -7,7 +7,7 @@ from sqlalchemy import and_, asc
 from app import app, oid
 from config import settings
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, DashboardTotal
 from datetime import datetime
 
 oid.init_app(app)
@@ -265,7 +265,8 @@ def dashboard():
     if not dashboard_permission:
         return redirect('/consolidated')
     
-    return redirect('/consolidated')
+    totals = DashboardTotal.query.all()
+    return render_template('dashboard.html', results=totals)
 
 @app.errorhandler(404)
 def page_not_found(e):
