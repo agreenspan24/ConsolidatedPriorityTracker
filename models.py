@@ -199,20 +199,22 @@ class CanvassGroup(db.Model):
     canvass_shifts = db.relationship('Shift', backref='group')
 
     def __init__(self):
-
         self.actual = 0
         self.goal = 0
         self.packets_given = 0
         self.packet_names = ''
         self.returned = False
-        self.departure = "Hasn't left"
-        self.last_contact = "Never"
-        self.check_in_time = "Nothing Yet"
+        self.departure = None
+        self.last_contact = None
+        self.check_in_time = None
         self.check_ins = 0
 
-    def add_shifts(self, shift):
+
+    def add_shifts(self, shift_ids):
     
-        self.canvass_shifts.append(shift)
+        for id in shift_ids:
+            shift = Shift.query.get(id)
+            self.canvass_shifts.append(shift)
 
     def check_in(self):
         if self.departure == "Hasn't left":

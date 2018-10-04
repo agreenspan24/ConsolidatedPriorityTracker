@@ -4,11 +4,11 @@
     }
     
     function getRowElem(parent_id, name){
-        return $('#' + name + '-' + parent_id).html();
+        return $('#' + name + '-' + parent_id);
     }
 
     function getName(parent_id) {
-        return getRowElem(parent_id, 'name');
+        return getRowElem(parent_id, 'name').html();
     }
 
     function updateCellPhone(phone_id) {
@@ -81,6 +81,10 @@
     }
 
     function updateCheckIns(parent_id, res, elem) {
+        console.log(res);
+
+
+
         getRowElem(parent_id, 'next-check').html(res.check_in_time);
         getRowElem(parent_id, 'last-check').html(res.last_check_in);
     }

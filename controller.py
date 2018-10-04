@@ -139,121 +139,122 @@ def office(office, page):
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/pass', methods=['POST'])
 def add_pass(office, page):
-    try:
-        parent_id = request.form.get('parent_id')
-        note_text = request.form.get('note')
-        cellphone = request.form.get('cellphone')
-        van_id = request.form.get('van_id')
+    parent_id = request.form.get('parent_id')
+    note_text = request.form.get('note')
+    cellphone = request.form.get('cellphone')
+    van_id = request.form.get('van_id')
 
-        if page == 'kph':
-            returned = request.form.get('returned')
-            checked_in = request.form.get('checked_in')
+    if page == 'kph':
+        returned = request.form.get('returned')
+        checked_in = request.form.get('checked_in')
+        actual = request.form.get('actual')
+        goal = request.form.get('goal')
+        packets_given = request.form.get('packets_given')
+        packet_names = request.form.get('packet_names')
 
-            if parent_id:
-                group = CanvassGroup.query.get(group_id)
 
-                if returned:
-                    CanvassGroup.returned()
+        if parent_id:
+            group = CanvassGroup.query.get(parent_id)
 
-                if checked_in:
-                    group = CanvassGroup.check_in()
+            if returned:
+                group.returned()
 
-                if note_text:
-                    CanvassGroup.add_note(page, note_text)
-                
-                if cellphone:
-                    volunteer = Volunteer.query.filter_by(van_id=van_id).first()
-                    volunteer.cellphone = cellphone
-                
-                db.session.commit()
-                return group
-        else: 
-            status = request.form.get('status')
-            return_var = ""
-            if status:
-                shift = Shift.query.get(parent_id)
-                shift.flip(status)     
+            if checked_in:
+                group = group.check_in()
 
             if note_text:
-                shift = Shift.query.get(parent_id)
-                return_var = shift.add_call_pass(page, note_text)
-
+                group.add_note(page, note_text)
+            
             if cellphone:
                 volunteer = Volunteer.query.filter_by(van_id=van_id).first()
                 volunteer.cellphone = cellphone
 
+            if actual:
+                group.actual = actual
+            
+            if goal: 
+                group.goal = goal
+
+            if packets_given:
+                group.packets_given = packets_given
+
+            if packet_names:
+                group.packet_names = packet_names
+            
             db.session.commit()
-            return return_var
-    except:
-        abort(500)
+            return group
+    else: 
+        status = request.form.get('status')
+        return_var = ""
+        if status:
+            shift = Shift.query.get(parent_id)
+            shift.flip(status)     
+
+        if note_text:
+            shift = Shift.query.get(parent_id)
+            return_var = shift.add_call_pass(page, note_text)
+
+        if cellphone:
+            volunteer = Volunteer.query.filter_by(van_id=van_id).first()
+            volunteer.cellphone = cellphone
+
+        db.session.commit()
+        return return_var
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/add_group', methods=['POST'])
 def add_group(office, page):
-    try:
-        group = CanvassGroup()
+    group = CanvassGroup()
 
-        shift_ids = request.form.getlist('shift_id[]')
+    shift_ids = request.form.getlist('shift_id[]')
+    goal = request.form.get('goal')
+    packets_given = request.form.get('packets_given')
+    packet_names = request.form.get('packet_names')
 
-        print(shift_ids, group.departure)
+    print(shift_ids, goal, packets_given, packet_names)
+    group.add_shifts(shift_ids)
 
-        if not shift_ids:
-            abort(404)
+    if goal:
+        group.goal = int(goal)
+    
+    if packets_given:
+        group.packets_given = int(packets_given)
 
-        CanvassGroup.add_shifts(shift_ids)
+    if packet_names:
+        group.packet_names = packet_names
 
-        goal = request.form.get('goal')
-        if goal:
-            group.goal = goal
+    db.session.add(group)
+    db.session.commit()
 
-        packets_given = request.form.get('packets_given')
-        if packets_given: 
-            group.packets_given = int(packets_given)
-
-        packet_names = request.form.get('packet_names')
-        if packet_names:
-            group.packet_names = request.form.get('packet_names')
-        
-        db.session.add(group)
-        db.session.commit()
-
-        return redirect('/consolidated/' + office + '/kph')
-    except:
-        abort(500)
+    return redirect('/consolidated/' + office + '/kph')
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/walk_in', methods=['POST'])
 def add_walk_in(office, page):
-    try:
-        firstname = request.form.get('firstname')
-        lastname = request.form.get('lastname')
-        phone = request.form.get('phone')
-        time = request.form.get('time')
-        role = request.form.get('activity')
+    firstname = request.form.get('firstname')
+    lastname = request.form.get('lastname')
+    phone = request.form.get('phone')
+    time = request.form.get('time')
+    role = request.form.get('activity')
 
-        eventtype = "Volunteer DVC" if role in ['Canvassing', 'Phonebanking'] else role
+    eventtype = "Volunteer DVC" if role in ['Canvassing', 'Phonebanking'] else role
 
-        location = Location.query.filter(Location.locationname.like(office + '%')).first()
+    location = Location.query.filter(Location.locationname.like(office + '%')).first()
 
-        shift = Shift(eventtype, time, datetime.now().date(), 'Confirmed', role, None, location.locationid)
+    shift = Shift(eventtype, time, datetime.now().date(), 'Confirmed', role, None, location.locationid)
 
-        vol = Volunteer(None, firstname, lastname, phone, None)
-        db.session.add(vol)
-        db.session.commit()
-        vol = Volunteer.query.filter_by(first_name=firstname, last_name=lastname, van_id=None).first()
+    vol = Volunteer(None, firstname, lastname, phone, None)
+    db.session.add(vol)
+    db.session.commit()
+    vol = Volunteer.query.filter_by(first_name=firstname, last_name=lastname, van_id=None).first()
 
-        shift.person = vol.id
+    shift.person = vol.id
 
-        db.session.add(vol)
-        db.session.add(shift)
-        db.session.commit()
+    db.session.add(vol)
+    db.session.add(shift)
+    db.session.commit()
 
-        return redirect('/consolidated/' + office + '/' + page)
-
-    except:
-        abort(500)
-        return redirect('/consolidated')
-
+    return redirect('/consolidated/' + office + '/' + page)
 
 @oid.require_login
 @app.route('/dashboard')
@@ -272,6 +273,7 @@ def page_not_found(e):
 
 @app.errorhandler(500)
 def internal_service_error(e):
+    print(e)
     return redirect('/consolidated')
 
 if __name__ == "__main__":

@@ -73,7 +73,7 @@
                 <td>
                     {% for shift in group.canvass_shifts %}
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.person}}</span>
-                        <p id='name-{{shift.id}}'>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</p>
+                        <p id='name-{{group.id}}'>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</p>
                     {% endfor %}
                 </td>
                 <td>
@@ -95,7 +95,7 @@
                 <td>
                     <input id="goal-{{group.id}}" name="goal" type="text" value="{{group.goal if not group.goal == None}}" />
                 </td>
-                <td id="perc-{{group.id}}">{{group.actual / group.goal}}</td>
+                <td id="perc-{{group.id}}">{{group.actual / (group.goal if group.goal != 0 else 1)}}</td>
                 <td>
                     <input id="packets_given-{{group.id}}" name="packets_given" type="text" value="{{group.packets_given if not group.packets_given == None}}" />
                 </td>
@@ -105,16 +105,11 @@
                 <td>
                     <input id='returned-{{group.id}}' onclick="updateElem('check-in-{{group.id}}', 'returned')" type="checkbox" class="checkbox" value="{{group.returned}}" />
                 </td>
-                <td id='next-check-{{group.id}}'>{{group.check_in_time}}</td> 
-                <td id='last-check-{{group.id}}'>{{group.last_check_in}}</td>
+                <td id='next-check-{{group.id}}'>{{group.check_in_time if group.check_in_time != None else ''}}</td> 
+                <td id='last-check-{{group.id}}'>{{group.last_check_in if group.last_check_in != None else ''}}</td>
                 <td>
-                    <a id="check-in-{{group.id}}" onclick="updateElem('check-in-{{group.id}}', 'checked_in', updateCheckIns)">{{'Check In' if departure != None else 'Depart'}}</a>
+                    <a id="check-in-{{group.id}}" value="true" onclick="updateElem('check-in-{{group.id}}', 'checked_in', updateCheckIns)">{{'Check In' if departure != None else 'Depart'}}</a>
                 </td>
-                {% if group.canvass_shifts[0].notes != 0 %}
-                    {% for note in group.canvass_shifts[0].notes[::-1] %}
-                        <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
-                    {% endfor %}
-                {% endif %}
             </tr>
         {% endfor %}
         {% endif %}
