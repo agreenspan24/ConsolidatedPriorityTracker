@@ -193,30 +193,30 @@ def add_group(office, page):
     try:
         group = CanvassGroup()
 
-        shift_id = request.form.get('shift_id')
+        shift_ids = request.form.getlist('shift_id[]')
 
-        print(shift_id, group.departure)
+        print(shift_ids, group.departure)
 
-        if not shift_id:
+        if not shift_ids:
             abort(404)
 
-        shift = Shift.query.get(shift_id)
-        
-        print(shift.volunteer.lastname)
-        if not shift:
-            abort(404)
+        CanvassGroup.add_shifts(shift_ids)
 
-        group.canvass_shifts.append(shift)
+        goal = request.form.get('goal')
+        if goal:
+            group.goal = goal
 
-        group.goal = request.form.get('goal')
-        group.packets_given = request.form.get('packets_given')
-        group.packet_names = request.form.get('packet_names')
+        packets_given = request.form.get('packets_given')
+        if packets_given: 
+            group.packets_given = int(packets_given)
+
+        packet_names = request.form.get('packet_names')
+        if packet_names:
+            group.packet_names = request.form.get('packet_names')
         
         db.session.add(group)
-
         db.session.commit()
 
-        print('/consolidated/' + office + '/kph')
         return redirect('/consolidated/' + office + '/kph')
     except:
         abort(500)

@@ -15,8 +15,8 @@
         <tbody class="tbody">
             <tr>
                 <td>
-                    <label class="input-label" for="shift_id">Volunteer</label>
-                    <select class="input-element" name="shift_id" id="shift_id" multiple>
+                    <label class="input-label" for="shift_id">Volunteers</label>
+                    <select class="input-element" name="shift_id[]" id="shift_id" multiple>
                         <option></option>
                         {% for shift in shifts %}
                             <option value={{shift.id}}>
@@ -93,18 +93,22 @@
                     <input id="actual-{{group.id}}" name="actual" type="text" value="{{group.actual if not group.actual == None}}" />
                 </td>
                 <td>
-                    {{group.goal}}
+                    <input id="goal-{{group.id}}" name="goal" type="text" value="{{group.goal if not group.goal == None}}" />
                 </td>
-                <td>{{group.actual / group.goal}}</td>
-                <td>{{group.packets_given}}</td>
-                <td>{{group.packet_names}}</td>
+                <td id="perc-{{group.id}}">{{group.actual / group.goal}}</td>
+                <td>
+                    <input id="packets_given-{{group.id}}" name="packets_given" type="text" value="{{group.packets_given if not group.packets_given == None}}" />
+                </td>
+                <td>
+                    <input id="packet_names-{{group.id}}" name="packet_names" type="text" value="{{group.packet_names if not group.packet_names == None}}" />
+                </td>
                 <td>
                     <input id='returned-{{group.id}}' onclick="updateElem('check-in-{{group.id}}', 'returned')" type="checkbox" class="checkbox" value="{{group.returned}}" />
                 </td>
-                <td>{{group.check_in_time}}</td> 
-                <td>{{group.last_check_in}}</td>
+                <td id='next-check-{{group.id}}'>{{group.check_in_time}}</td> 
+                <td id='last-check-{{group.id}}'>{{group.last_check_in}}</td>
                 <td>
-                    <a id="check-in-{{group.id}}" onclick="updateElem('check-in-{{group.id}}', 'checked_in')">{{'Check In' if departure != None else 'Depart'}}</a>
+                    <a id="check-in-{{group.id}}" onclick="updateElem('check-in-{{group.id}}', 'checked_in', updateCheckIns)">{{'Check In' if departure != None else 'Depart'}}</a>
                 </td>
                 {% if group.canvass_shifts[0].notes != 0 %}
                     {% for note in group.canvass_shifts[0].notes[::-1] %}
