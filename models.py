@@ -123,6 +123,7 @@ class Shift(db.Model):
         self.date = date
         self.status = status
         self.role = role
+        self.flake = False
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
@@ -188,7 +189,7 @@ class CanvassGroup(db.Model):
     goal = db.Column(db.Integer)
     packets_given = db.Column(db.Integer)
     packet_names = db.Column(db.String(255))
-    returned = db.Column(db.Boolean)
+    is_returned = db.Column(db.Boolean)
     departure = db.Column(db.Time)
     last_check_in = db.Column(db.Time)
     check_in_time = db.Column(db.Time)
@@ -200,10 +201,10 @@ class CanvassGroup(db.Model):
         self.goal = 0
         self.packets_given = 0
         self.packet_names = ''
-        self.returned = False
-        self.departure = None
-        self.last_contact = None
-        self.check_in_time = None
+        self.is_returned = False
+        self.departure = datetime.now().time()
+        self.last_contact = datetime.now().time()
+        self.check_in_time = datetime.now().time()
         self.check_ins = 0
 
 
@@ -231,6 +232,8 @@ class CanvassGroup(db.Model):
 
         for shift in self.canvass_shifts:
             shift.status = 'Completed'
+
+        return self
 
     def add_note(self, page, text):
         self.canvass_shifts[0].add_call_pass(page, text)
