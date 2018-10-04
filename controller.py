@@ -146,7 +146,7 @@ def add_pass(office, page):
 
     if page == 'kph':
         returned = request.form.get('returned')
-        checked_in = request.form.get('checked_in')
+        checked_in = 'checked_in' in request.form.keys()
         actual = request.form.get('actual')
         goal = request.form.get('goal')
         packets_given = request.form.get('packets_given')
@@ -156,13 +156,14 @@ def add_pass(office, page):
         if parent_id:
             print(parent_id)
             group = CanvassGroup.query.get(parent_id)
-
+            print('groupid', group.id)
             if returned:
                 group.returned()
 
             if checked_in:
                 print(parent_id)
                 group = group.check_in()
+                return_var = group.next_check_in
 
             if note_text:
                 group.add_note(page, note_text)
