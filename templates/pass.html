@@ -61,8 +61,10 @@
         }).done(function(res){
             showAlert('success', elem_name + ' for ' + name + ' has been added');
             elem.prop('disabled', false);
-
-            success_callback(parent_id, res, elem);
+            
+            if (success_callback) {
+                success_callback(parent_id, res, elem);
+            }
         }).fail(function(){
             showAlert('error', elem_name + ' for ' + name + ' has NOT been added');
             elem.prop('disabled', false);

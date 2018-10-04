@@ -62,6 +62,7 @@
       </thead>
       <tbody class="tbody">
         {% for shift in shifts %}
+        {% if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In']}
             <tr>
                 <td>
                     <input name="vanid-{{shift.id}}" value="{{shift.person}}" type="hidden" />
