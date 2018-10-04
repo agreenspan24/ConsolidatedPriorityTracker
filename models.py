@@ -209,10 +209,12 @@ class CanvassGroup(db.Model):
         self.last_contact = "Never"
         self.check_in_time = "Nothing Yet"
         self.check_ins = 0
+        self.canvass_shifts = shifts
 
-    def add_shifts(self, shift):
+    def add_shifts(self, shifts):
     
-        self.canvass_shifts.append(shift)
+        for shift in shifts:
+            self.canvass_shifts.append(shift)
 
     def check_in(self):
         if self.departure == "Hasn't left":

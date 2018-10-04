@@ -193,24 +193,23 @@ def add_group(office, page):
     try:
         group = CanvassGroup()
 
-        shift_id = request.form.get('shift_id')
+        shifts = request.form.get('shift_id')
+        goal = request.form.get('goal')
+        packets_given = request.form.get('packets_given')
+        packet_names = request.form.get('packet_names')
 
-        print(shift_id, group.departure)
+        group.add_shifts(shifts)
 
-        if not shift_id:
-            abort(404)
-
-        shift = Shift.query.get(shift_id)
+        if goal:
+            group.goal = goal
         
-        print(shift.volunteer.lastname)
-        if not shift:
-            abort(404)
+        if packets_given:
+            group.packets_given = packets_given
 
-        group.canvass_shifts.append(shift)
+        if packet_names:
+            group.packet_names = packetnames
 
-        group.goal = request.form.get('goal')
-        group.packets_given = request.form.get('packets_given')
-        group.packet_names = request.form.get('packet_names')
+        
         
         db.session.add(group)
 
