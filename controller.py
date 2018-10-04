@@ -1,8 +1,10 @@
 from datetime import datetime
 
-from flask import flash, g, redirect, render_template, request, session, abort
+from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape
 
 from sqlalchemy import and_, asc
+
+import re
 
 from app import app, oid
 from config import settings
@@ -82,12 +84,14 @@ def consolidated():
     if request.method == 'POST':
         option = request.form.get('target')
 
-        print(option)
         if option == "Dashboard":
             return redirect('/dashboard')
 
         office = request.form.get('office')
         page = request.form.get('page')
+
+        office = escape(office)
+
         return redirect('/consolidated/' + str(office)[0:3] + '/' + page)
 
     user = User.query.filter_by(email=g.user.email).first()
@@ -100,6 +104,7 @@ def consolidated():
 def office(office, page):
     date = datetime.today().strftime('%Y-%m-%d')
 
+    office = escape(office)
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
 
     if not locations:
@@ -144,6 +149,9 @@ def add_pass(office, page):
     cellphone = request.form.get('cellphone')
     van_id = request.form.get('van_id')
 
+    if not parent_id:
+        return abort(404)
+
     if page == 'kph':
         returned = request.form.get('returned')
         checked_in = 'checked_in' in request.form.keys()
@@ -153,51 +161,97 @@ def add_pass(office, page):
         packet_names = request.form.get('packet_names')
 
         return_var = ""
-        if parent_id:
-            print(parent_id)
-            group = CanvassGroup.query.get(parent_id)
-            print('groupid', group.id)
-            if returned:
-                group.returned()
+        group = CanvassGroup.query.get(parent_id)
 
-            if checked_in:
-                print(parent_id)
-                group = group.check_in()
-                return_var = group.next_check_in
+        if not group:
+            return abort(404, 'Group Not Found')
 
-            if note_text:
-                group.add_note(page, note_text)
-            
-            if cellphone:
-                volunteer = Volunteer.query.filter_by(van_id=van_id).first()
-                volunteer.cellphone = cellphone
+        if returned:
+            if not isinstance(returned, bool):
+                return abort(400, 'Invalid value for "Returned"')
 
-            if actual:
-                group.actual = actual
-            
-            if goal: 
-                group.goal = goal
+            group = group.returned(true)
 
-            if packets_given:
-                group.packets_given = packets_given
+            return_var  = jsonify({
+                'last_check_in': group.last_check_in.strftime('%I:%M %p'),
+                'check_ins': group.check_ins
+            })
 
-            if packet_names:
-                group.packet_names = packet_names
-            
-            db.session.commit()
-            return return_var
+        if checked_in:
+            group = group.check_in()
+            return_var = jsonify({
+                'departure': group.departure.strftime('%I:%M %p'), 
+                'check_in_time': group.next_check_in.strftime('%I:%M %p'), 
+                'last_check_in': group.last_check_in.strftime('%I:%M %p'),
+                'check_ins': group.check_ins
+            })
+
+        if note_text:
+            note_text = escape(note_text)
+
+            group.add_note(page, note_text)
+        
+        if cellphone:
+            phone_sanitized = re.sub('() -+', '', cellphone)
+
+            if not phone_sanitized.isdigit():
+                return abort(400, 'Invalid Phone')
+
+            volunteer = Volunteer.query.filter_by(van_id=van_id).first()
+            volunteer.cellphone = cellphone
+
+        if actual:
+            if not actual.isdigit():
+                return abort(400, '"Actual" must be a nuber"')
+
+            group.actual = int(actual)
+        
+        if goal: 
+            if not goal.isdigit():
+                return abort(400, '"Goal" must be a nuber"')
+            group.goal = int(goal)
+
+        if packets_given:
+            if not packets_given.isdigit():
+                return abort(400, '"packets_given" must be a nuber"')
+
+            group.packets_given = int(packets_given)
+
+        if packet_names:
+            packet_names = escape(packet_names)
+
+            group.packet_names = packet_names
+        
+        db.session.commit()
+        return return_var
     else: 
         status = request.form.get('status')
+
+        shift = Shift.query.get(parent_id)
+
+        if not shift:
+            return abort(404, 'Shift not found')
         
         if status:
-            shift = Shift.query.get(parent_id)
+            status = escape(status)
+
+            if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
+                return abort(400, 'Invalid status')
+
             shift.flip(status)     
 
         if note_text:
+            note_text = escape(note_text)
+
             shift = Shift.query.get(parent_id)
             return_var = shift.add_call_pass(page, note_text)
 
         if cellphone:
+            phone_sanitized = re.sub('() -+.', '', cellphone)
+
+            if not phone_sanitized.isdigit():
+                return abort(400, 'Invalid Phone')
+
             volunteer = Volunteer.query.filter_by(van_id=van_id).first()
             volunteer.cellphone = cellphone
 
@@ -214,16 +268,27 @@ def add_group(office, page):
     packets_given = request.form.get('packets_given')
     packet_names = request.form.get('packet_names')
 
-    print(shift_ids, goal, packets_given, packet_names)
+    for id in shift_ids:
+        if not id.isdigit():
+            return abort(400, 'Invalid shift id')
+
     group.add_shifts(shift_ids)
 
     if goal:
+        if not goal.isdigit():
+            return abort(400, 'Goal must be a number')
+        
         group.goal = int(goal)
     
     if packets_given:
+        if not goal.isdigit():
+            return abort(400, '# of Packets must be a number')
+
         group.packets_given = int(packets_given)
 
     if packet_names:
+        packet_names = escape(packet_names)
+        
         group.packet_names = packet_names
 
     db.session.add(group)
@@ -240,8 +305,27 @@ def add_walk_in(office, page):
     time = request.form.get('time')
     role = request.form.get('activity')
 
+    if firstname:
+        firstname = escape(firstname)
+
+    if lastname: 
+        lastname = escape(lastname)
+
+    if phone:
+        phone_sanitized = re.sub('() -+.', '', phone)
+
+        if not phone_sanitized.isdigit():
+            return abort(400, 'Invalid Phone')
+        
+    if time and not time in ['10:00 AM', '1:00 PM', '4:00 PM', '6:00 PM']:
+        return abort(400, 'Invalid time')
+
+    if role and not role in ['Canvassing', 'Phonebanking', 'Comfort Vol', 'Intern Onboarding', 'Intern Interview']:
+        return abort(400, 'Invalid activity')
+
     eventtype = "Volunteer DVC" if role in ['Canvassing', 'Phonebanking'] else role
 
+    office = escape(office)
     location = Location.query.filter(Location.locationname.like(office + '%')).first()
 
     shift = Shift(eventtype, time, datetime.now().date(), 'Confirmed', role, None, location.locationid)
@@ -249,12 +333,12 @@ def add_walk_in(office, page):
     vol = Volunteer(None, firstname, lastname, phone, None)
     db.session.add(vol)
     db.session.commit()
+    
     vol = Volunteer.query.filter_by(first_name=firstname, last_name=lastname, van_id=None).first()
 
     shift.person = vol.id
-
-    db.session.add(vol)
     db.session.add(shift)
+
     db.session.commit()
 
     return redirect('/consolidated/' + office + '/' + page)
@@ -278,7 +362,7 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_service_error(e):
     if request.endpoint == 'pass':
-        return e
+        return abort(500)
 
     return redirect('/consolidated')
 

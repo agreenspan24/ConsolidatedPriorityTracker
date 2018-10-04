@@ -131,10 +131,13 @@ class Shift(db.Model):
 
     def flip(self, status):
         
+        if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
+            return
+
         if self.flake and status == 'Completed' or status == 'Same Day Confirmed':
             self.flake = False
-        
-        if status == 'Flake':
+
+        elif status == 'Flake':
             self.flake = True
 
         self.status = status
@@ -212,26 +215,40 @@ class CanvassGroup(db.Model):
     
         for id in shift_ids:
             shift = Shift.query.get(id)
+
+            if not shift:
+                return abort(404, 'Shift not found')
+
             self.canvass_shifts.append(shift)
 
     def check_in(self):
-        if self.departure == "Hasn't left":
+
+        if self.departure == None:
             self.departure = datetime.now().time()
-            self.check_in_time = self.departure.timedelta(hours=1)
+            self.check_in_time = self.departure + timedelta(hours=1)
 
         else:
             self.last_check_in = datetime.now().time()
-            self.check_in_time = self.last_check_in.timedelta(hours=1)
+            self.check_in_time = self.last_check_in + timedelta(hours=1)
             self.check_ins += 1
 
         return self
 
-    def returned(self):
+    def returned(self, value):
 
-        self.returned = True
+        self.is_returned = value
+        self.last_check_in = datetime.now().time()
+        self.check_ins += 1
 
-        for shift in self.canvass_shifts:
-            shift.status = 'Completed'
+        if value:
+            self.check_in_time = None
+            for shift in self.canvass_shifts:
+                shift.status = 'Completed'
+        
+        else:
+            self.check_in_time = datetime.now().time() + timedelta(hours=1)
+            for shift in self.canvass_shifts:
+                shift.status = 'In'
 
         return self
 

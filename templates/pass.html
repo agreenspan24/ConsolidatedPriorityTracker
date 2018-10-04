@@ -1,4 +1,6 @@
 <script>
+
+    // helper functions
     function getParentIdFromId(id) {
         return id.split('-').pop();
     }
@@ -9,33 +11,6 @@
 
     function getName(parent_id) {
         return getRowElem(parent_id, 'name').html();
-    }
-
-    function updateCellPhone(phone_id) {
-        phoneElem = $('#' + phone_id);
-        var phone = phoneElem.val();
-
-        var parent_id = getParentIdFromId(phone_id);
-        var name = getName(parent_id);
-        var van_id = $('#vanid-' + parent_id).html();
-
-        showAlert('info', 'Updating cell phone for ' + name);
-        phoneElem.prop('disabled', 'disabled');
-
-        $.ajax({
-            type: 'POST', 
-            url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
-            data: {
-                van_id: van_id,
-                cellphone: phone
-            }
-        }).done(function(d){
-            showAlert('success', 'Cell Phone for ' + name + ' has been added');
-            phoneElem.prop('disabled', false);
-        }).fail(function(){
-            showAlert('error', 'Cell Phone for ' + name + ' has NOT been added');
-            phoneElem.prop('disabled', false);
-        });
     }
 
     function updateElem(elem_id, elem_name, success_callback) {
@@ -54,6 +29,11 @@
 
         data[elem_name] = val;
 
+        if (elem_name == 'cellphone') {
+            var van_id = $('#vanid-' + parent_id).html();
+            data[van_id] = van_id
+        }
+
         $.ajax({
             type: 'POST', 
             url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
@@ -65,12 +45,18 @@
             if (success_callback) {
                 success_callback(parent_id, res, elem);
             }
-        }).fail(function(){
-            showAlert('error', elem_name + ' for ' + name + ' has NOT been added');
+        }).fail(function(res){
+            var message = elem_name + ' for ' + name + ' has NOT been added';
+            if (res.message) {
+                message += 'Error message: ' + res.message
+            }
+
+            showAlert('error', message);
             elem.prop('disabled', false);
         });
     }
 
+    // success callbacks
     function updateNote(parent_id, res, elem) {
         var child = document.createElement('td');
         child.innerText = res;
@@ -84,11 +70,20 @@
 
     function updateCheckIns(parent_id, res, elem) {
         console.log(res);
-
+        
+        getRowElem(parent_id, 'departure').html(res.departure);
         getRowElem(parent_id, 'next-check').html(res.check_in_time);
         getRowElem(parent_id, 'last-check').html(res.last_check_in);
+        getRowElem(parent_id, 'check_ins').html(res.check_ins);
     }
 
+    function setReturned(parent_id, res, elem) {
+        getRowElem(parent_id, 'next-check').html('');
+        getRowElem(parent_id, 'last-check').html(res.last_check_in);
+        getRowElem(parent_id, 'check_ins').html(res.check_ins);
+    }
+
+    // enter handler
     $('body').on('keyup', function(e) {
         e.preventDefault();
 
@@ -99,7 +94,7 @@
             if (name == 'note') {
                 updateElem(id, name, updateNote);
             } else if (name == 'cellphone') {
-                updateCellPhone(id, name, null);
+                updateElem(id, name, null);
             } else if (name == 'actual') {
                 updateElem(id, name, updateGoalActual);
             } else if (name == 'goal') {
