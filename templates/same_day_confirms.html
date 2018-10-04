@@ -20,24 +20,26 @@
         <tbody class="tbody">
             {% for shift in shifts %}
                 <tr id="row-{{shift.id}}">
-                    <td id="vanid-{{shift.id}}">{{shift.person}}</td>
+                    <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
                     <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>
-                        <input id='note-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        <input id='phone-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td>{{shift.shift_location.locationname}}</td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.eventtype}}</td>
                     <td>{{shift.role}}</td>
                     <td>
-                        <select id='status-{{shift.id}}' onchange="updateStatus({{shift.id}})" value='{{shift.status}}'>
-                            <option value={{shift.status}}>{{shift.status}}</option>
+                        <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
+                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'Flaked'] %}
+                                <option value={{shift.status}}>{{shift.status}}</option>
+                            {% endif %}
                             <option value='Same Day Confirmed'>Same Day Confirmed</option>
                             <option value='In'>In</option>
                             <option value='Completed'>Completed</option>
                             <option value='Declined'>Declined</option>
-                            <option value='Flake'>Flake</option>
+                            <option value='No Show'>Flake</option>
                         </select>
                     </td>
                     <td>{{shift.call_pass}}</td>

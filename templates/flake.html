@@ -19,12 +19,14 @@
         <tbody class="tbody">
             {% for shift in shifts %}
                 {% if shift.flake == True %}
-                <span id="vanid-{{shift.id}}" class="hide">{{shift.person}}</span>
                 <tr id="row-{{shift.id}}">
-                    <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
+                    <td id="name-{{shift.id}}">
+                        <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>
+                        {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
+                    </td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>
-                        <input id='note-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        <input id='phone-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td>{{shift.time}}</td>
                     <td>{{shift.role}}</td>
@@ -32,8 +34,8 @@
                     <td>{{shift.flake_passed}}</td>
                     <td>{{shift.last_contact}}</td>
                     <td>
-                        <select id='status-{{shift.id}}' onchange="updateStatus({{shift.id}})" value='{{shift.status}}'>
-                            <option value="Flake">Flake</option>
+                        <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
+                            <option value="No Show">Flake</option>
                             <option value='Not Contacted'>Not Contacted</option>
                             <option value='Rescheduled'>Rescheduled</option>
                             <option value='Completed - Not Rescheduled'>Completed - Not Rescheduled</option>
