@@ -106,33 +106,35 @@ function setReturned(parent_id, res, elem) {
     }
 }
 
+function setUpListener() {
+    $('body').on('keyup', function(e) {
+        e.preventDefault();
 
-// enter handler
-$('body').on('keyup', function(e) {
-    e.preventDefault();
+        if (e.keyCode == 13) {
+            var name = e.target.attributes['name'].nodeValue;
+            var id = event.target.id;
 
-    if (e.keyCode == 13) {
-        var name = e.target.attributes['name'].nodeValue;
-        var id = event.target.id;
-
-        if (name == 'note') {
-            updateElem(id, name, updateNote);
-        } else if (name == 'first_name') {
-            updateElem(id, name, null);
-        } else if (name == 'last_name') {
-            updateElem(id, name, null);
-        } else if (name == 'phone') {
-            updateElem(id, name, null);
-        } else if (name == 'cellphone') {
-            updateElem(id, name, null);
-        } else if (name == 'actual') {
-            updateElem(id, name, updateGoalActual);
-        } else if (name == 'goal') {
-            updateElem(id, name, updateGoalActual);
-        } else if (name == 'packets_given') {
-            updateElem(id, name, null);
-        } else if (name == 'packet_names') {
-            updateElem(id, name, null);
+            if (name == 'note') {
+                updateElem(id, name, updateNote);
+            } else if (name == 'first_name') {
+                updateElem(id, name, null);
+            } else if (name == 'last_name') {
+                updateElem(id, name, null);
+            } else if (name == 'phone') {
+                updateElem(id, name, null);
+            } else if (name == 'cellphone') {
+                updateElem(id, name, null);
+            } else if (name == 'actual') {
+                updateElem(id, name, updateGoalActual);
+            } else if (name == 'goal') {
+                updateElem(id, name, updateGoalActual);
+            } else if (name == 'packets_given') {
+                updateElem(id, name, null);
+            } else if (name == 'packet_names') {
+                updateElem(id, name, null);
+            }
         }
-    }
-});
+    });
+}
+
+$(document).ready(setUpListener);
