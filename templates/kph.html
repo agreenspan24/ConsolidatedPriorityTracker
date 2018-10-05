@@ -1,8 +1,7 @@
 {% extends "consolidated_tabs.html" %}
 
 {% block above_table %}
-<link src="http://select2.github.io/select2/select2-3.5.1/select2.css" rel="stylesheet" />
-<script src="http://select2.github.io/select2/select2-3.5.1/select2.js" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='scripts/select2.js') }}" type="text/javascript"></script>
 <script>
     $(document).ready(
         function () {
@@ -76,7 +75,7 @@
         {% if groups %}
         {% for group in groups %}
             <tr id="row-{{group.id}}">
-                <td>
+                <td style="vertical-align: top">
                     <select class="input-element" name="shift_id[]" id="shift_id-{{group.id}}"
                         onchange="updateElem('shift_id-{{group.id}}', 'shift_id[]', updateNames)" multiple>
                         <option></option>
@@ -109,28 +108,28 @@
                         </p>
                     {% endfor %}
                 </td>
-                <td>{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}</td>
+                <td id='departure-{{group.id}}'>{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}</td>
                 <td>
-                    <input id="actual-{{group.id}}" name="actual" type="number" value="{{group.actual if not group.actual == None}}" />
+                    <input id="actual-{{group.id}}" name="actual" type="number" value="{{group.actual if not group.actual == None}}" style="max-width: 50px" />
                 </td>
                 <td>
-                    <input id="goal-{{group.id}}" name="goal" type="number" value="{{group.goal if not group.goal == None}}" />
+                    <input id="goal-{{group.id}}" name="goal" type="number" value="{{group.goal if not group.goal == None}}" style="max-width: 50px"  />
                 </td>
                 <td id="perc-{{group.id}}">{{((group.actual / (group.goal if group.goal != 0 else 1))*100)|round(2)|string + '%'}}</td>
                 <td>
-                    <input id="packets_given-{{group.id}}" name="packets_given" type="number" value="{{group.packets_given if not group.packets_given == None}}" />
+                    <input id="packets_given-{{group.id}}" name="packets_given" type="number" value="{{group.packets_given if not group.packets_given == None}}" style="max-width: 50px"  />
                 </td>
                 <td>
                     <input id="packet_names-{{group.id}}" name="packet_names" type="text" maxlength="255" value="{{group.packet_names if not group.packet_names == None}}" />
                 </td>
                 <td>
-                    <input id='returned-{{group.id}}' onclick="updateElem('check-in-{{group.id}}', 'returned', setReturned)" type="checkbox" class="checkbox" {{'checked=checked' if group.returned == True else ''}} />
+                    <input id='returned-{{group.id}}' onclick="updateElem('returned-{{group.id}}', 'returned', setReturned)" type="checkbox" class="checkbox" {{'checked=checked' if group.is_returned == True else ''}} />
                 </td>
                 <td id='check_in_time-{{group.id}}'>{{group.check_in_time.strftime('%I:%M %p') if group.check_in_time != None else ''}}</td> 
                 <td id='last_check_in-{{group.id}}'>{{group.last_check_in.strftime('%I:%M %p') if group.last_check_in != None else ''}}</td>
                 <td id='check_ins-{{group.id}}'>{{group.check_ins}}</td>
                 <td>
-                    <a id="check-in-{{group.id}}" value="true" onclick="updateElem('check-in-{{group.id}}', 'checked_in', updateCheckIns)">{{'Check In' if group.departure != None else 'Depart'}}</a>
+                    <a id="check_in-{{group.id}}" value="true" onclick="updateElem('check_in-{{group.id}}', 'checked_in', updateCheckIns)" {{'disabled' if group.is_returned == True else ''}}>{{'Check In' if group.departure != None else 'Depart'}}</a>
                 </td>
                 <td>
                     <input id='note-{{group.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">

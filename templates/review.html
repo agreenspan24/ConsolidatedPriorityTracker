@@ -57,6 +57,7 @@
               <th>VanID</th>
               <th>Name</th>
               <th>Event</th>
+              <th>Cell Phone</th>
               <th>Status</th>
           </tr>
       </thead>
@@ -72,6 +73,7 @@
                     {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                 </td>
                 <td>{{shift.eventtype}}</td>
+                <td>{{shift.cellphone}}</td>
                 <td>
                     <input name="status-{{shift.id}}" value="{{shift.status}}" type="hidden" />
                     {{shift.status}}
@@ -87,7 +89,7 @@
 {% block footer %}
   {% if (g.user.rank == "DATA" or g.user.rank == "FD") and shifts %}
     <p>By clicking this button, you will sync all of these shifts to the status on the right.</p>
-    
+
     <button class="btn btn-full btn-blue">Sync Shifts To VAN</button>
   {% endif %}
 {% endblock %}

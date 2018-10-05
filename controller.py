@@ -123,7 +123,12 @@ def office(office, page):
             all_shifts.append(shift)
         
         if page == 'kph':
-            groups = CanvassGroup.query.all()
+            all_groups = CanvassGroup.query.all()
+            groups = []
+
+            for gr in all_groups:
+                if gr.canvass_shifts[0].shift_location == location.locationid:
+                    groups.append(gr)
 
     if page == 'sdc':
         return render_template('same_day_confirms.html', active_tab="sdc", location=location, shifts=all_shifts)
@@ -272,18 +277,13 @@ def add_pass(office, page):
             shift.volunteer.last_name = last 
         
         if phone:
+            print(phone)
             phone_sanitized = re.sub('() -+.', '', phone)
 
             if not phone_sanitized.isdigit():
                 return abort(400, 'Invalid Phone')
-
+            
             shift.volunteer.phone_number = phone 
-
-        if note_text:
-            note_text = escape(note_text)
-
-            shift = Shift.query.get(parent_id)
-            return_var = shift.add_call_pass(page, note_text)
 
         if cellphone:
             phone_sanitized = re.sub('() -+.', '', cellphone)
@@ -291,11 +291,19 @@ def add_pass(office, page):
             if not phone_sanitized.isdigit():
                 return abort(400, 'Invalid Phone')
 
-            volunteer = Volunteer.query.filter_by(van_id=van_id).first()
-            volunteer.cellphone = cellphone
+            shift.volunteer.cellphone = cellphone
+
+        if note_text:
+            note_text = escape(note_text)
+
+            shift = Shift.query.get(parent_id)
+            return_var = shift.add_call_pass(page, note_text)
 
         db.session.commit()
-        return return_var
+        if return_var:
+            return return_var
+        else:
+            return ''
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/add_group', methods=['POST'])

@@ -124,6 +124,7 @@ class Shift(db.Model):
         self.status = status
         self.role = role
         self.flake = False
+        self.last_contact = None
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
@@ -145,6 +146,7 @@ class Shift(db.Model):
         else:
             self.call_pass += 1
 
+        self.last_contact = datetime.now().time().strftime('%I:%M %p')
         note = Note(page, self.last_contact, text, self.person, self.id)
 
         db.session.add(note)
@@ -223,13 +225,13 @@ class CanvassGroup(db.Model):
 
     def check_in(self):
 
+        self.last_check_in = datetime.now().time()
+        self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
+
         if self.departure == None:
             self.departure = datetime.now().time()
-            self.check_in_time = time(self.departure.hour + 1, self.departure.minute)
 
         else:
-            self.last_check_in = datetime.now().time()
-            self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
             self.check_ins += 1
 
         return self
