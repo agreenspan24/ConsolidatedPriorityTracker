@@ -1,6 +1,7 @@
 from app import app, db
 from models import db, SyncShift, Volunteer, Shift, Location
 from datetime import datetime
+from config import black_list
 
 def update_shifts():
     date = datetime.today().strftime('%Y-%m-%d')
@@ -10,7 +11,7 @@ def update_shifts():
         update_shift = Shift.query.filter_by(date=today_shift.startdate, time=today_shift.starttime, person=today_shift.vanid).all()
         print(update_shift)
 
-        if not update_shift:
+        if not update_shift and update_shift.locationname not in black_list:
             location = Location.query.filter_by(locationid=today_shift.locationid).first()
             if not location:
                 location = Location(today_shift.locationid, today_shift.locationname, today_shift.locationname[0:2])

@@ -228,7 +228,7 @@ class CanvassGroup(db.Model):
 
     def returned(self):
 
-        self.returned = True
+        self.is_returned = True
 
         for shift in self.canvass_shifts:
             shift.status = 'Completed'
