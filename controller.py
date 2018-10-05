@@ -115,7 +115,7 @@ def office(office, page):
     for location in locations:
         shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).order_by(asc(Shift.time), asc(Shift.person)).all()
         for shift in shifts:
-            if shift.status in ['Completed', 'Declined'] or shift.flake == True:
+            if shift.status in ['Completed', 'Declined', 'No Show']:
                 extra_shifts.append(shift)
             else: 
                 all_shifts.append(shift)

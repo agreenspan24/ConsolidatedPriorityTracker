@@ -17,7 +17,7 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                {% if shift.flake == True %}
+                {% if shift.status == "No Show" %}
                 <tr id="row-{{shift.id}}">
                     <td id="name-{{shift.id}}">
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>

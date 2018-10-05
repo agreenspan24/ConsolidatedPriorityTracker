@@ -77,16 +77,17 @@
                     {{shift.status}}
                 </td>
             </tr>
-          {% endif %}
-          {% endfor %}
+        {% endif %}
+        {% endfor %}
       </tbody>
     </form>
   {% endif %}
 {% endblock %}
 
 {% block footer %}
-{% if (g.user.rank == "DATA" or g.user.rank == "FD") and shifts %}
-  <p>By clicking this button, you will sync all of these shifts to the status on the right.</p>
-  <button class="btn btn-full btn-blue">Sync Shifts To VAN</button>
-{% endif %}
+  {% if (g.user.rank == "DATA" or g.user.rank == "FD") and shifts %}
+    <p>By clicking this button, you will sync all of these shifts to the status on the right.</p>
+    
+    <button class="btn btn-full btn-blue">Sync Shifts To VAN</button>
+  {% endif %}
 {% endblock %}

@@ -89,13 +89,13 @@
             name += '<span>'+ shift.name + '</span>';
             phone += '<p>'+ shift.phone + '</p>';
             cellphone += '<p><input id="phone-' + shift.id + '" name="cellphone" maxlength="120"' +
-                'type="text" value="' + shift.cell + '"/></p>';
+                'type="text" value="' + shift.cellphone + '"/></p>';
         });
 
         getRowElem(parent_id, 'vanid').html(vanid);
         getRowElem(parent_id, 'name').html(name);
         getRowElem(parent_id, 'phone').html(phone);
-        getRowElem(parent_id, 'cell').html(cellphone);
+        getRowElem(parent_id, 'cellphone').html(cellphone);
     }
 
     function setReturned(parent_id, res, elem) {

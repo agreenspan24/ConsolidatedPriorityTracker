@@ -130,15 +130,10 @@ class Shift(db.Model):
         self.call_pass = 0
 
     def flip(self, status):
-        print(status)
         if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
             return
 
-        if self.flake and status == 'Completed' or status == 'Same Day Confirmed':
-            self.flake = False
-
         elif status == 'No Show':
-            print(self.flake)
             self.flake = True
 
         self.status = status
@@ -182,7 +177,7 @@ class ShiftStats:
                     self.vol_declined += 1
                 if s.status == "Scheduled":
                     self.vol_unflipped += 1
-                if s.flake:
+                if s.status == "No Show":
                     self.vol_flaked += 1
     
 class CanvassGroup(db.Model):
