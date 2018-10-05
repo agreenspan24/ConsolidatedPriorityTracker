@@ -54,6 +54,7 @@
     <form action="" method="POST">
       <thead class="thead">
           <tr>
+              <th></th>
               <th>VanID</th>
               <th>Name</th>
               <th>Event</th>
@@ -62,9 +63,10 @@
           </tr>
       </thead>
       <tbody class="tbody">
-        {% for shift in shifts %}
-        {% if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In'] %}
+        {% for shift in shifts 
+          if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In'] and not shift.volunteer.van_id == None %}
             <tr>
+                <td>{{loop.index}}</td>
                 <td>
                     <input name="vanid-{{shift.id}}" value="{{shift.volunteer.van_id}}" type="hidden" />
                     {{shift.volunteer.van_id}}
@@ -79,7 +81,6 @@
                     {{shift.status}}
                 </td>
             </tr>
-        {% endif %}
         {% endfor %}
       </tbody>
     </form>

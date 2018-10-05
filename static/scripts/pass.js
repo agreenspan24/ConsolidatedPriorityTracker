@@ -72,6 +72,22 @@ function updateCheckIns(parent_id, res, elem) {
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
 }
 
+function updateInput(name, id, val) {
+    getRowElem(id, name).val(val);
+}
+
+function updateHtml(name, id, text) {
+    getRowElem(id, name).html(text);
+}
+
+function updateRow(id, res){
+    if (window.location.pathname.endsWith('kph')) {
+
+    } else {
+        
+    }
+}
+
 function updateNames(parent_id, res, elem) {
     var vanid = '';
     var name = '';

@@ -3,6 +3,7 @@ from config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, time, timedelta
+from sqlalchemy.inspection import inspect
 
 engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
 
@@ -40,6 +41,9 @@ class Location(db.Model):
         self.locationname = locationname
         self.region = region
 
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+
 class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'users'
@@ -75,6 +79,9 @@ class Volunteer(db.Model):
         self.knocks = 0
         self.is_intern = is_intern
 
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+
 
 class Note(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -93,6 +100,9 @@ class Note(db.Model):
         self.text = text
         self.volunteer = volunteer
         self.note_shift = note_shift
+
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
 
 class Shift(db.Model):
@@ -152,6 +162,9 @@ class Shift(db.Model):
         db.session.add(note)
 
         return self.last_contact + ": " + text
+
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
 
 class ShiftStats:

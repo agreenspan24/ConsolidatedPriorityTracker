@@ -4,6 +4,7 @@
     {% if shifts %}
         <thead class="thead">
             <tr>
+                <th></th>
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Cell</th>
@@ -16,9 +17,9 @@
             </tr>
         </thead>
         <tbody class="tbody">
-            {% for shift in shifts %}
-                {% if shift.status == "No Show" %}
+            {% for shift in shifts if shift.status == "No Show" %}
                 <tr id="row-{{shift.id}}">
+                    <td>{{loop.index}}</td>
                     <td id="name-{{shift.id}}">
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>
                         {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
@@ -48,7 +49,6 @@
                         {% endfor %}
                     {% endif %}
                 </tr>
-                {% endif %}
             {% endfor%}
         </tbody>
     {% endif %}

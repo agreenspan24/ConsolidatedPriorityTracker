@@ -53,6 +53,7 @@
 {% block table %}
     <thead class="thead">
         <tr>
+            <th></th>
             <th>Name</th>
             <th>Phone Number</th>
             <th>Cell</th>
@@ -75,6 +76,7 @@
         {% if groups %}
         {% for group in groups %}
             <tr id="row-{{group.id}}">
+                <td>{{loop.index}}</td>
                 <td style="vertical-align: top">
                     <select class="input-element" name="shift_id[]" id="shift_id-{{group.id}}"
                         onchange="updateElem('shift_id-{{group.id}}', 'shift_id[]', updateNames)" multiple>

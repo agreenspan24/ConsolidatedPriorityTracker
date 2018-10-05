@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape
+from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response
 
 from sqlalchemy import and_, asc
 
@@ -296,14 +296,10 @@ def add_pass(office, page):
         if note_text:
             note_text = escape(note_text)
 
-            shift = Shift.query.get(parent_id)
-            return_var = shift.add_call_pass(page, note_text)
+            shift.add_call_pass(page, note_text)
 
         db.session.commit()
-        if return_var:
-            return return_var
-        else:
-            return ''
+        return jsonify(shift.serialize())
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/add_group', methods=['POST'])

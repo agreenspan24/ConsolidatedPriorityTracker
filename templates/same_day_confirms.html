@@ -62,6 +62,7 @@
     {% if shifts %}
         <thead class="thead">
             <tr>
+                <th></th>
                 <th>VanID</th>
                 <th>Name</th>
                 <th>Phone</th>
@@ -77,6 +78,7 @@
         <tbody class="tbody">
             {% for shift in shifts %}
                 <tr id="row-{{shift.id}}">
+                    <td>{{loop.index}}</td>
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
                     <td id="name-{{shift.id}}">
                         {% if shift.volunteer.van_id == None %}
