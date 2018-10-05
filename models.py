@@ -2,7 +2,7 @@ from app import app, db
 from config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+from datetime import datetime, time, timedelta
 
 engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
 
@@ -88,7 +88,7 @@ class Note(db.Model):
 
     def __init__(self, type, time, text, volunteer, note_shift):
 
-        self.type
+        self.type = type
         self.time = time
         self.text = text
         self.volunteer = volunteer
@@ -130,17 +130,19 @@ class Shift(db.Model):
         self.call_pass = 0
 
     def flip(self, status):
-        
+        print(status)
         if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
             return
 
         if self.flake and status == 'Completed' or status == 'Same Day Confirmed':
             self.flake = False
 
-        elif status == 'Flake':
+        elif status == 'No Show':
+            print(self.flake)
             self.flake = True
 
         self.status = status
+        print(self.status)
 
     def add_call_pass(self, page, text):
         if self.call_pass == None:
@@ -148,7 +150,6 @@ class Shift(db.Model):
         else:
             self.call_pass += 1
 
-        self.last_contact = datetime.now().time().strftime('%I:%M %p')
         note = Note(page, self.last_contact, text, self.person, self.id)
 
         db.session.add(note)
@@ -211,49 +212,58 @@ class CanvassGroup(db.Model):
         self.check_ins = 0
 
 
-    def add_shifts(self, shift_ids):
-    
+    def update_shifts(self, shift_ids):
+        self.canvass_shifts = []
+        return_var = ''
+
         for id in shift_ids:
             shift = Shift.query.get(id)
 
             if not shift:
                 return abort(400, 'Shift not found')
-
+                ','
             self.canvass_shifts.append(shift)
+
+        return self.canvass_shifts
 
     def check_in(self):
 
         if self.departure == None:
             self.departure = datetime.now().time()
-            self.check_in_time = self.departure + timedelta(hours=1)
+            self.check_in_time = time(self.departure.hour + 1, self.departure.minute)
 
         else:
             self.last_check_in = datetime.now().time()
-            self.check_in_time = self.last_check_in + timedelta(hours=1)
+            self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
             self.check_ins += 1
 
         return self
 
-    def returned(self, value):
+    def returned(self):
 
-        self.is_returned = value
+        self.is_returned = not self.is_returned
         self.last_check_in = datetime.now().time()
         self.check_ins += 1
 
-        if value:
+        if self.is_returned:
             self.check_in_time = None
             for shift in self.canvass_shifts:
                 shift.status = 'Completed'
         
         else:
-            self.check_in_time = datetime.now().time() + timedelta(hours=1)
+            self.check_in_time = datetime.now() + timedelta(hours=1)
             for shift in self.canvass_shifts:
                 shift.status = 'In'
 
         return self
 
     def add_note(self, page, text):
-        self.canvass_shifts[0].add_call_pass(page, text)
+        return_var = ''
+        print(page)
+        for shift in self.canvass_shifts:
+            return_var = shift.add_call_pass(page, text)
+
+        return return_var
 
     
 

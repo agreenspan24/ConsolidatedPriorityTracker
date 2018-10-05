@@ -13,6 +13,7 @@
                 <th>Event</th>
                 <th>Role</th>
                 <th>Status</th>
+                <th></th>
                 <th>Passes Made</th>
                 <th>New Note</th>
             </tr>
@@ -21,10 +22,23 @@
             {% for shift in shifts %}
                 <tr id="row-{{shift.id}}">
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
-                    <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
-                    <td>{{shift.volunteer.phone_number}}</td>
+                    <td id="name-{{shift.id}}">
+                        {% if shift.volunteer.van_id == None %}
+                            <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}"/>
+                            <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}"/>
+                        {% else %}
+                            {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
+                        {% endif %}
+                    </td>
+                    <td id="phone-{{shift.id}}">
+                        {% if shift.volunteer.van_id == None %}
+                            <input id='phone-{{shift.id}}' name="phone" maxlength="120" type="text" value="{{shift.volunteer.phone if not shift.volunteer.phone == None}}"/>
+                        {% else %}
+                            {{shift.volunteer.phone_number if shift.volunteer.phone_number != None}}
+                        {% endif %}
+                    </td>
                     <td>
-                        <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td>{{shift.shift_location.locationname}}</td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
@@ -32,17 +46,17 @@
                     <td>{{shift.role}}</td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
-                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'Flaked'] %}
+                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show'] %}
                                 <option value={{shift.status}}>{{shift.status}}</option>
                             {% endif %}
                             <option value='Same Day Confirmed'>Same Day Confirmed</option>
                             <option value='In'>In</option>
                             <option value='Completed'>Completed</option>
                             <option value='Declined'>Declined</option>
-                            <option value='No Show'>Flake</option>
+                            <option value="No Show" {{"selected" if shift.status == "No Show"}}>Flake</option>
                         </select>
                     </td>
-                    <td>{{shift.call_pass}}</td>
+                    <td id="check_ins-{{shift.id}}">{{shift.call_pass}}</td>
                     <td>
                         <input id='note-{{shift.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">
                     </td>

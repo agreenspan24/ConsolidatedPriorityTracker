@@ -152,27 +152,47 @@ def add_pass(office, page):
     if not parent_id:
         return abort(400)
 
+    return_var = None
+
     if page == 'kph':
-        returned = request.form.get('returned')
+        shift_ids = request.form.getlist('shift_id[]')
+        returned = 'returned' in request.form.keys()
         checked_in = 'checked_in' in request.form.keys()
         actual = request.form.get('actual')
         goal = request.form.get('goal')
         packets_given = request.form.get('packets_given')
         packet_names = request.form.get('packet_names')
 
-        return_var = ""
         group = CanvassGroup.query.get(parent_id)
 
-        if not group:
+        if not group and not cellphone:
             return abort(400, 'Group Not Found')
 
-        if returned:
-            if not isinstance(returned, bool):
-                return abort(400, 'Invalid value for "Returned"')
+        if shift_ids:
+            for id in shift_ids:
+                if not id.isdigit():
+                    return abort(400, 'Invalid shift id')
 
-            group = group.returned(true)
+            shifts = group.update_shifts(shift_ids)
+            for shift in shifts:
+                if return_var == None:
+                    return_var = []
+
+                return_var.append({
+                    'shift_id': shift.id,
+                    'van_id': shift.volunteer.van_id,
+                    'name': shift.volunteer.first_name + ' ' + shift.volunteer.last_name,
+                    'phone': shift.volunteer.phone_number,
+                    'cellphone': shift.volunteer.cellphone
+                })
+
+            return_var = jsonify(return_var)
+
+        if returned:
+            group = group.returned()
 
             return_var  = jsonify({
+                'check_in_time': group.check_in_time.strftime('%I:%M %p') if group.check_in_time else '',
                 'last_check_in': group.last_check_in.strftime('%I:%M %p'),
                 'check_ins': group.check_ins
             })
@@ -181,7 +201,7 @@ def add_pass(office, page):
             group = group.check_in()
             return_var = jsonify({
                 'departure': group.departure.strftime('%I:%M %p'), 
-                'check_in_time': group.next_check_in.strftime('%I:%M %p'), 
+                'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
                 'last_check_in': group.last_check_in.strftime('%I:%M %p'),
                 'check_ins': group.check_ins
             })
@@ -189,8 +209,8 @@ def add_pass(office, page):
         if note_text:
             note_text = escape(note_text)
 
-            group.add_note(page, note_text)
-        
+            return_var = group.add_note(page, note_text)
+            
         if cellphone:
             phone_sanitized = re.sub('() -+', '', cellphone)
 
@@ -226,6 +246,9 @@ def add_pass(office, page):
         return return_var
     else: 
         status = request.form.get('status')
+        first = request.form.get('first_name')
+        last = request.form.get('last_name')
+        phone = request.form.get('phone')
 
         shift = Shift.query.get(parent_id)
 
@@ -238,7 +261,23 @@ def add_pass(office, page):
             if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
                 return abort(400, 'Invalid status')
 
-            shift.flip(status)     
+            shift.flip(status)    
+
+        if first:
+            first = escape(first)
+            shift.volunteer.first_name = first 
+
+        if last:
+            last = escape(last)
+            shift.volunteer.last_name = last 
+        
+        if phone:
+            phone_sanitized = re.sub('() -+.', '', phone)
+
+            if not phone_sanitized.isdigit():
+                return abort(400, 'Invalid Phone')
+
+            shift.volunteer.phone_number = phone 
 
         if note_text:
             note_text = escape(note_text)
@@ -272,7 +311,7 @@ def add_group(office, page):
         if not id.isdigit():
             return abort(400, 'Invalid shift id')
 
-    group.add_shifts(shift_ids)
+    group.update_shifts(shift_ids)
 
     if goal:
         if not goal.isdigit():

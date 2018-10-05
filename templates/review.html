@@ -62,11 +62,11 @@
       </thead>
       <tbody class="tbody">
         {% for shift in shifts %}
-        {% if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In']}
+        {% if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In'] %}
             <tr>
                 <td>
-                    <input name="vanid-{{shift.id}}" value="{{shift.person}}" type="hidden" />
-                    {{shift.person}}
+                    <input name="vanid-{{shift.id}}" value="{{shift.volunteer.van_id}}" type="hidden" />
+                    {{shift.volunteer.van_id}}
                 </td>
                 <td>
                     {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
@@ -77,14 +77,15 @@
                     {{shift.status}}
                 </td>
             </tr>
-            {% endfor %}
+          {% endif %}
+          {% endfor %}
       </tbody>
     </form>
   {% endif %}
 {% endblock %}
 
 {% block footer %}
-{% if g.user.rank == "DATA" or g.user.rank == "FD" %}
+{% if (g.user.rank == "DATA" or g.user.rank == "FD") and shifts %}
   <p>By clicking this button, you will sync all of these shifts to the status on the right.</p>
   <button class="btn btn-full btn-blue">Sync Shifts To VAN</button>
 {% endif %}

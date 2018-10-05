@@ -31,7 +31,7 @@
 
         if (elem_name == 'cellphone') {
             var van_id = $('#vanid-' + parent_id).html();
-            data[van_id] = van_id
+            data['van_id'] = van_id
         }
 
         $.ajax({
@@ -56,32 +56,55 @@
         });
     }
 
+
     // success callbacks
     function updateNote(parent_id, res, elem) {
         var child = document.createElement('td');
         child.innerText = res;
         getRowElem(parent_id, 'row').append(child);
+        getRowElem(parent_id, 'check_ins').html(parseInt(getRowElem(parent_id, 'check_ins').html()) + 1)
         elem.val('');
     }
 
     function updateGoalActual(parent_id, res, elem) {
-        getRowElem(parent_id, 'perc').html(getRowElem(parent_id, 'actual').val() / getRowElem(parent_id, 'goal').val());
+        var perc = getRowElem(parent_id, 'actual').val() / getRowElem(parent_id, 'goal').val();
+        getRowElem(parent_id, 'perc').html(Math.round(perc * 10000) / 100 + '%');
     }
 
     function updateCheckIns(parent_id, res, elem) {
-        console.log(res);
-        
         getRowElem(parent_id, 'departure').html(res.departure);
         getRowElem(parent_id, 'next-check').html(res.check_in_time);
         getRowElem(parent_id, 'last-check').html(res.last_check_in);
         getRowElem(parent_id, 'check_ins').html(res.check_ins);
     }
 
+    function updateNames(parent_id, res, elem) {
+        var vanid = '';
+        var name = '';
+        var phone = '';
+        var cellphone = ''; 
+
+        res.forEach(function(shift, index) {
+            vanid += '<span id="shift-' + shift.id + '>'+ shift.van_id + '</span>';
+            name += '<span>'+ shift.name + '</span>';
+            phone += '<p>'+ shift.phone + '</p>';
+            cellphone += '<p><input id="phone-' + shift.id + '" name="cellphone" maxlength="120"' +
+                'type="text" value="' + shift.cell + '"/></p>';
+        });
+
+        getRowElem(parent_id, 'vanid').html(vanid);
+        getRowElem(parent_id, 'name').html(name);
+        getRowElem(parent_id, 'phone').html(phone);
+        getRowElem(parent_id, 'cell').html(cellphone);
+    }
+
     function setReturned(parent_id, res, elem) {
-        getRowElem(parent_id, 'next-check').html('');
-        getRowElem(parent_id, 'last-check').html(res.last_check_in);
+
+        getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
+        getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
         getRowElem(parent_id, 'check_ins').html(res.check_ins);
     }
+
 
     // enter handler
     $('body').on('keyup', function(e) {
@@ -93,6 +116,12 @@
 
             if (name == 'note') {
                 updateElem(id, name, updateNote);
+            } else if (name == 'first_name') {
+                updateElem(id, name, null);
+            } else if (name == 'last_name') {
+                updateElem(id, name, null);
+            } else if (name == 'phone') {
+                updateElem(id, name, null);
             } else if (name == 'cellphone') {
                 updateElem(id, name, null);
             } else if (name == 'actual') {
