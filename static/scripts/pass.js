@@ -29,7 +29,7 @@ function updateElem(elem_id, elem_name, success_callback) {
 
     $.ajax({
         type: 'POST', 
-        url: '/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/pass',
+        url: window.location.pathname + '/pass',
         data: data
     }).done(function(res){
         showAlert('success', elem_name + ' for ' + name + ' has been updated');

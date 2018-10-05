@@ -5,9 +5,6 @@
     {% block modals %}
 
     {% endblock %}
-    <script>
-        //$(document).ready(setUpListener);
-    </script>
     <header class="panel-tabs functional">
         <div class="tab {{'active' if active_tab == 'sdc'}}">
             <a href="{{'/consolidated/' + location.locationname[0:3] + '/sdc' if active_tab != 'sdc'}}">
