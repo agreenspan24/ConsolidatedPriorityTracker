@@ -5,9 +5,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <link type="text/css" rel="stylesheet" href="http://progress.ngpvan.com/stylesheets/normalize.css">
-  <link type="text/css" rel="stylesheet" href="http://progress.ngpvan.com/stylesheets/progress.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/normalize.css') }}">
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/progress.min.css') }}">
+  <script src="{{ url_for('static',filename='scripts/jquery.min.js') }}" type="text/javascript"></script>
+  <script src="{{ url_for('static', filename='scripts/pass.js') }}" type="text/javascript"></script>
   <title>Consolidated</title>
 </head>
 
@@ -17,8 +18,8 @@
       <section class="app-nav-header">
         <div class="app-branding app-title bg-blue6">
           <a class="app-image" href="/">
-            <img src="https://pbs.twimg.com/profile_images/875384839280640000/cvuD5Ovd_400x400.jpg" alt='mdplogo'
-              height='40' />
+            <img src="https://pbs.twimg.com/profile_images/875384839280640000/cvuD5Ovd_400x400.jpg" 
+              alt='mdplogo' height='40' />
           </a>
           <div class="app-user-controls">
             <div class="dropdown action-menu">

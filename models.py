@@ -2,7 +2,7 @@ from app import app, db
 from config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+from datetime import datetime, time, timedelta
 
 engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
 
@@ -88,7 +88,7 @@ class Note(db.Model):
 
     def __init__(self, type, time, text, volunteer, note_shift):
 
-        self.type
+        self.type = type
         self.time = time
         self.text = text
         self.volunteer = volunteer
@@ -124,20 +124,21 @@ class Shift(db.Model):
         self.status = status
         self.role = role
         self.flake = False
+        self.last_contact = None
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
         self.call_pass = 0
 
     def flip(self, status):
-        
-        if self.flake and status == 'Completed' or status == 'Same Day Confirmed':
-            self.flake = False
-        
-        if status == 'Flake':
+        if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
+            return
+
+        elif status == 'No Show':
             self.flake = True
 
         self.status = status
+        print(self.status)
 
     def add_call_pass(self, page, text):
         if self.call_pass == None:
@@ -178,7 +179,7 @@ class ShiftStats:
                     self.vol_declined += 1
                 if s.status == "Scheduled":
                     self.vol_unflipped += 1
-                if s.flake:
+                if s.status == "No Show":
                     self.vol_flaked += 1
     
 class CanvassGroup(db.Model):
@@ -202,44 +203,103 @@ class CanvassGroup(db.Model):
         self.packets_given = 0
         self.packet_names = ''
         self.is_returned = False
-        self.departure = datetime.now().time()
-        self.last_contact = datetime.now().time()
-        self.check_in_time = datetime.now().time()
+        self.departure = None
+        self.last_contact = None
+        self.check_in_time = None
         self.check_ins = 0
 
 
-    def add_shifts(self, shift_ids):
-    
+    def update_shifts(self, shift_ids):
+        self.canvass_shifts = []
+        return_var = ''
+
         for id in shift_ids:
             shift = Shift.query.get(id)
+
+            if not shift:
+                return abort(400, 'Shift not found')
+                ','
             self.canvass_shifts.append(shift)
 
+        return self.canvass_shifts
+
     def check_in(self):
-        if self.departure == "Hasn't left":
+
+        self.last_check_in = datetime.now().time()
+        self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
+
+        if self.departure == None:
             self.departure = datetime.now().time()
-            self.check_in_time = self.departure.timedelta(hours=1)
 
         else:
-            self.last_check_in = datetime.now().time()
-            self.check_in_time = self.last_check_in.timedelta(hours=1)
             self.check_ins += 1
 
         return self
 
     def returned(self):
 
-        self.is_returned = True
+        self.is_returned = not self.is_returned
+        self.last_check_in = datetime.now().time()
+        self.check_ins += 1
 
-        for shift in self.canvass_shifts:
-            shift.status = 'Completed'
+        if self.is_returned:
+            self.check_in_time = None
+            for shift in self.canvass_shifts:
+                shift.status = 'Completed'
+        
+        else:
+            self.check_in_time = datetime.now() + timedelta(hours=1)
+            for shift in self.canvass_shifts:
+                shift.status = 'In'
 
         return self
 
     def add_note(self, page, text):
-        self.canvass_shifts[0].add_call_pass(page, text)
+        return_var = ''
+        print(page)
+        for shift in self.canvass_shifts:
+            return_var = shift.add_call_pass(page, text)
+
+        return return_var
 
     
 
+class DashboardTotal(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+    __tablename__ = 'dashboard_totals'
+
+    id = db.Column('id', db.Integer, primary_key=True)
+    region = db.Column('region', db.String(10))
+    office = db.Column('office', db.String(50))
+    canvass_total_scheduled = db.Column('canvass_total_scheduled', db.Integer)
+    canvass_same_day_confirmed = db.Column('canvass_same_day_confirmed', db.Integer)
+    canvass_completed = db.Column('canvass_completed', db.Integer)
+    canvass_declined = db.Column('canvass_declined', db.Integer)
+    canvass_flaked = db.Column('canvass_flaked', db.Integer)
+    phone_total_scheduled = db.Column('phone_total_scheduled', db.Integer)
+    phone_same_day_confirmed = db.Column('phone_same_day_confirmed', db.Integer)
+    phone_completed = db.Column('phone_completed', db.Integer)
+    phone_declined = db.Column('phone_declined', db.Integer)
+    phone_flaked = db.Column('phone_flaked', db.Integer)
+    flake_total = db.Column('flake_total', db.Integer)
+    flake_attempts = db.Column('flake_attempts', db.Integer)
+    flake_attempts_perc = db.Column('flake_attempts_perc', db.Integer)
+    flake_rescheduled = db.Column('flake_rescheduled', db.Integer)
+    flake_rescheduled_perc = db.Column('flake_rescheduled_perc', db.Integer)
+    flake_chase_remaining = db.Column('flake_chase_remaining', db.Integer)
+    flake_chase_remaining_perc = db.Column('flake_chase_remaining_perc', db.Integer)
+    canvassers_all_day = db.Column('canvassers_all_day', db.Integer)
+    actual_all_day = db.Column('actual_all_day', db.Integer)
+    goal_all_day = db.Column('goal_all_day', db.Integer)
+    packets_out_all_day = db.Column('packets_out_all_day', db.Integer)
+    kps = db.Column('kps', db.Integer)
+    canvassers_out_now = db.Column('canvassers_out_now', db.Integer)
+    actual_out_now = db.Column('actual_out_now', db.Integer)
+    goal_out_now = db.Column('goal_out_now', db.Integer)
+    packets_out_now = db.Column('packets_out_now', db.Integer)
+    kph = db.Column('kph', db.Integer)
+    overdue_check_ins = db.Column('overdue_check_ins', db.Integer)
+    
 
 
 

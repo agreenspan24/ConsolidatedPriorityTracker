@@ -1,5 +1,63 @@
 {% extends "consolidated_tabs.html" %}
 
+{% block above_table %}
+
+<form action="/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/walk_in" method="POST">
+    <table class="table">
+        <tbody class="tbody">
+            <tr>
+                <td>
+                    <label class="input-label">First Name</label>
+                    <div class="input-control">
+                        <input class="input-element" name="firstname" maxlength="120" />
+    
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Last Name</label>
+                    <div class="input-control">
+                        <input class="input-element" name="lastname" maxlength="120" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Phone</label>
+                    <div class="input-control">
+                        <input class="input-element" name="phone" maxlength="120" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Shift Time</label>
+                    <div class="input-control">
+                        <select class="input-element input-element-base select" name="time" >   
+                            <option value="10:00 AM">10:00 AM - 1:00 PM</option>
+                            <option value="1:00 PM">1:00 PM - 4:00 PM</option>
+                            <option value="4:00 PM">4:00 PM - 7:00 PM</option>
+                            <option value="6:00 PM">6:00 PM - 9:00 PM</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Activity</label>
+                    <div class="input-control">
+                        <select class="input-element input-element-base select" name="activity">   
+                            <option value="Canvassing">Canvassing</option>
+                            <option value="Phonebanking">Phonebanking</option>
+                            <option value="Comfort Vol">Comfort Vol</option>
+                            <option value="Intern Interview">Intern Interview</option>
+                            <option value="Intern Onboarding">Intern Onboarding</option>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <input class="btn btn-blue" style="margin-top:30px" type="submit" value="Add Walk In" />
+                </td> 
+            </td>
+        </tbody>
+    </table>
+</form>
+
+{% endblock %}
+
 {% block table %}
     {% if shifts %}
         <thead class="thead">
@@ -8,12 +66,11 @@
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Cell Phone</th>
-                <th>Location</th>
                 <th>Time</th>
                 <th>Event</th>
                 <th>Role</th>
                 <th>Status</th>
-                <th>Passes Made</th>
+                <th>Passes</th>
                 <th>New Note</th>
             </tr>
         </thead>
@@ -21,30 +78,42 @@
             {% for shift in shifts %}
                 <tr id="row-{{shift.id}}">
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
-                    <td id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
-                    <td>{{shift.volunteer.phone_number}}</td>
-                    <td>
-                        <input id='phone-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                    <td id="name-{{shift.id}}">
+                        {% if shift.volunteer.van_id == None %}
+                            <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}"/>
+                            <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}"/>
+                        {% else %}
+                            {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
+                        {% endif %}
                     </td>
-                    <td>{{shift.shift_location.locationname}}</td>
+                    <td>
+                        {% if shift.volunteer.van_id == None %}
+                            <input id='phone-{{shift.id}}' name="phone" maxlength="120" type="text" value="{{shift.volunteer.phone_number if not shift.volunteer.phone_number == None}}"/>
+                        {% else %}
+                            {{shift.volunteer.phone_number if shift.volunteer.phone_number != None}}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                    </td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.eventtype}}</td>
                     <td>{{shift.role}}</td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
-                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'Flaked'] %}
+                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show'] %}
                                 <option value={{shift.status}}>{{shift.status}}</option>
                             {% endif %}
                             <option value='Same Day Confirmed'>Same Day Confirmed</option>
                             <option value='In'>In</option>
                             <option value='Completed'>Completed</option>
                             <option value='Declined'>Declined</option>
-                            <option value='No Show'>Flake</option>
+                            <option value="No Show" {{"selected" if shift.status == "No Show"}}>Flake</option>
                         </select>
                     </td>
-                    <td>{{shift.call_pass}}</td>
+                    <td id="check_ins-{{shift.id}}">{{shift.call_pass}}</td>
                     <td>
-                        <input id='note-{{shift.id}}' name="note" type='text' placeholder="Hit Enter To Save">
+                        <input id='note-{{shift.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}

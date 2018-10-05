@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% include 'pass.html' %}
-    {% block pass %}
-
-    {% endblock %}
-
     {% include "add_walk_in_modal.html" %}
     {% block modals %}
 
@@ -37,15 +32,17 @@
             </a>
         </div>
     </header>
-    <section class="panel-content table-wrapper">       
+    <section class="panel-content">       
         {% block above_table %} 
 
         {% endblock %}
-        <table class="table table-panel table-striped table-small">
-            {% block table %}
-
-            {% endblock %}
-        </table>    
+        <div class="table-wrapper">
+            <table class="table table-panel table-striped table-small">
+                {% block table %}
+    
+                {% endblock %}
+            </table> 
+        </div>   
     </section>
     <footer class="panel-footer">
         {% block footer %}

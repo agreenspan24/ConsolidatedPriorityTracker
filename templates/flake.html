@@ -10,15 +10,14 @@
                 <th>Time</th>
                 <th>Role</th>
                 <th>Event</th>
-                <th># of Passes</th>
-                <th>Time of Last Pass</th>
+                <th>Passes</th>
                 <th>Status</th>
                 <th>New Note</th>
             </tr>
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                {% if shift.flake == True %}
+                {% if shift.status == "No Show" %}
                 <tr id="row-{{shift.id}}">
                     <td id="name-{{shift.id}}">
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>
@@ -26,24 +25,22 @@
                     </td>
                     <td>{{shift.volunteer.phone_number}}</td>
                     <td>
-                        <input id='phone-{{shift.id}}' name="cellphone" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
-                    <td>{{shift.time}}</td>
+                    <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.role}}</td>
-                    <td>{{shift.eventype}}</td>
-                    <td>{{shift.flake_passed}}</td>
-                    <td>{{shift.last_contact}}</td>
+                    <td>{{shift.eventtype}}</td>
+                    <td id="check_ins-{{shift.id}}">{{shift.call_pass}}</td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
-                            <option value="No Show">Flake</option>
-                            <option value='Not Contacted'>Not Contacted</option>
-                            <option value='Rescheduled'>Rescheduled</option>
-                            <option value='Completed - Not Rescheduled'>Completed - Not Rescheduled</option>
-                            <option value='Completed - Completed Today'>Completed - Completed Today</option>
+                            <option value="No Show">Not Contacted</option>
+                            <option value='Resched'>Rescheduled</option>
+                            <option value='Declined'>Completed - Not Rescheduled</option>
+                            <option value='Same Day Confirmed'>Completed - Same Day Confirmed</option>
                         </select>
                     </td>
                     <td>
-                        <input id='note-{{shift.id}}' name="note" type='text' placeholder="Hit Enter to Save">
+                        <input id='note-{{shift.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter to Save">
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
