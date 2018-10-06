@@ -435,16 +435,22 @@ def add_walk_in(office, page):
     return redirect('/consolidated/' + office + '/' + page)
 
 @oid.require_login
-@app.route('/dashboard')
-def dashboard():
-    user = User.query.filter_by(email=g.user.email).first()
-    dashboard_permission = user.rank == 'DATA' or user.rank == 'Field Director'
+@app.route('/dashboard/<page>')
+def dashboard(page):
+    dashboard_permission = g.user.rank == 'DATA' or g.user.rank == 'Field Director'
 
     if not dashboard_permission:
         return redirect('/consolidated')
     
     totals = DashboardTotal.query.all()
-    return render_template('dashboard.html', results=totals)
+
+    if page == 'prod':
+        return render_template('dashboard-production.html', active_tab=page, results=totals)
+
+    elif page == 'top':
+        return render_template('dashboard-toplines.html', active_tab=page, results=totals)
+
+    return render_template('dashboard.html', active_tab=page, results=totals)
 
 @app.errorhandler(404)
 def page_not_found(e):
