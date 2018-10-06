@@ -1,5 +1,5 @@
 from app import app, db
-from models import db, SyncShift, Volunteer, Shift, Location
+from models import db, SyncShift, Volunteer, Shift, Location, 
 from datetime import datetime
 from config import black_list
 
