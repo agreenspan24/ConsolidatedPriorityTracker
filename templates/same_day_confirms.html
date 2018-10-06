@@ -92,7 +92,7 @@
                         {% if shift.volunteer.van_id == None %}
                             <input id='phone-{{shift.id}}' name="phone" maxlength="120" type="text" value="{{shift.volunteer.phone_number if not shift.volunteer.phone_number == None}}"/>
                         {% else %}
-                            {{shift.volunteer.phone_number if shift.volunteer.phone_number != None}}
+                            {{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) if shift.volunteer.phone_number != None}}
                         {% endif %}
                     </td>
                     <td>

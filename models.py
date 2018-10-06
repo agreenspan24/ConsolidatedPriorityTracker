@@ -175,7 +175,7 @@ class Shift(db.Model):
 
 
 class ShiftStats:
-    def __init__(self, shifts):
+    def __init__(self, shifts, groups):
         self.vol_confirmed = 0
         self.vol_completed = 0
         self.vol_declined = 0
@@ -183,6 +183,7 @@ class ShiftStats:
         self.vol_flaked = 0
         self.intern_completed = 0
         self.intern_declined = 0
+        self.kps = 0
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
@@ -201,7 +202,15 @@ class ShiftStats:
                     self.vol_unflipped += 1
                 if s.status == "No Show":
                     self.vol_flaked += 1
-    
+
+        knocks = 0
+        for g in groups:
+            if g.is_returned:
+                knocks += g.actual
+
+        self.kps = knocks / (self.intern_completed + self.vol_completed)
+
+        
 class CanvassGroup(db.Model):
     __table_args__ = {'schema':'consolidated'}
 

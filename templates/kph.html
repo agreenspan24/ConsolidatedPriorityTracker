@@ -105,7 +105,7 @@
                 </td>
                 <td id="phone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
-                        <p id="phone-{{shift.id}}">{{shift.volunteer.phone_number}}</p>
+                        <p id="phone-{{shift.id}}">{{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) }}</p>
                     {% endfor %}
                 </td>
                 <td id="cellphone-{{group.id}}">

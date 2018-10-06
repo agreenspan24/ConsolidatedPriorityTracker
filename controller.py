@@ -126,7 +126,7 @@ def office(office, page):
         for shift in extra_shifts:
             all_shifts.append(shift)
         
-        if page == 'kph':
+        if page in ['kph', 'review']:
             all_groups = CanvassGroup.query.all()
             groups = []
 
@@ -144,7 +144,7 @@ def office(office, page):
         return render_template('flake.html', active_tab="flake", location=location, shifts=all_shifts)
 
     elif page == 'review':
-        stats = ShiftStats(all_shifts)
+        stats = ShiftStats(all_shifts, groups)
         return render_template('review.html', active_tab="review", location=location, stats=stats, shifts=all_shifts)
 
     else:
