@@ -21,7 +21,7 @@
                     <label class="input-label" for="shift_id">Volunteers</label>
                     <select class="input-element" name="shift_id[]" id="shift_id" multiple>
                         <option></option>
-                        {% for shift in shifts %}
+                        {% for shift in shifts if (shift.status == 'In' and shift.canvass_group == None) %}
                             <option value={{shift.id}}>
                                 {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
                             </option>
@@ -53,6 +53,7 @@
 {% block table %}
     <thead class="thead">
         <tr>
+            <th></th>
             <th>Name</th>
             <th>Phone Number</th>
             <th>Cell</th>
@@ -62,11 +63,11 @@
             <th>% to Goal</th>
             <th># Packets Out</th>
             <th>Packets</th>
-            <th>Returned?</th>
+            <th></th>
             <th>Next Check In</th>
             <th>Last Check In</th>
             <th>Check Ins</th>
-            <th></th>
+            <th>Add Doors</th>
             <th>New Note</th>
             <th>Notes</th>
         </tr>
@@ -75,6 +76,7 @@
         {% if groups %}
         {% for group in groups %}
             <tr id="row-{{group.id}}">
+                <td>{{loop.index}}</td>
                 <td style="vertical-align: top">
                     <select class="input-element" name="shift_id[]" id="shift_id-{{group.id}}"
                         onchange="updateElem('shift_id-{{group.id}}', 'shift_id[]', updateNames)" multiple>
@@ -85,10 +87,15 @@
                             </option>
                         {% endfor %}
                     </select>
+                    <span id="vol_id-{{group.id}}" class="hide">
+                        {% for shift in group.canvass_shifts %}
+                            <span id="vol_id-{{shift.id}}">{{shift.volunteer.id}}</span>
+                        {% endfor %}
+                    </span>
                     <span id="vanid-{{group.id}}" class="hide">
                         {% for shift in group.canvass_shifts %}
                             <span id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</span>
-                          {% endfor %}
+                        {% endfor %}
                     </span>
                     <span id="name-{{group.id}}" class="hide">
                         {% for shift in group.canvass_shifts %}
@@ -98,13 +105,13 @@
                 </td>
                 <td id="phone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
-                        <p id="phone-{{shift.id}}">{{shift.volunteer.phone_number}}</p>
+                        <p id="phone-{{shift.id}}">{{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) }}</p>
                     {% endfor %}
                 </td>
                 <td id="cellphone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
                         <p>
-                            <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                            <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                         </p>
                     {% endfor %}
                 </td>
@@ -123,13 +130,15 @@
                     <input id="packet_names-{{group.id}}" name="packet_names" type="text" maxlength="255" value="{{group.packet_names if not group.packet_names == None}}" />
                 </td>
                 <td>
-                    <input id='returned-{{group.id}}' onclick="updateElem('returned-{{group.id}}', 'returned', setReturned)" type="checkbox" class="checkbox" {{'checked=checked' if group.is_returned == True else ''}} />
+                    <a id='out-{{group.id}}' name='out' onclick="updateElem('out-{{group.id}}', 'out', setOut)">
+                        {{'Depart' if group.departure == None else 'Not Returned' if group.is_returned else 'Returned'}}
+                    </a>
                 </td>
                 <td id='check_in_time-{{group.id}}'>{{group.check_in_time.strftime('%I:%M %p') if group.check_in_time != None else ''}}</td> 
                 <td id='last_check_in-{{group.id}}'>{{group.last_check_in.strftime('%I:%M %p') if group.last_check_in != None else ''}}</td>
                 <td id='check_ins-{{group.id}}'>{{group.check_ins}}</td>
                 <td>
-                    <a id="check_in-{{group.id}}" value="true" onclick="updateElem('check_in-{{group.id}}', 'checked_in', updateCheckIns)" {{'disabled' if group.is_returned == True else ''}}>{{'Check In' if group.departure != None else 'Depart'}}</a>
+                    <input id='check_in-{{group.id}}' name="check_in" type='number' style="max-width: 50px" placeholder="Enter to Check In"  {{'disabled' if group.is_returned == True else ''}}>
                 </td>
                 <td>
                     <input id='note-{{group.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">

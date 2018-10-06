@@ -45,7 +45,17 @@
                 <div class="stat-title">Intern Shifts Declined</div>
             </div>
         </li>
+        <li class="stat-item">
+            <div class="stat-info">
+                <div class="stat-data">{{stats.kps|round(2)}}</div>
+                <div class="stat-title">KPS</div>
+            </div>
+        </li>
       </ul>
+      <hr />
+      <h3>
+        Sync to VAN
+      </h3>
 {% endif %}
 {% endblock %}
 
@@ -54,6 +64,7 @@
     <form action="" method="POST">
       <thead class="thead">
           <tr>
+              <th></th>
               <th>VanID</th>
               <th>Name</th>
               <th>Event</th>
@@ -62,9 +73,10 @@
           </tr>
       </thead>
       <tbody class="tbody">
-        {% for shift in shifts %}
-        {% if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In'] %}
+        {% for shift in shifts 
+          if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In'] and not shift.volunteer.van_id == None %}
             <tr>
+                <td>{{loop.index}}</td>
                 <td>
                     <input name="vanid-{{shift.id}}" value="{{shift.volunteer.van_id}}" type="hidden" />
                     {{shift.volunteer.van_id}}
@@ -73,13 +85,12 @@
                     {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                 </td>
                 <td>{{shift.eventtype}}</td>
-                <td>{{shift.cellphone}}</td>
+                <td>{{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) }}</td>
                 <td>
                     <input name="status-{{shift.id}}" value="{{shift.status}}" type="hidden" />
                     {{shift.status}}
                 </td>
             </tr>
-        {% endif %}
         {% endfor %}
       </tbody>
     </form>
@@ -88,8 +99,8 @@
 
 {% block footer %}
   {% if (g.user.rank == "DATA" or g.user.rank == "FD") and shifts %}
-    <p>By clicking this button, you will sync all of these shifts to the status on the right.</p>
+    <p>By clicking this button, you will sync all of these shifts to the status on the right. (Feature coming soon)</p>
 
-    <button class="btn btn-full btn-blue">Sync Shifts To VAN</button>
+    <button class="btn btn-full btn-blue" disabled>Sync Shifts To VAN</button>
   {% endif %}
 {% endblock %}

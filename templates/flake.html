@@ -4,6 +4,7 @@
     {% if shifts %}
         <thead class="thead">
             <tr>
+                <th></th>
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Cell</th>
@@ -16,14 +17,14 @@
             </tr>
         </thead>
         <tbody class="tbody">
-            {% for shift in shifts %}
-                {% if shift.status == "No Show" %}
+            {% for shift in shifts if shift.status == "No Show" %}
                 <tr id="row-{{shift.id}}">
+                    <td>{{loop.index}}</td>
                     <td id="name-{{shift.id}}">
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>
                         {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                     </td>
-                    <td>{{shift.volunteer.phone_number}}</td>
+                    <td>{{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) }}</td>
                     <td>
                         <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
@@ -44,11 +45,12 @@
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
-                            <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                            {% if note.type == 'flake' %}
+                                <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                 </tr>
-                {% endif %}
             {% endfor%}
         </tbody>
     {% endif %}

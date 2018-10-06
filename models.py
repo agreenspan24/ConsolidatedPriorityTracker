@@ -5,6 +5,7 @@ from sqlalchemy.sql import text
 from sqlalchemy_views import CreateView, DropView
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, time, timedelta
+from sqlalchemy.inspection import inspect
 
 engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
 
@@ -51,6 +52,9 @@ class Location(db.Model):
         self.locationname = locationname
         self.region = region
 
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+
 class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'users'
@@ -75,6 +79,8 @@ class Volunteer(db.Model):
     cellphone = db.Column(db.String(120))
     shifts = db.relationship('Shift', backref='volunteer')
     notes = db.relationship('Note', backref='note')
+    last_user = db.Column(db.Integer)
+    last_update = db.Column(db.Time)
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -85,6 +91,11 @@ class Volunteer(db.Model):
         self.cellphone = cellphone
         self.knocks = 0
         self.is_intern = is_intern
+        self.last_user = None
+        self.last_update = None
+
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
 
 class Note(db.Model):
@@ -105,6 +116,9 @@ class Note(db.Model):
         self.volunteer = volunteer
         self.note_shift = note_shift
 
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+
 
 class Shift(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -124,6 +138,8 @@ class Shift(db.Model):
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
     notes = db.relationship('Note', backref='shift')
     canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'))
+    last_user = db.Column(db.Integer)
+    last_update = db.Column(db.Time)
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -140,6 +156,8 @@ class Shift(db.Model):
         self.person = person
         self.shift_location = shift_location
         self.call_pass = 0
+        self.last_user = None
+        self.last_update = None
 
     def flip(self, status):
         if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
@@ -149,13 +167,13 @@ class Shift(db.Model):
             self.flake = True
 
         self.status = status
-        print(self.status)
 
     def add_call_pass(self, page, text):
-        if self.call_pass == None:
-            self.call_pass = 1
-        else:
-            self.call_pass += 1
+        if page != 'kph':
+            if self.call_pass == None:
+                self.call_pass = 1
+            else:
+                self.call_pass += 1
 
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
         note = Note(page, self.last_contact, text, self.person, self.id)
@@ -164,9 +182,12 @@ class Shift(db.Model):
 
         return self.last_contact + ": " + text
 
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+
 
 class ShiftStats:
-    def __init__(self, shifts):
+    def __init__(self, shifts, groups):
         self.vol_confirmed = 0
         self.vol_completed = 0
         self.vol_declined = 0
@@ -174,6 +195,7 @@ class ShiftStats:
         self.vol_flaked = 0
         self.intern_completed = 0
         self.intern_declined = 0
+        self.kps = 0
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
@@ -192,7 +214,15 @@ class ShiftStats:
                     self.vol_unflipped += 1
                 if s.status == "No Show":
                     self.vol_flaked += 1
-    
+
+        knocks = 0
+        for g in groups:
+            if g.is_returned:
+                knocks += g.actual
+
+        self.kps = knocks / (self.intern_completed + self.vol_completed)
+
+        
 class CanvassGroup(db.Model):
     __table_args__ = {'schema':'consolidated'}
 
@@ -207,6 +237,8 @@ class CanvassGroup(db.Model):
     check_in_time = db.Column(db.Time)
     check_ins = db.Column(db.Integer)
     canvass_shifts = db.relationship('Shift', backref='group')
+    last_user = db.Column(db.Integer)
+    last_update = db.Column(db.Time)
 
     def __init__(self):
         self.actual = 0
@@ -218,6 +250,8 @@ class CanvassGroup(db.Model):
         self.last_contact = None
         self.check_in_time = None
         self.check_ins = 0
+        self.last_user = None
+        self.last_update = None
 
 
     def update_shifts(self, shift_ids):
@@ -234,24 +268,26 @@ class CanvassGroup(db.Model):
 
         return self.canvass_shifts
 
-    def check_in(self):
+    def check_in(self, check_in_amount):
 
         self.last_check_in = datetime.now().time()
         self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
-
-        if self.departure == None:
-            self.departure = datetime.now().time()
-
-        else:
-            self.check_ins += 1
+        self.check_ins += 1
+        self.actual += int(check_in_amount)
 
         return self
 
-    def returned(self):
+    def setOut(self):
+
+        if self.departure == None:
+            self.departure = datetime.now().time()
+            self.last_check_in = datetime.now().time()
+            self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
+
+            return self
 
         self.is_returned = not self.is_returned
         self.last_check_in = datetime.now().time()
-        self.check_ins += 1
 
         if self.is_returned:
             self.check_in_time = None
@@ -267,7 +303,6 @@ class CanvassGroup(db.Model):
 
     def add_note(self, page, text):
         return_var = ''
-        print(page)
         for shift in self.canvass_shifts:
             return_var = shift.add_call_pass(page, text)
 

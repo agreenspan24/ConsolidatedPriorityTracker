@@ -62,6 +62,7 @@
     {% if shifts %}
         <thead class="thead">
             <tr>
+                <th></th>
                 <th>VanID</th>
                 <th>Name</th>
                 <th>Phone</th>
@@ -77,11 +78,12 @@
         <tbody class="tbody">
             {% for shift in shifts %}
                 <tr id="row-{{shift.id}}">
+                    <td>{{loop.index}}</td>
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
                     <td id="name-{{shift.id}}">
                         {% if shift.volunteer.van_id == None %}
-                            <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}"/>
-                            <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}"/>
+                            <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}" style="max-width: 100px"/>
+                            <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}" style="max-width: 100px"/>
                         {% else %}
                             {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                         {% endif %}
@@ -90,7 +92,7 @@
                         {% if shift.volunteer.van_id == None %}
                             <input id='phone-{{shift.id}}' name="phone" maxlength="120" type="text" value="{{shift.volunteer.phone_number if not shift.volunteer.phone_number == None}}"/>
                         {% else %}
-                            {{shift.volunteer.phone_number if shift.volunteer.phone_number != None}}
+                            {{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) if shift.volunteer.phone_number != None}}
                         {% endif %}
                     </td>
                     <td>
@@ -105,9 +107,9 @@
                                 <option value={{shift.status}}>{{shift.status}}</option>
                             {% endif %}
                             <option value='Same Day Confirmed'>Same Day Confirmed</option>
-                            <option value='In'>In</option>
-                            <option value='Completed'>Completed</option>
-                            <option value='Declined'>Declined</option>
+                            <option value='In' {{"selected" if shift.status == "In"}}>In</option>
+                            <option value='Completed' {{"selected" if shift.status == "Completed"}}>Completed</option>
+                            <option value='Declined' {{"selected" if shift.status == "Declined"}}>Declined</option>
                             <option value="No Show" {{"selected" if shift.status == "No Show"}}>Flake</option>
                         </select>
                     </td>
@@ -117,7 +119,9 @@
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
-                            <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                            {% if note.type == 'sdc' %}
+                                <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                     <!-- TODO:

@@ -1,0 +1,37 @@
+{% extends 'dashboard_tabs.html' %}
+
+{% block headers %}
+    <th>Office</th>
+    <th>Canvassers Out</th>
+    <th>Packets Out</th>
+    <th>Total Doors Out</th>
+    <th>Doors Out - Completed</th>
+    <th>Doors Out - Remaining</th>
+    <th>All Day Door Goal</th>
+    <th>All Day Door Actual</th>
+    <th>Overdue Check Ins</th>
+    <th>All Day Completion</th>
+    <th>Max Doors as of Now</th>
+    <th>Doors Already Lost</th>
+{% endblock %
+
+{% block rows %}
+    {% for res in results %}
+        <tr>
+            <td class="item-info">
+                <a class="item-name" href="/consolidated/{{res.office[0:3]}}/review">{{res.office}}</a>
+            </td>
+            <td>{{res.canvassers_out_now}}</td>
+            <td>{{res.packets_out_now}}</td>
+            <td>{{res.goal_out_now}}</td>
+            <td>{{res.actual_out_now}}</td>
+            <td>{{res.goal_out_now - res.actual_out_now}}</td>
+            <td>{{res.goal_all_day}}</td>
+            <td>{{res.actual_all_day}}</td>
+            <td>{{res.overdue_check_ins}}</td>
+            <td>{{res.actual_all_day / res.goal_all_day}}</td>
+            <td>{{res.actual_all_day + (res.goal_out_now - res.actual_out_now)}}</td>
+            <td>{{res.goal_all_day - (res.actual_all_day + (res.goal_out_now - res.actual_out_now))}}</td>
+        </tr>  
+    {% endfor %}
+{% endblock %}

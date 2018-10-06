@@ -22,10 +22,16 @@ function updateElem(elem_id, elem_name, success_callback) {
     elem.prop('disabled', 'disabled');
 
     var data = {
-        parent_id: parent_id
+        parent_id: parent_id,
+        page_load_time: $("#page_load_time").html()
     };
 
     data[elem_name] = val;
+
+    if (elem_name == 'cellphone') {
+        shift_id = elem_id.split('-')[1];
+        data['vol_id'] = getRowElem(shift_id, 'vol_id').html();
+    }
 
     $.ajax({
         type: 'POST', 
@@ -39,11 +45,11 @@ function updateElem(elem_id, elem_name, success_callback) {
             success_callback(parent_id, res, elem);
         }
     }).fail(function(res){
-        var message = elem_name + ' for ' + name + ' has NOT been updated';
-        if (res.message) {
-            message += 'Error message: ' + res.message
+        var message = elem_name + ' for ' + name + ' has NOT been updated.';
+        if (res.responseText) {
+            message += ' Error message: ' + res.responseText
         }
-
+        console.log(res);
         showAlert('error', message);
         elem.prop('disabled', false);
     });
@@ -51,11 +57,11 @@ function updateElem(elem_id, elem_name, success_callback) {
 
 
 // success callbacks
-function updateNote(parent_id, res, elem) {
+function addNote(parent_id, res, elem) {
     var child = document.createElement('td');
     child.innerText = res;
     getRowElem(parent_id, 'row').append(child);
-    getRowElem(parent_id, 'check_ins').html(parseInt(getRowElem(parent_id, 'check_ins').html()) + 1)
+    
     elem.val('');
 }
 
@@ -65,11 +71,15 @@ function updateGoalActual(parent_id, res, elem) {
 }
 
 function updateCheckIns(parent_id, res, elem) {
-    getRowElem(parent_id, 'check_in').html('Check In');
-    getRowElem(parent_id, 'departure').html(res.departure);
+    getRowElem(parent_id, 'check_in').val('');
     getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
+    getRowElem(parent_id, 'actual').val(res.actual);
+
+    updateGoalActual(parent_id, res, elem);
+
+    addNote(parent_id, res.note);
 }
 
 function updateNames(parent_id, res, elem) {
@@ -82,7 +92,7 @@ function updateNames(parent_id, res, elem) {
         vanid += '<span id="shift-' + shift.id + '>'+ shift.van_id + '</span>';
         name += '<span>'+ shift.name + '</span>';
         phone += '<p>'+ shift.phone + '</p>';
-        cellphone += '<p><input id="phone-' + shift.id + '" name="cellphone" maxlength="120"' +
+        cellphone += '<p><input id="cell-' + shift.id + '" name="cellphone" maxlength="120"' +
             'type="text" value="' + (shift.cellphone || '') + '"/></p>';
     });
 
@@ -92,10 +102,12 @@ function updateNames(parent_id, res, elem) {
     getRowElem(parent_id, 'cellphone').html(cellphone);
 }
 
-function setReturned(parent_id, res, elem) {
+function setOut(parent_id, res, elem) {
+    getRowElem(parent_id, 'out').html(res.is_returned ? 'Not Returned' : 'Returned');
     getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
+    getRowElem(parent_id, 'departure').html(res.departure);
 
     if (!res.check_in_time){
         getRowElem(parent_id, 'check_in').prop('disabled', 'disabled');
@@ -115,7 +127,7 @@ function setUpListener() {
             var id = event.target.id;
 
             if (name == 'note') {
-                updateElem(id, name, updateNote);
+                updateElem(id, name, addNote);
             } else if (name == 'first_name') {
                 updateElem(id, name, null);
             } else if (name == 'last_name') {
@@ -132,6 +144,8 @@ function setUpListener() {
                 updateElem(id, name, null);
             } else if (name == 'packet_names') {
                 updateElem(id, name, null);
+            } else if (name == 'check_in') {
+                updateElem(id, name, updateCheckIns);
             }
         }
     });
