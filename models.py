@@ -68,6 +68,8 @@ class Volunteer(db.Model):
     cellphone = db.Column(db.String(120))
     shifts = db.relationship('Shift', backref='volunteer')
     notes = db.relationship('Note', backref='note')
+    last_user = db.Column(db.Integer)
+    last_update = db.Column(db.Time)
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -78,6 +80,8 @@ class Volunteer(db.Model):
         self.cellphone = cellphone
         self.knocks = 0
         self.is_intern = is_intern
+        self.last_user = None
+        self.last_update = None
 
     def serialize(self):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
@@ -123,6 +127,8 @@ class Shift(db.Model):
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
     notes = db.relationship('Note', backref='shift')
     canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'))
+    last_user = db.Column(db.Integer)
+    last_update = db.Column(db.Time)
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -139,6 +145,8 @@ class Shift(db.Model):
         self.person = person
         self.shift_location = shift_location
         self.call_pass = 0
+        self.last_user = None
+        self.last_update = None
 
     def flip(self, status):
         if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
@@ -148,7 +156,6 @@ class Shift(db.Model):
             self.flake = True
 
         self.status = status
-        print(self.status)
 
     def add_call_pass(self, page, text):
         if self.call_pass == None:
@@ -209,6 +216,8 @@ class CanvassGroup(db.Model):
     check_in_time = db.Column(db.Time)
     check_ins = db.Column(db.Integer)
     canvass_shifts = db.relationship('Shift', backref='group')
+    last_user = db.Column(db.Integer)
+    last_update = db.Column(db.Time)
 
     def __init__(self):
         self.actual = 0
@@ -220,6 +229,8 @@ class CanvassGroup(db.Model):
         self.last_contact = None
         self.check_in_time = None
         self.check_ins = 0
+        self.last_user = None
+        self.last_update = None
 
 
     def update_shifts(self, shift_ids):
@@ -236,24 +247,26 @@ class CanvassGroup(db.Model):
 
         return self.canvass_shifts
 
-    def check_in(self):
+    def check_in(self, check_in_amount):
 
         self.last_check_in = datetime.now().time()
         self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
-
-        if self.departure == None:
-            self.departure = datetime.now().time()
-
-        else:
-            self.check_ins += 1
+        self.check_ins += 1
+        self.actual += int(check_in_amount)
 
         return self
 
-    def returned(self):
+    def setOut(self):
+
+        if self.departure == None:
+            self.departure = datetime.now().time()
+            self.last_check_in = datetime.now().time()
+            self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
+
+            return self
 
         self.is_returned = not self.is_returned
         self.last_check_in = datetime.now().time()
-        self.check_ins += 1
 
         if self.is_returned:
             self.check_in_time = None
@@ -269,7 +282,6 @@ class CanvassGroup(db.Model):
 
     def add_note(self, page, text):
         return_var = ''
-        print(page)
         for shift in self.canvass_shifts:
             return_var = shift.add_call_pass(page, text)
 

@@ -82,8 +82,8 @@
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
                     <td id="name-{{shift.id}}">
                         {% if shift.volunteer.van_id == None %}
-                            <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}"/>
-                            <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}"/>
+                            <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}" style="max-width: 100px"/>
+                            <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}" style="max-width: 100px"/>
                         {% else %}
                             {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                         {% endif %}
@@ -107,9 +107,9 @@
                                 <option value={{shift.status}}>{{shift.status}}</option>
                             {% endif %}
                             <option value='Same Day Confirmed'>Same Day Confirmed</option>
-                            <option value='In'>In</option>
-                            <option value='Completed'>Completed</option>
-                            <option value='Declined'>Declined</option>
+                            <option value='In' {{"selected" if shift.status == "In"}}>In</option>
+                            <option value='Completed' {{"selected" if shift.status == "Completed"}}>Completed</option>
+                            <option value='Declined' {{"selected" if shift.status == "Declined"}}>Declined</option>
                             <option value="No Show" {{"selected" if shift.status == "No Show"}}>Flake</option>
                         </select>
                     </td>
