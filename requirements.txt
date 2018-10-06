@@ -1,6 +1,6 @@
+Flask_SQLAlchemy==2.3.2
+flask_oidc==1.4.0
+requests==2.19.1
 SQLAlchemy==1.2.12
 Flask==1.0.2
-requests==2.19.1
-flask_oidc==1.4.0
-Flask_SQLAlchemy==2.3.2
 simplejson==3.16.0
