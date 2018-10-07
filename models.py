@@ -1,11 +1,10 @@
 from app import app, db
-from config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 
-engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
+engine = create_engine('postgresql+psycopg2://' + os.environ['sql_username'] + ':' + os.environ['sql_pass'] +  '@' + os.environ['server'])
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'consolidated'}
