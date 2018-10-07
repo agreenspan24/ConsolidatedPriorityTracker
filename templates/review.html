@@ -85,7 +85,7 @@
                     {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                 </td>
                 <td>{{shift.eventtype}}</td>
-                <td>{{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) }}</td>
+                <td>{{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) if shift.volunteer.cellphone }}</td>
                 <td>
                     <input name="status-{{shift.id}}" value="{{shift.status}}" type="hidden" />
                     {{shift.status}}
