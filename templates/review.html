@@ -61,14 +61,13 @@
 
 {% block table %}
   {% if shifts %}
-    <form action="" method="POST">
+    <form action="/consolidated/sync_to_van" method="POST">
       <thead class="thead">
           <tr>
               <th></th>
               <th>VanID</th>
               <th>Name</th>
               <th>Event</th>
-              <th>Cell Phone</th>
               <th>Status</th>
           </tr>
       </thead>
@@ -78,20 +77,24 @@
             <tr>
                 <td>{{loop.index}}</td>
                 <td>
-                    <input name="vanid-{{shift.id}}" value="{{shift.volunteer.van_id}}" type="hidden" />
+                    <input name="vanids[]" value="{{shift.volunteer.van_id}}" type="hidden" />
                     {{shift.volunteer.van_id}}
                 </td>
                 <td>
                     {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                 </td>
                 <td>{{shift.eventtype}}</td>
-                <td>{{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) }}</td>
                 <td>
-                    <input name="status-{{shift.id}}" value="{{shift.status}}" type="hidden" />
+                    <input name="statuses[]" value="{{shift.status}}" type="hidden" />
                     {{shift.status}}
                 </td>
+                <td>
+          
+                    <input type='submit' class="btn btn-full btn-blue">Sync Shifts To VAN</button>
+                  </td>
             </tr>
         {% endfor %}
+        
       </tbody>
     </form>
   {% endif %}

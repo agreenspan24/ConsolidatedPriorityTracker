@@ -9,7 +9,7 @@ import re
 import urllib
 
 from app import app, oid
-from config import settings
+
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, DashboardTotal
 from datetime import datetime
@@ -70,6 +70,7 @@ def login_auth():
             g.user = user
             print(user)
             return redirect('/consolidated')    
+            
 @oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
@@ -435,16 +436,34 @@ def add_walk_in(office, page):
     return redirect('/consolidated/' + office + '/' + page)
 
 @oid.require_login
-@app.route('/dashboard')
-def dashboard():
-    user = User.query.filter_by(email=g.user.email).first()
-    dashboard_permission = user.rank == 'DATA' or user.rank == 'Field Director'
+@app.route('/consolidated/sync_to_van', methods=['POST'])
+def sync_to_van():
+    vanids = request.form.getlist('vanids[]')
+    statuses = request.form.getlist('statuses[]')
+    print('hello')
+    print(statuses, vanids)
+    for i, id in enumerate(vanids):
+        print(statuses[i], vanids[i])
+
+    
+
+@oid.require_login
+@app.route('/dashboard/<page>', methods=['GET'])
+def dashboard(page):
+    dashboard_permission = g.user.rank == 'DATA' or g.user.rank == 'Field Director'
 
     if not dashboard_permission:
         return redirect('/consolidated')
     
     totals = DashboardTotal.query.all()
-    return render_template('dashboard.html', results=totals)
+
+    if page == 'prod':
+        return render_template('dashboard-production.html', active_tab=page, results=totals)
+
+    elif page == 'top':
+        return render_template('dashboard-toplines.html', active_tab=page, results=totals)
+
+    return render_template('dashboard.html', active_tab=page, results=totals)
 
 @app.errorhandler(404)
 def page_not_found(e):
