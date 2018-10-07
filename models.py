@@ -318,7 +318,7 @@ class CanvassGroup(db.Model):
 
 
 class DashboardTotal(db.Model):
-    __table__ = db.Table('consolidated.dashboard_totals', MetaData(),
+    __table__ = Table('consolidated.dashboard_totals', MetaData(),
         Column('region', db.String),
         Column('office', db.String, primary_key=True),
         Column('canvass_total_scheduled', db.Integer),
