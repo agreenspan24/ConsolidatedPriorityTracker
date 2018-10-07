@@ -255,6 +255,9 @@ class CanvassGroup(db.Model):
 
             if not shift:
                 return abort(400, 'Shift not found')
+
+            if shift.canvass_group != None:
+                return abort(400, 'Canvasser can only be in one group')
                 ','
             self.canvass_shifts.append(shift)
 
