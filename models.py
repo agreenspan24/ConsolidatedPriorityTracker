@@ -7,7 +7,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 import os
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+engine = create_engine(os.environ['DATABASE_URL'])
 
 def create_view(view, definition):
     create_view = CreateView(view, definition)
