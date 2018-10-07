@@ -235,7 +235,9 @@ def add_pass(office, page):
             return_var = group.add_note(page, note_text)
             
         if cellphone:
-            phone_sanitized = re.sub('() -+', '', cellphone)
+            phone_sanitized = re.sub('[- ().+]', '', cellphone)
+
+            print(cellphone, phone_sanitized)
 
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
@@ -313,7 +315,7 @@ def add_pass(office, page):
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-            phone_sanitized = re.sub('() -+.', '', phone)
+            phone_sanitized = re.sub('[- ().+]', '', phone)
 
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
@@ -325,7 +327,7 @@ def add_pass(office, page):
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-            phone_sanitized = re.sub('() -+.', '', cellphone)
+            phone_sanitized = re.sub('[- ().+]', '', cellphone)
 
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
@@ -403,7 +405,7 @@ def add_walk_in(office, page):
         lastname = escape(lastname)
 
     if phone:
-        phone_sanitized = re.sub('() -+.', '', phone)
+        phone_sanitized = re.sub('[- ().+]', '', phone)
 
         if not phone_sanitized.isdigit():
             return abort(400, 'Invalid Phone')

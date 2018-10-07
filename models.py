@@ -208,7 +208,8 @@ class ShiftStats:
             if g.is_returned:
                 knocks += g.actual
 
-        self.kps = knocks / (self.intern_completed + self.vol_completed)
+        shifts = self.intern_completed + self.vol_completed
+        self.kps = knocks / (shifts if shifts > 0 else 1)
 
         
 class CanvassGroup(db.Model):
