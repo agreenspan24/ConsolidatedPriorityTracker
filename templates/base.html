@@ -17,7 +17,7 @@
     <header class="app-header">
       <section class="app-nav-header">
         <div class="app-branding app-title bg-blue6">
-          <a class="app-image" href="/">
+          <a class="app-image" href="/consolidated">
             <img src="https://pbs.twimg.com/profile_images/875384839280640000/cvuD5Ovd_400x400.jpg" 
               alt='mdplogo' height='40' />
           </a>
@@ -29,7 +29,7 @@
               <ul id="header_menu" class="dropdown-menu dropdown-menu-right left">
                 {% if g.user %}
                   <li class="user-title">
-                    Logged in as {{g.user.email}}
+                    Logged in as {{g.user.fullname if g.user.fullname else g.user.email}}
                   </li>
                 {% endif %}
                 {% if g.user.rank == "DATA" or g.user.rank == "FD" %}
@@ -38,6 +38,9 @@
                   </li>
                 {% endif %}
                 {% if g.user %}
+                  <li>
+                    <a href="/user">Update User Info</a>
+                  </li>
                   <li>
                     <a href="/logout">Log Out</a>
                   </li>

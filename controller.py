@@ -5,7 +5,6 @@ from flask import flash, g, redirect, render_template, request, session, abort, 
 from sqlalchemy import and_, asc
 
 import re
-
 import urllib
 
 from app import app, oid
@@ -69,10 +68,13 @@ def login_auth():
             db.session.commit()
             g.user = user
             print(user)
-            return redirect('/consolidated')    
+            return redirect('/')    
 @oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
+    if g.user.office:
+        return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
+
     return redirect('/consolidated')    
 
 @app.route('/logout', methods=['GET'])
@@ -101,7 +103,7 @@ def consolidated():
     user = User.query.filter_by(email=g.user.email).first()
     dashboard_permission = user.rank == 'DATA' or user.rank == 'FD'
 
-    return render_template('index.html', user=g.user, offices=offices, show_dashboard=dashboard_permission)
+    return render_template('index.html', offices=offices, show_dashboard=dashboard_permission)
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
@@ -451,6 +453,42 @@ def dashboard(page):
         return render_template('dashboard-toplines.html', active_tab=page, results=totals)
 
     return render_template('dashboard.html', active_tab=page, results=totals)
+
+@oid.require_login
+@app.route('/user', methods=['GET', 'POST'])
+def user():
+    offices = Location.query.order_by(asc(Location.locationname)).all()
+
+    if request.method == "POST":
+        user = User.query.get(g.user.id)
+
+        firstname = request.form.get('firstname')
+
+        if firstname:
+            firstname = escape(firstname)
+            user.firstname = firstname
+
+        lastname = request.form.get('lastname')
+
+        if lastname:
+            lastname = escape(lastname)
+            user.lastname = lastname
+
+        fullname = request.form.get('fullname')
+
+        if fullname:
+            fullname = escape(fullname)
+            user.fullname = fullname
+
+        office = request.form.get('office')
+
+        office = escape(office)
+        user.office = office
+
+        db.session.commit()
+
+    return render_template('user.html', offices=offices)
+
 
 @app.errorhandler(404)
 def page_not_found(e):

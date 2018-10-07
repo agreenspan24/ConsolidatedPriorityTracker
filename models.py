@@ -5,7 +5,7 @@ from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 import os
 
-engine = create_engine(os.environ['DATABASE_URL'])
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -48,12 +48,15 @@ class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'users'
     id = db.Column('id', db.Integer, primary_key=True)
-    #fullname = db.Column('fullname', db.String(120))
+    fullname = db.Column('full_name', db.String(240))
+    firstname = db.Column('first_name', db.String(120))
+    lastname = db.Column('last_name', db.String(120))
     email = db.Column('email', db.String(120), unique=True)
     rank = db.Column('rank', db.String(120))
     region = db.Column('region', db.String(120))
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
+
 
 class Volunteer(db.Model):
     __table_args__ = {'schema':'consolidated'}

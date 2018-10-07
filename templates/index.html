@@ -2,7 +2,7 @@
 
 {% block content %}
     <div class="panel-header">
-        <h1>Welcome, {{user.email}}!</h1>
+        <h1>Welcome, {{g.user.fullname if g.user.fullname else g.user.email}}!</h1>
     </div>
     
     <form action="/consolidated" method="post">
