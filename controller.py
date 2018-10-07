@@ -237,8 +237,6 @@ def add_pass(office, page):
         if cellphone:
             phone_sanitized = re.sub('[- ().+]', '', cellphone)
 
-            print(cellphone, phone_sanitized)
-
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
 
@@ -246,7 +244,7 @@ def add_pass(office, page):
             if volunteer.last_user != g.user.id and volunteer.last_update != None and volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-            volunteer.cellphone = cellphone
+            volunteer.cellphone = phone_sanitized
             volunteer.last_user = g.user.id
             volunteer.last_update = datetime.now().time()
 
@@ -320,7 +318,7 @@ def add_pass(office, page):
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
             
-            shift.volunteer.phone_number = phone 
+            shift.volunteer.phone_number = phone_sanitized 
 
         if cellphone:
             
@@ -332,7 +330,7 @@ def add_pass(office, page):
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
 
-            shift.volunteer.cellphone = cellphone
+            shift.volunteer.cellphone = phone_sanitized
             shift.volunteer.last_user = g.user.id
             shift.volunteer.last_update = datetime.now().time()
 
@@ -423,7 +421,7 @@ def add_walk_in(office, page):
 
     shift = Shift(eventtype, time, datetime.now().date(), 'In', role, None, location.locationid)
 
-    vol = Volunteer(None, firstname, lastname, phone, None)
+    vol = Volunteer(None, firstname, lastname, phone_sanitized, None)
     db.session.add(vol)
     db.session.commit()
 
