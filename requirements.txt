@@ -8,3 +8,4 @@ gunicorn==19.6.0
 newrelic==2.70.0.51
 psycopg2-binary==2.7.5
 Jinja2==2.8
+sqlalchemy_views==0.2.1
