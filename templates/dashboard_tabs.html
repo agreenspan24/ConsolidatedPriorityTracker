@@ -8,12 +8,12 @@
         </a>
     </div>
     <div class="tab {{'active' if active_tab == 'prod'}}">
-        <a href="{{'/consolidated/prod' if active_tab != 'prod'}}">  
+        <a href="{{'/dashboard/prod' if active_tab != 'prod'}}">  
             <h6>Production</h6>
         </a>
     </div>
     <div class="tab {{'active' if active_tab == 'top'}}">
-        <a href="{{'/consolidated/top' if active_tab != 'top'}}">  
+        <a href="{{'/dashboard/top' if active_tab != 'top'}}">  
             <h6>Production Toplines</h6>
         </a>
     </div>
@@ -32,3 +32,4 @@
         </tbody>
     </table>
 </div>
+{% endblock %}

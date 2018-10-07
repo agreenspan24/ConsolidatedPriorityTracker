@@ -1,13 +1,12 @@
 from app import app, db
-from config import settings
 from sqlalchemy import create_engine, Table, MetaData, Column, orm
-from sqlalchemy.sql import text
-from sqlalchemy_views import CreateView, DropView
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
+from sqlalchemy_views import CreateView, DropView
+import os
 
-engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
 def create_view(view, definition):
     create_view = CreateView(view, definition)
@@ -60,12 +59,15 @@ class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'users'
     id = db.Column('id', db.Integer, primary_key=True)
-    #fullname = db.Column('fullname', db.String(120))
+    #fullname = db.Column('full_name', db.String(240))
+    #firstname = db.Column('first_name', db.String(120))
+    #lastname = db.Column('last_name', db.String(120))
     email = db.Column('email', db.String(120), unique=True)
     rank = db.Column('rank', db.String(120))
     region = db.Column('region', db.String(120))
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
+
 
 class Volunteer(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -221,7 +223,8 @@ class ShiftStats:
             if g.is_returned:
                 knocks += g.actual
 
-        self.kps = knocks / (self.intern_completed + self.vol_completed)
+        shifts = self.intern_completed + self.vol_completed
+        self.kps = knocks / (shifts if shifts > 0 else 1)
 
         
 class CanvassGroup(db.Model):
@@ -264,6 +267,9 @@ class CanvassGroup(db.Model):
 
             if not shift:
                 return abort(400, 'Shift not found')
+
+            if shift.canvass_group != None:
+                return abort(400, 'Canvasser can only be in one group')
                 ','
             self.canvass_shifts.append(shift)
 
