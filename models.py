@@ -1,6 +1,7 @@
 from app import app, db
 from sqlalchemy import create_engine, Table, MetaData, Column, orm
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import text
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
@@ -317,8 +318,7 @@ class CanvassGroup(db.Model):
 
 
 class DashboardTotal(db.Model):
-    __table_args__ = {'schema':'consolidated'}
-    __table__ = Table('dashboard_totals', MetaData(),
+    __table__ = db.Table('consolidated.dashboard_totals', MetaData(),
         Column('region', db.String),
         Column('office', db.String, primary_key=True),
         Column('canvass_total_scheduled', db.Integer),
