@@ -1,4 +1,4 @@
-from models import db, engine, Volunteer, Shift, Location, Note, CanvassGroup, create_view, drop_view, Table, MetaData, engine
+from models import db, engine, Volunteer, Shift, Location, Note, CanvassGroup
 from setup_config import dashboard_query
 
     
