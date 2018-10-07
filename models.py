@@ -5,7 +5,7 @@ from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 import os
 
-engine = create_engine('postgresql+psycopg2://' + os.environ['sql_username'] + ':' + os.environ['sql_pass'] +  '@' + os.environ['server'])
+engine = create_engine(os.environ['DATABASE_URL'])
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'consolidated'}
