@@ -1,5 +1,5 @@
 from app import app, db
-from config import settings, consolidated_dashboard
+from config import settings
 from sqlalchemy import create_engine, Table, MetaData, Column, orm
 from sqlalchemy.sql import text
 from sqlalchemy_views import CreateView, DropView
@@ -11,8 +11,7 @@ engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') +
 
 def create_view(view, definition):
     create_view = CreateView(view, definition)
-    return print(str(create_view.compile()).strip())
-    
+    return create_view
 
 def drop_view(view):
     drop_view = DropView(view)
@@ -42,13 +41,15 @@ class Location(db.Model):
     #__tablename__ = 'location'
 
     locationid = db.Column(db.Integer, primary_key=True)
+    actual_location_name = db.Column(db.String(50))
     locationname = db.Column(db.String(50))
     region = db.Column(db.String(2))
     shifts = db.relationship('Shift', backref='location')
 
-    def __init__(self, locationid, locationname, region):
+    def __init__(self, locationid, actual_location_name, locationname, region):
 
         self.locationid = locationid
+        self.actual_location_name = actual_location_name
         self.locationname = locationname
         self.region = region
 
@@ -308,7 +309,6 @@ class CanvassGroup(db.Model):
 
         return return_var
 
-    
 
 class DashboardTotal(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -346,7 +346,6 @@ class DashboardTotal(db.Model):
         autoload=True, autoload_with=engine)
 
 
-  
 
 
 

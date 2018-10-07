@@ -1,9 +1,10 @@
-from models import db, engine, Volunteer, Shift, Location, Note, CanvassGroup, create_view, drop_view, dashboard_view
-from config import consolidated_dashboard
+from models import db, engine, Volunteer, Shift, Location, Note, CanvassGroup, create_view, drop_view, Table, MetaData, engine, text
+from setup_config import dashboard_query
 
+    
 
 def main():
-    drop_view(dashboard_view, consolidated_dashboard)
+    engine.execute('DROP VIEW consolidated.dashboard_totals')
     Note.__table__.drop(engine)
     Shift.__table__.drop(engine)
     CanvassGroup.__table__.drop(engine)
@@ -14,9 +15,10 @@ def main():
     CanvassGroup.__table__.create(engine)
     Shift.__table__.create(engine)
     Note.__table__.create(engine)
-    create_view(dashboard_view, if_exists=True)
+    engine.execute(dashboard_query)
     
-
 
 if __name__ == '__main__':
     main()
+    
+    
