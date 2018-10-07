@@ -89,7 +89,7 @@ def consolidated():
         option = request.form.get('target')
 
         if option == "Dashboard":
-            return redirect('/dashboard')
+            return redirect('/dashboard/conf')
 
         office = request.form.get('office')
         page = request.form.get('page')
@@ -437,6 +437,7 @@ def add_walk_in(office, page):
 @oid.require_login
 @app.route('/dashboard/<page>')
 def dashboard(page):
+    print('dash', page)
     dashboard_permission = g.user.rank == 'DATA' or g.user.rank == 'Field Director'
 
     if not dashboard_permission:
