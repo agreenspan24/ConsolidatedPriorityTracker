@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
+import os
 
 engine = create_engine('postgresql+psycopg2://' + os.environ['sql_username'] + ':' + os.environ['sql_pass'] +  '@' + os.environ['server'])
 
