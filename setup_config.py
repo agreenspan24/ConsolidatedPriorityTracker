@@ -50,39 +50,39 @@ WITH confirm_attempt_totals AS (
 SELECT l.region, l.locationname AS office
 , COALESCE(cat.canvass_total_scheduled, 0) canvass_total_scheduled
 , COALESCE(cat.canvass_same_day_confirmed, 0) canvass_same_day_confirmed
-, COALESCE(cat.canvass_same_day_confirmed / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END), 0) canvass_same_day_confirmed_perc
+, COALESCE(cat.canvass_same_day_confirmed * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END), 0) canvass_same_day_confirmed_perc
 , COALESCE(cat.canvass_completed, 0) canvass_completed
-, COALESCE(cat.canvass_completed / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END), 0) canvass_completed_perc
+, COALESCE(cat.canvass_completed * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END), 0) canvass_completed_perc
 , COALESCE(cat.canvass_declined, 0) canvass_declined
-, COALESCE(cat.canvass_declined / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END)) canvass_declined_perc
+, COALESCE(cat.canvass_declined * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END)) canvass_declined_perc
 , COALESCE(cat.canvass_flaked, 0) canvass_flaked
-, COALESCE(cat.canvass_flaked / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END)) canvass_flaked_perc
+, COALESCE(cat.canvass_flaked * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END)) canvass_flaked_perc
 , COALESCE(cat.phone_total_scheduled, 0) phone_total_scheduled
 , COALESCE(cat.phone_same_day_confirmed, 0) phone_same_day_confirmed
-, COALESCE(cat.phone_same_day_confirmed / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_same_day_confirmed_perc
+, COALESCE(cat.phone_same_day_confirmed * 1.0 / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_same_day_confirmed_perc
 , COALESCE(cat.phone_completed, 0) phone_completed
-, COALESCE(cat.phone_completed / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_completed_perc
+, COALESCE(cat.phone_completed * 1.0 / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_completed_perc
 , COALESCE(cat.phone_declined, 0) phone_declined
-, COALESCE(cat.phone_declined / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_declined_perc
+, COALESCE(cat.phone_declined * 1.0 / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_declined_perc
 , COALESCE(cat.phone_flaked, 0) phone_flaked
-, COALESCE(cat.phone_flaked / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END)) phone_flaked_perc
+, COALESCE(cat.phone_flaked * 1.0 / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END)) phone_flaked_perc
 , COALESCE(cat.flake_total, 0) flake_total
 , COALESCE(cat.flake_attempts, 0) flake_attempts
-, COALESCE(cat.flake_attempts / (CASE WHEN cat.flake_total < 1 THEN 1 ELSE cat.flake_total END), 0) flake_attempts_perc
+, COALESCE(cat.flake_attempts * 1.0 / (CASE WHEN cat.flake_total < 1 THEN 1 ELSE cat.flake_total END), 0) flake_attempts_perc
 , COALESCE(cat.flake_rescheduled, 0) flake_rescheduled
-, COALESCE(cat.flake_rescheduled / (CASE WHEN cat.flake_total < 1 THEN 1 ELSE cat.flake_total END), 0) flake_rescheduled_perc
+, COALESCE(cat.flake_rescheduled * 1.0 / (CASE WHEN cat.flake_total < 1 THEN 1 ELSE cat.flake_total END), 0) flake_rescheduled_perc
 , COALESCE(cat.flake_total - cat.flake_attempts, 0) flake_chase_remaining
-, COALESCE((cat.flake_total - cat.flake_attempts)/ (CASE WHEN cat.flake_total < 1 THEN 1 ELSE cat.flake_total END), 0) flake_chase_remaining_perc
+, COALESCE((cat.flake_total - cat.flake_attempts) * 1.0 / (CASE WHEN cat.flake_total < 1 THEN 1 ELSE cat.flake_total END), 0) flake_chase_remaining_perc
 , COALESCE(ct.canvassers_all_day, 0) canvassers_all_day
 , COALESCE(ct.actual_all_day, 0) actual_all_day
 , COALESCE(ct.goal_all_day, 0) goal_all_day
 , COALESCE(ct.packets_all_day, 0) packets_out_all_day
-, COALESCE(ct.actual_all_day / (CASE WHEN ct.canvassers_all_day < 1 THEN 1 ELSE ct.canvassers_all_day END), 0) kps
+, COALESCE(ct.actual_all_day * 1.0 / (CASE WHEN ct.canvassers_all_day < 1 THEN 1 ELSE ct.canvassers_all_day END), 0) kps
 , COALESCE(ct.canvassers_out_now, 0) canvassers_out_now
 , COALESCE(ct.actual_out_now, 0) actual_out_now
 , COALESCE(ct.goal_out_now, 0) goal_out_now
 , COALESCE(ct.packets_out_now, 0) packets_out_now
-, COALESCE(ct.actual_out_now / (CASE WHEN ct.canvassers_out_now < 1 THEN 1 ELSE ct.canvassers_out_now END), 0) kph
+, COALESCE(ct.actual_out_now * 1.0 / (CASE WHEN ct.canvassers_out_now < 1 THEN 1 ELSE ct.canvassers_out_now END), 0) kph
 , COALESCE(ct.overdue_check_in, 0) overdue_check_ins
 FROM consolidated.location l 
 LEFT JOIN confirm_attempt_totals cat

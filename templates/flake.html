@@ -45,7 +45,7 @@
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
-                            {% if note.type == 'flake' %}
+                            {% if note.type == "flake"}
                                 <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
                             {% endif %}
                         {% endfor %}

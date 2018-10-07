@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/user" method="POST">
+    <div class="panel-header">
+        <div class="panel-title">
+            <h3>Update User Information</h3>
+        </div>
+    </div>
+    <div class="panel-content">
+        <ul class="input-list">
+            <li class="input-unit">
+                <label class="input-label">First Name</label>
+                <div class="input-control">
+                    <input class="input-element" name="firstname" maxlength="120" value="{{g.user.firstname if g.user.firstname else ''}}" />
+                </div>
+            </li>
+            <li class="input-unit">
+                <label class="input-label">Last Name</label>
+                <div class="input-control">
+                    <input class="input-element" name="lastname" maxlength="120" value="{{g.user.lastname if g.user.lastname else ''}}" />
+                </div>
+            </li>
+            <li class="input-unit">
+                <label class="input-label">Full Name</label>
+                <div class="input-control">
+                    <input class="input-element" name="fullname" maxlength="240" value="{{g.user.fullname if g.user.fullname else ''}}" />
+                </div>
+            </li>
+            <li class="input-unit">
+                <label class="input-label">Default Office</label>
+                <div class="input-control">
+                    <select class="input-element input-element-base select" name="office" >   
+                        <option>None</option>
+                        {% for office in offices %}
+                            <option value="{{office.locationname}}" {{"selected" if g.user.office == office.locationname}}>{{office.locationname}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="panel-footer">
+        <input class="btn btn-blue" type="submit" value="Update" /> 
+    </div>
+</form>
+
+{% endblock %}

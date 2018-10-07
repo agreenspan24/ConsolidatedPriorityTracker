@@ -5,11 +5,10 @@ from flask import flash, g, redirect, render_template, request, session, abort, 
 from sqlalchemy import and_, asc
 
 import re
-
 import urllib
 
 from app import app, oid
-from config import settings
+
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, DashboardTotal
 from datetime import datetime
@@ -69,10 +68,13 @@ def login_auth():
             db.session.commit()
             g.user = user
             print(user)
-            return redirect('/consolidated')    
+            return redirect('/')    
 @oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
+    if g.user.office:
+        return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
+
     return redirect('/consolidated')    
 
 @app.route('/logout', methods=['GET'])
@@ -101,7 +103,7 @@ def consolidated():
     user = User.query.filter_by(email=g.user.email).first()
     dashboard_permission = user.rank == 'DATA' or user.rank == 'FD'
 
-    return render_template('index.html', user=g.user, offices=offices, show_dashboard=dashboard_permission)
+    return render_template('index.html', offices=offices, show_dashboard=dashboard_permission)
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
@@ -235,7 +237,7 @@ def add_pass(office, page):
             return_var = group.add_note(page, note_text)
             
         if cellphone:
-            phone_sanitized = re.sub('() -+', '', cellphone)
+            phone_sanitized = re.sub('[- ().+]', '', cellphone)
 
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
@@ -244,7 +246,7 @@ def add_pass(office, page):
             if volunteer.last_user != g.user.id and volunteer.last_update != None and volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-            volunteer.cellphone = cellphone
+            volunteer.cellphone = phone_sanitized
             volunteer.last_user = g.user.id
             volunteer.last_update = datetime.now().time()
 
@@ -313,24 +315,24 @@ def add_pass(office, page):
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-            phone_sanitized = re.sub('() -+.', '', phone)
+            phone_sanitized = re.sub('[- ().+]', '', phone)
 
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
             
-            shift.volunteer.phone_number = phone 
+            shift.volunteer.phone_number = phone_sanitized 
 
         if cellphone:
             
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-            phone_sanitized = re.sub('() -+.', '', cellphone)
+            phone_sanitized = re.sub('[- ().+]', '', cellphone)
 
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
 
-            shift.volunteer.cellphone = cellphone
+            shift.volunteer.cellphone = phone_sanitized
             shift.volunteer.last_user = g.user.id
             shift.volunteer.last_update = datetime.now().time()
 
@@ -403,7 +405,7 @@ def add_walk_in(office, page):
         lastname = escape(lastname)
 
     if phone:
-        phone_sanitized = re.sub('() -+.', '', phone)
+        phone_sanitized = re.sub('[- ().+]', '', phone)
 
         if not phone_sanitized.isdigit():
             return abort(400, 'Invalid Phone')
@@ -421,7 +423,7 @@ def add_walk_in(office, page):
 
     shift = Shift(eventtype, time, datetime.now().date(), 'In', role, None, location.locationid)
 
-    vol = Volunteer(None, firstname, lastname, phone, None)
+    vol = Volunteer(None, firstname, lastname, phone_sanitized, None)
     db.session.add(vol)
     db.session.commit()
 
@@ -437,7 +439,6 @@ def add_walk_in(office, page):
 @oid.require_login
 @app.route('/dashboard/<page>')
 def dashboard(page):
-    print('dash', page)
     dashboard_permission = g.user.rank == 'DATA' or g.user.rank == 'Field Director'
 
     if not dashboard_permission:
@@ -446,12 +447,48 @@ def dashboard(page):
     totals = DashboardTotal.query.all()
 
     if page == 'prod':
-        return render_template('dashboard-production.html', active_tab=page, results=totals)
+        return render_template('dashboard_production.html', active_tab=page, results=totals)
 
     elif page == 'top':
-        return render_template('dashboard-toplines.html', active_tab=page, results=totals)
+        return render_template('dashboard_toplines.html', active_tab=page, results=totals)
 
     return render_template('dashboard.html', active_tab=page, results=totals)
+
+@oid.require_login
+@app.route('/user', methods=['GET', 'POST'])
+def user():
+    offices = Location.query.order_by(asc(Location.locationname)).all()
+
+    if request.method == "POST":
+        user = User.query.get(g.user.id)
+
+        firstname = request.form.get('firstname')
+
+        if firstname:
+            firstname = escape(firstname)
+            user.firstname = firstname
+
+        lastname = request.form.get('lastname')
+
+        if lastname:
+            lastname = escape(lastname)
+            user.lastname = lastname
+
+        fullname = request.form.get('fullname')
+
+        if fullname:
+            fullname = escape(fullname)
+            user.fullname = fullname
+
+        office = request.form.get('office')
+
+        office = escape(office)
+        user.office = office
+
+        db.session.commit()
+
+    return render_template('user.html', offices=offices)
+
 
 @app.errorhandler(404)
 def page_not_found(e):

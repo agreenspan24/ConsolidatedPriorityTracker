@@ -1,0 +1,10 @@
+Flask_SQLAlchemy==2.3.2
+flask_oidc==1.4.0
+requests==2.19.1
+SQLAlchemy==1.2.12
+Flask==1.0.2
+simplejson==3.16.0
+gunicorn==19.6.0
+newrelic==2.70.0.51
+psycopg2-binary==2.7.5
+Jinja2==2.8
