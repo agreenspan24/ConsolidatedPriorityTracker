@@ -35,7 +35,7 @@ class SyncShift(db.Model):
     mobilephone = db.Column('mobilephone', db.String(10))
 
 class Location(db.Model):
-    __table_args__ = {'schema':'consolidated'}
+    __table_args__ = {'schema':'test'}
     #__tablename__ = 'location'
 
     locationid = db.Column(db.Integer, primary_key=True)
@@ -55,7 +55,7 @@ class Location(db.Model):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
 class User(db.Model):
-    __table_args__ = {'schema':'consolidated'}
+    __table_args__ = {'schema':'test'}
     __tablename__ = 'users'
     id = db.Column('id', db.Integer, primary_key=True)
     fullname = db.Column('full_name', db.String(240))
@@ -70,7 +70,7 @@ class User(db.Model):
 
 
 class Volunteer(db.Model):
-    __table_args__ = {'schema':'consolidated'}
+    __table_args__ = {'schema':'test'}
     #__tablename__ = 'volunteer'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -104,14 +104,14 @@ class Volunteer(db.Model):
 
 
 class Note(db.Model):
-    __table_args__ = {'schema':'consolidated'}
+    __table_args__ = {'schema':'test'}
 
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(7))
     time = db.Column(db.Time)
     text = db.Column(db.String(255))
-    volunteer = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
-    note_shift = db.Column(db.Integer, db.ForeignKey('consolidated.shift.id'))
+    volunteer = db.Column(db.Integer, db.ForeignKey('test.volunteer.id'))
+    note_shift = db.Column(db.Integer, db.ForeignKey('test.shift.id'))
 
     def __init__(self, type, time, text, volunteer, note_shift):
 
@@ -126,7 +126,7 @@ class Note(db.Model):
 
 
 class Shift(db.Model):
-    __table_args__ = {'schema':'consolidated'}
+    __table_args__ = {'schema':'test'}
     #__tablename__ = 'shift'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -139,10 +139,10 @@ class Shift(db.Model):
     knocks = db.Column(db.Integer)
     flake = db.Column(db.Boolean)
     call_pass = db.Column(db.Integer)
-    person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
-    shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
+    person = db.Column(db.Integer, db.ForeignKey('test.volunteer.id'))
+    shift_location = db.Column(db.Integer, db.ForeignKey('test.location.locationid'))
     notes = db.relationship('Note', backref='shift')
-    canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'))
+    canvass_group = db.Column(db.Integer, db.ForeignKey('test.canvass_group.id'))
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
 
@@ -232,7 +232,7 @@ class ShiftStats:
 
         
 class CanvassGroup(db.Model):
-    __table_args__ = {'schema':'consolidated'}
+    __table_args__ = {'schema':'test'}
 
     id = db.Column(db.Integer, primary_key = True)
     actual = db.Column(db.Integer)
