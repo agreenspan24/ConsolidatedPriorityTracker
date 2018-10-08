@@ -499,16 +499,24 @@ def user():
 @app.route('/dashboardtest', methods=['GET', 'POST'])
 def testdash():
     groups = CanvassGroup.query.all()
-    canvassers = 0
-    actual = 0
-    doors_out = 0
+    cwecanvassers = 0
+    cweactual = 0
+    cwedoors_out = 0
+    sccanvassers = 0
+    scactual = 0
+    scdoors_out = 0
     for group in groups:
-        canvassers += len(group.canvass_shifts)
-        actual += group.actual
-        doors_out += group.goal
+        if group.location.locationname == "R1B - CWE STL":
+            cwecanvassers += len(group.canvass_shifts)
+            cweactual += group.actual
+            cwedoors_out += group.goal
+        if group.location.locationname == 'R1C - South City':
+            sccanvassers += len(group.canvass_shifts)
+            scactual += group.actual
+            scdoors_out += group.goal
 
 
-    return render_template('dashboardtest.html', canvassers=canvassers, actual=actual, doors_out=doors_out)
+    return render_template('dashboardtest.html', cwecanvassers=cwecanvassers, cweactual=cweactual, cwedoors_out=cwedoors_out, sccanvasses=sccanvassers, scactual=scactual, scdoors_out=scdoors_out)
 
 
 

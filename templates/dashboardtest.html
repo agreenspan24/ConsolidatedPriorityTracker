@@ -3,18 +3,30 @@
 
 {% block content %}
 
-<thead class="thead">
-        <tr>
-            <th>Canvasser Out</th>
-            <th>Actual</th>
-            <th>Doors Out</th>
-        </tr>
-    </thead>
-    <tbody class="tbody">
-        <tr>
-            <td>{{canvassers}}</td>
-            <td>{{actual}}</td>
-            <td>{{doors_out}}</td>
-        </tr>
-    </tbody>
+<table>
+    <tr>
+        <th>Office</th>
+        <th>Canvasser Out</th>
+        <th>Actual</th>
+        <th>Doors Out</th>
+    </tr>
+    <tr>
+        <td>CWE</td>
+        <td>{{cwecanvassers}}</td>
+        <td>{{cweactual}}</td>
+        <td>{{cwedoors_out}}</td>
+    </tr>
+    <tr>
+        <td>South City</td>
+        <td>{{sccanvassers}}</td>
+        <td>{{scactual}}</td>
+        <td>{{scdoors_out}}</td>
+    </tr>
+    <tr>
+        <td>Total</td>
+        <td>{{sccanvassers + cwecanvassers}}</td>
+        <td>{{scactual + cweactual}}</td>
+        <td>{{scdoors_out + cwedoors_out}}</td>
+    </tr>
+</table>
 {% endblock %}
