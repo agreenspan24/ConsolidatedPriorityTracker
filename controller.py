@@ -61,9 +61,7 @@ def login_auth():
             if user is not None and user.openid is None:
                 user.openid = user_info['sub']
             elif user is None:
-                user = User()
-                user.openid = user_info['sub']
-                user.email = user_info['email']
+                user = User(user_info['email'], user_info['sub'])
 
             db.session.add(user)
             db.session.commit()
@@ -253,18 +251,18 @@ def add_pass(office, page):
 
         if actual:
             if not actual.isdigit():
-                return Response('"Actual" must be a nuber"', status=400)
+                return Response('"Actual" must be a number"', status=400)
 
             group.actual = int(actual)
         
         if goal: 
             if not goal.isdigit():
-                return Response('"Goal" must be a nuber"', status=400)
+                return Response('"Goal" must be a number"', status=400)
             group.goal = int(goal)
 
         if packets_given:
             if not packets_given.isdigit():
-                return Response('"packets_given" must be a nuber"', status=400)
+                return Response('"packets_given" must be a number"', status=400)
 
             group.packets_given = int(packets_given)
 
