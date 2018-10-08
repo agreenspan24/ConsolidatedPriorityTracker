@@ -20,7 +20,10 @@
         <tbody class="tbody">
             {% for shift in shifts if shift.flake %}
                 <tr id="row-{{shift.id}}">
-                    <td>{{loop.index}}</td>
+                    <td>
+                        {{loop.index}}&nbsp;&nbsp;
+                        <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                    </td>
                     <td id="name-{{shift.id}}">
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>
                         {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}

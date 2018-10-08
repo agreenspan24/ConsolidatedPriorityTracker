@@ -156,3 +156,36 @@ function setUpListener() {
 }
 
 $(document).ready(setUpListener);
+
+function show_recently_updated(ids) {
+    $('tr').removeClass('text-red7');
+    $('tr .glyphicons.glyphicons-refresh').addClass('hide');
+
+    ids.forEach(function(id) {
+        $('#row-' + id).addClass('text-red7');
+        $('#row-' + id + ' .glyphicons.glyphicons-refresh').removeClass('hide');
+    })
+}
+
+function get_recently_updated() {
+    $.ajax({
+        type: 'GET', 
+        url: window.location.pathname + '/recently_updated',
+        data: {
+            page_load_time: $("#page_load_time").html()
+        }
+    }).done(show_recently_updated)
+    .fail(function(res){
+        var message = 'Could not get recently updated rows. Please refresh the page.';
+
+        if (res.responseText) {
+            message += ' Error message: ' + res.responseText
+        }
+        
+        showAlert('error', message);
+    });
+}
+
+if (!window.location.pathname.endsWith('review')) {
+    setInterval(get_recently_updated, 30000);
+}

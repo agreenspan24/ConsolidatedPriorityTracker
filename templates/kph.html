@@ -76,7 +76,10 @@
         {% if groups %}
         {% for group in groups %}
             <tr id="row-{{group.id}}">
-                <td>{{loop.index}}</td>
+                <td>
+                    {{loop.index}}&nbsp;&nbsp;
+                    <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                </td>
                 <td style="vertical-align: top">
                     <select class="input-element" name="shift_id[]" id="shift_id-{{group.id}}"
                         onchange="updateElem('shift_id-{{group.id}}', 'shift_id[]', updateNames)" multiple>
