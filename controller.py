@@ -10,8 +10,9 @@ import urllib
 from app import app, oid
 
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, DashboardTotal
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup
 from datetime import datetime
+#from dashboard_totals import DashboardTotal
 
 oid.init_app(app)
 
@@ -463,6 +464,7 @@ def user():
         user = User.query.get(g.user.id)
 
         firstname = request.form.get('firstname')
+        print(user.id, firstname)
 
         if firstname:
             firstname = escape(firstname)

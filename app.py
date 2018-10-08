@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+
 from flask_oidc import OpenIDConnect
 import os
 from flask_oidc import OpenIDConnect
@@ -14,4 +15,5 @@ app.config['OIDC_SCOPES'] = ['openid', 'email', 'profile']
 app.config['OIDC_ID_TOKEN_COOKIE_SECURE'] = False
 db = SQLAlchemy(app)
 oid = OpenIDConnect()
+engine = create_engine(os.environ['DATABASE_URL'])
 app.secret_key = os.environ['secret_key']

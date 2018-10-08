@@ -1,4 +1,4 @@
-from app import app, db
+from app import app, db, engine
 from sqlalchemy import create_engine, Table, MetaData, Column, orm
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import text
@@ -6,9 +6,6 @@ from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 import os
-
-engine = create_engine('postgresql+psycopg2://zmteqmujvkfnmq:8dce67c5ae02028c174df35be856535c90a9593280ab43edceadf25f3f76f97a@ec2-54-83-204-230.compute-1.amazonaws.com:5432/de8kcah93s00d9')
-metadata = MetaData(engine)
 
 def create_view(view, definition):
     create_view = CreateView(view, definition)
@@ -61,9 +58,9 @@ class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'users'
     id = db.Column('id', db.Integer, primary_key=True)
-    #fullname = db.Column('full_name', db.String(240))
-    #firstname = db.Column('first_name', db.String(120))
-    #lastname = db.Column('last_name', db.String(120))
+    fullname = db.Column('full_name', db.String(240))
+    firstname = db.Column('first_name', db.String(120))
+    lastname = db.Column('last_name', db.String(120))
     email = db.Column('email', db.String(120), unique=True)
     rank = db.Column('rank', db.String(120))
     region = db.Column('region', db.String(120))
@@ -316,54 +313,3 @@ class CanvassGroup(db.Model):
             return_var = shift.add_call_pass(page, text)
 
         return return_var
-
-
-class DashboardTotal(db.Model):
-    __table_args__ = {'schema':'consolidated'}
-    __table__ = Table('dashboard_totals', metadata,
-        Column('region', db.String(2)),
-        Column('office', db.String(50), primary_key=True),
-        Column('canvass_total_scheduled', db.BigInteger),
-        Column('canvass_same_day_confirmed', db.BigInteger),
-        Column('canvass_same_day_confirmed_perc', db.Numeric),
-        Column('canvass_completed', db.BigInteger),
-        Column('canvass_completed_perc', db.Numeric),
-        Column('canvass_declined', db.BigInteger),
-        Column('canvass_declined_perc', db.Numeric),
-        Column('canvass_flaked', db.BigInteger),
-        Column('canvass_flaked_perc', db.Numeric),
-        Column('phone_total_scheduled', db.BigInteger),
-        Column('phone_same_day_confirmed', db.BigInteger),
-        Column('phone_same_day_confirmed_perc', db.Numeric),
-        Column('phone_completed', db.BigInteger),
-        Column('phone_completed_perc', db.Numeric),
-        Column('phone_declined', db.BigInteger),
-        Column('phone_declined_perc', db.Numeric),
-        Column('phone_flaked', db.BigInteger),
-        Column('phone_flaked_perc', db.Numeric),
-        Column('flake_total', db.BigInteger),
-        Column('flake_attempts', db.BigInteger),
-        Column('flake_attempts_perc', db.Numeric),
-        Column('flake_rescheduled', db.BigInteger),
-        Column('flake_rescheduled_perc', db.Numeric),
-        Column('flake_chase_remaining', db.BigInteger),
-        Column('flake_chase_remaining_perc', db.Numeric),
-        Column('canvassers_all_day', db.Numeric),
-        Column('actual_all_day', db.BigInteger),
-        Column('goal_all_day', db.BigInteger),
-        Column('packets_out_all_day', db.BigInteger),
-        Column('kps', db.Numeric),
-        Column('canvassers_out_now', db.Numeric),
-        Column('actual_out_now', db.BigInteger),
-        Column('goal_out_now', db.BigInteger),
-        Column('packets_out_now', db.BigInteger),
-        Column('kph', db.Numeric),
-        Column('overdue_check_ins', db.BigInteger),
-        autoload=True, autoload_with=engine)
-
-
-
-
-
-
-
