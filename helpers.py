@@ -15,7 +15,7 @@ def update_shifts():
         if not update_shift:
             location = Location.query.filter_by(locationid=today_shift.locationid).first()
             if not location:
-                location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
+                location = Location(today_shift.locationid, today_shift.location.actual_location_name, rural_locations.get(today_shift.location.actual_locationame, today_shift.location.actual_locationame), today_shift.locationname[0:2])
                 db.session.add(location)
             
             volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()
