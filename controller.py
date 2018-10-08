@@ -511,9 +511,7 @@ def get_recently_updated(office, page):
         all_groups = CanvassGroup.query.all()
 
         for gr in all_groups:
-            print(gr.id, gr.canvass_shifts[0].shift_location, location_ids)
             if (gr.canvass_shifts[0].shift_location in location_ids) and gr.updated_by_other(page_load_time, g.user):
-                print('adding')
                 update_ids.append(gr.id)
 
     else:
@@ -523,8 +521,32 @@ def get_recently_updated(office, page):
             if shift.updated_by_other(page_load_time, g.user):
                 update_ids.append(shift.id)
 
-    print(update_ids)
     return jsonify(update_ids)
+
+@oid.require_login
+@app.route('/dashboardtest', methods=['GET', 'POST'])
+def testdash():
+    groups = CanvassGroup.query.all()
+    cwecanvassers = 0
+    cweactual = 0
+    cwedoors_out = 0
+    sccanvassers = 0
+    scactual = 0
+    scdoors_out = 0
+    for group in groups:
+        for shift in group.canvass_shifts:
+            if shift.shift_location == 8617:
+                cwecanvassers += len(group.canvass_shifts)
+                cweactual += group.actual
+                cwedoors_out += group.goal
+            if shift.shift_location == 8687:
+                sccanvassers += len(group.canvass_shifts)
+                scactual += group.actual
+                scdoors_out += group.goal
+
+
+    return render_template('dashboardtest.html', cwecanvassers=cwecanvassers, cweactual=cweactual, cwedoors_out=cwedoors_out, sccanvassers=sccanvassers, scactual=scactual, scdoors_out=scdoors_out)
+
 
 @app.errorhandler(404)
 def page_not_found(e):

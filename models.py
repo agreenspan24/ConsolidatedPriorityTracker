@@ -220,7 +220,7 @@ class ShiftStats:
                     self.vol_completed += 1
                 if s.status == "Declined":
                     self.vol_declined += 1
-                if s.status == "Scheduled":
+                if s.status in ["Scheduled", 'Confirmed', 'Same Day Confirmed']:
                     self.vol_unflipped += 1
                 if s.status == "No Show":
                     self.vol_flaked += 1
