@@ -87,7 +87,7 @@ def logout():
 @oid.require_login
 @app.route('/consolidated', methods=['POST','GET'])
 def consolidated():
-    offices = Location.query.order_by(asc(Location.locationname)).all()
+    offices = Location.query.distinct(Location.locationname).order_by(asc(Location.locationname)).all()
     if request.method == 'POST':
         option = request.form.get('target')
 
