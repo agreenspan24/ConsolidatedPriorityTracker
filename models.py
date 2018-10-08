@@ -16,8 +16,8 @@ def drop_view(view):
     return drop_view
 
 class SyncShift(db.Model):
-    __table_args__ = {'schema':'consolidated'}
-    __tablename__ = 'syncshifts'
+    __table_args__ = {'schema':'sync'}
+    __tablename__ = 'shifts'
 
     id = db.Column('sync_id', db.Integer, primary_key=True)
     vanid = db.Column('vanid', db.Integer)
