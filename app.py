@@ -1,9 +1,8 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from sqlalchemy import create_engine
 from flask_oidc import OpenIDConnect
 import os
-from flask_oidc import OpenIDConnect
 
 app = Flask(__name__)
 app.config['DEBUG'] = False
