@@ -30,7 +30,7 @@ def logout_before():
     redir = False
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
-        if g.user == None or g.user.rank == None:
+        if g.user == None or (g.user.rank == None and g.user.region != 'R1'):
             redir = True
     else:
         redir = True

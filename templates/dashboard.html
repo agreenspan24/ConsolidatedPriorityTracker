@@ -26,29 +26,29 @@
             </td>
             <td>{{res.canvass_total_scheduled}}</td>
             <td>{{res.canvass_same_day_confirmed}}</td>
-            <td>{{res.canvass_same_day_confirmed_perc}}</td>
+            <td>{{res.canvass_same_day_confirmed_perc|round(2)|string + '%'}}</td>
             <td>{{res.canvass_completed}}</td>
-            <td>{{res.canvass_completed_perc}}</td>
+            <td>{{res.canvass_completed_perc|round(2)|string + '%'}}</td>
             <td>{{res.canvass_declined}}</td>
-            <td>{{res.canvass_declined_perc}}</td>
+            <td>{{res.canvass_declined_perc|round(2)|string + '%'}}</td>
             <td>{{res.canvass_flaked}}</td>
-            <td>{{res.canvass_flaked_perc}}</td>
+            <td>{{res.canvass_flaked_perc|round(2)|string + '%'}}</td>
             <td>{{res.phone_total_scheduled}}</td>
             <td>{{res.phone_same_day_confirmed}}</td>
-            <td>{{res.phone_same_day_confirmed_perc}}</td>
+            <td>{{res.phone_same_day_confirmed_perc|round(2)|string + '%'}}</td>
             <td>{{res.phone_completed}}</td>
-            <td>{{res.phone_completed_perc}}</td>
+            <td>{{res.phone_completed_perc|round(2)|string + '%'}}</td>
             <td>{{res.phone_declined}}</td>
-            <td>{{res.phone_declined_perc}}</td>
+            <td>{{res.phone_declined_perc|round(2)|string + '%'}}</td>
             <td>{{res.phone_flaked}}</td>
-            <td>{{res.phone_flaked_perc}}</td>
+            <td>{{res.phone_flaked_perc|round(2)|string + '%'}}</td>
             <td>{{res.flake_total}}</td>
             <td>{{res.flake_attempted}}</td>
-            <td>{{res.flake_attempted_perc}}</td>
+            <td>{{res.flake_attempted_perc|round(2)|string + '%'}}</td>
             <td>{{res.flake_rescheduled}}</td>
-            <td>{{res.flake_rescheduled_perc}}</td>
+            <td>{{res.flake_rescheduled_perc|round(2)|string + '%'}}</td>
             <td>{{res.flake_chase_remaining}}</td>
-            <td>{{res.flake_chase_remaining_perc}}</td>
+            <td>{{res.flake_chase_remaining_perc|round(2)|string + '%'}}</td>
         </tr>  
     {% endfor %}
 {% endblock %}
