@@ -451,8 +451,7 @@ def dashboard(page):
     
     totals = DashboardTotal.query.order_by(DashboardTotal.office).all()
 
-    region_totals = DashboardTotal.query(DashboardTotal.region, func.sum(DashboardTotal.canvass_total_scheduled)).group_by(DashboardTotal.region).all()
-
+ 
     if page == 'prod':
 
         return render_template('dashboard_production.html', active_tab=page, results=totals)
