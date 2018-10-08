@@ -14,7 +14,8 @@ def update_shifts():
 
         if not update_shift:
             location = Location.query.filter_by(locationid=today_shift.locationid).first()
-            if not location and location.locationid is not None:
+            print(location)
+            if not location and location is not None:
                 location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
                 db.session.add(location)
             
