@@ -226,7 +226,10 @@ class ShiftStats:
         for g in groups:
             if g.is_returned:
                 knocks += g.actual
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
         shifts = self.intern_completed + self.vol_completed
         self.kps = knocks / (shifts if shifts > 0 else 1)
 

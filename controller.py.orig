@@ -67,9 +67,12 @@ def login_auth():
             db.session.commit()
             g.user = user
             print(user)
-
+<<<<<<< HEAD
+            return redirect('/consolidated')    
+            
+=======
             return redirect('/')    
-
+>>>>>>> master
 @oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
@@ -444,6 +447,7 @@ def add_walk_in(office, page):
     return redirect('/consolidated/' + office + '/' + page)
 
 @oid.require_login
+<<<<<<< HEAD
 @app.route('/consolidated/sync_to_van', methods=['POST'])
 def sync_to_van():
     vanids = request.form.getlist('vanids[]')
@@ -453,8 +457,13 @@ def sync_to_van():
     for i, id in enumerate(vanids):
         print(statuses[i], vanids[i])
 
+    
+
 @oid.require_login
 @app.route('/dashboard/<page>', methods=['GET'])
+=======
+@app.route('/dashboard/<page>')
+>>>>>>> master
 def dashboard(page):
     dashboard_permission = g.user.rank == 'DATA' or g.user.rank == 'Field Director'
 
@@ -464,6 +473,14 @@ def dashboard(page):
     totals = DashboardTotal.query.all()
 
     if page == 'prod':
+<<<<<<< HEAD
+        return render_template('dashboard-production.html', active_tab=page, results=totals)
+
+    elif page == 'top':
+        return render_template('dashboard-toplines.html', active_tab=page, results=totals)
+
+    return render_template('dashboard.html', active_tab=page, results=totals)
+=======
         return render_template('dashboard_production.html', active_tab=page, results=totals)
 
     elif page == 'top':
@@ -506,6 +523,8 @@ def user():
         db.session.commit()
 
     return render_template('user.html', offices=offices)
+
+>>>>>>> master
 
 @app.errorhandler(404)
 def page_not_found(e):

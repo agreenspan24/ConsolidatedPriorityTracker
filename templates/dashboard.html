@@ -1,78 +1,54 @@
-{% extends 'base.html' %}
+{% extends 'dashboard_tabs.html' %}
 
-{% block content %}
-<div class="panel-content table-wrapper">
-    <table class="table table-panel table-striped table-small">
-        <thead class="thead">
-            <tr>
-                <th>Region</th>
-                <th>Office</th>
-                <th>Canvass Scheduled</th>
-                <th colspan="2">Canvass Same Day Confirmed</th>
-                <th colspan="2">Canvass Completed</th>
-                <th colspan="2">Canvass Declined</th>
-                <th colspan="2">Canvass Flaked</th>
-                <th>Phone Scheduled</th>
-                <th colspan="2">Phone Same Day Confirmed</th>
-                <th colspan="2">Phone Completed</th>
-                <th colspan="2">Phone Declined</th>
-                <th colspan="2">Phone Flaked</th>
-                <th colspan="2">Total Flakes</th>
-                <th colspan="2">Flakes Attempted</th>
-                <th colspan="2">Flakes Rescheduled</th>
-                <th colspan="2">Flake Chase Remaining</th>
-                <th>Canvassers All Day</th>
-                <th>Actual Doors All Day</th>
-                <th>Door Goal All Day</th>
-                <th>Packets Out All Day</th>
-                <th>Knocks Per Shift</th>
-                <th>Canvassers Out Now</th>
-                <th>Actual Doors Out Now</th>
-                <th>Door Goal Out Now</th>
-                <th>Packets Out Now</th>
-                <th>Knocks Per Hour</th>
-                <th>Overdue Check Ins</th>
-            </tr>
-        </thead>
-        <tbody class="tbody">
-            {% for res in results %}
-                <tr>
-                    <td>{{res.region}}</td>
-                    <td>{{res.office}}</td>
-                    <td>{{res.canvass_total_scheduled}}</td>
-                    <td>{{res.canvass_same_day_confirmed}}</td>
-                    <td>{{res.canvass_completed}}</td>
-                    <td>{{res.canvass_declined}}</td>
-                    <td>{{res.canvass_flaked}}</td>
-                    <td>{{res.phone_total_scheduled}}</td>
-                    <td>{{res.phone_same_day_confirmed}}</td>
-                    <td>{{res.phone_completed}}</td>
-                    <td>{{res.phone_declined}}</td>
-                    <td>{{res.phone_flaked}}</td>
-                    <td>{{res.flake_total}}</td>
-                    <td>{{res.flake_attempted}}</td>
-                    <td>{{res.flake_attempted_perc}}</td>
-                    <td>{{res.flake_rescheduled}}</td>
-                    <td>{{res.flake_rescheduled_perc}}</td>
-                    <td>{{res.flake_chase_remaining}}</td>
-                    <td>{{res.flake_chase_remaining_perc}}</td>
-                    <td>{{res.canvassers_all_day}}</td>
-                    <td>{{res.actual_all_day}}</td>
-                    <td>{{res.goal_all_day}}</td>
-                    <td>{{res.packets_all_day}}</td>
-                    <td>{{res.kps}}</td>
-                    <td>{{res.canvassers_out_now}}</td>
-                    <td>{{res.actual_out_now}}</td>
-                    <td>{{res.goal_out_now}}</td>
-                    <td>{{res.packets_out_now}}</td>
-                    <td>{{res.kph}}</td>
-                    <td>{{res.overdue_check_ins}}</td>
-                </tr>  
-            {% endfor %}
-        </tbody>
+{% block headers %}
+    <th>Office</th>
+    <th>Canvass Scheduled</th>
+    <th colspan="2">Canvass Same Day Confirmed</th>
+    <th colspan="2">Canvass Completed</th>
+    <th colspan="2">Canvass Declined</th>
+    <th colspan="2">Canvass Flaked</th>
+    <th>Phone Scheduled</th>
+    <th colspan="2">Phone Same Day Confirmed</th>
+    <th colspan="2">Phone Completed</th>
+    <th colspan="2">Phone Declined</th>
+    <th colspan="2">Phone Flaked</th>
+    <th>Total Flakes</th>
+    <th colspan="2">Flakes Attempted</th>
+    <th colspan="2">Flakes Rescheduled</th>
+    <th colspan="2">Flake Chase Remaining</th>
+{% endblock %}
 
-    </table>
-</div>
-
-
+{% block rows %}
+    {% for res in results %}
+        <tr>
+            <td class="item-info">
+                <a class="item-name" href="/consolidated/{{res.office[0:3]}}/review">{{res.office}}</a>
+            </td>
+            <td>{{res.canvass_total_scheduled}}</td>
+            <td>{{res.canvass_same_day_confirmed}}</td>
+            <td>{{res.canvass_same_day_confirmed_perc|round(2)|string + '%'}}</td>
+            <td>{{res.canvass_completed}}</td>
+            <td>{{res.canvass_completed_perc|round(2)|string + '%'}}</td>
+            <td>{{res.canvass_declined}}</td>
+            <td>{{res.canvass_declined_perc|round(2)|string + '%'}}</td>
+            <td>{{res.canvass_flaked}}</td>
+            <td>{{res.canvass_flaked_perc|round(2)|string + '%'}}</td>
+            <td>{{res.phone_total_scheduled}}</td>
+            <td>{{res.phone_same_day_confirmed}}</td>
+            <td>{{res.phone_same_day_confirmed_perc|round(2)|string + '%'}}</td>
+            <td>{{res.phone_completed}}</td>
+            <td>{{res.phone_completed_perc|round(2)|string + '%'}}</td>
+            <td>{{res.phone_declined}}</td>
+            <td>{{res.phone_declined_perc|round(2)|string + '%'}}</td>
+            <td>{{res.phone_flaked}}</td>
+            <td>{{res.phone_flaked_perc|round(2)|string + '%'}}</td>
+            <td>{{res.flake_total}}</td>
+            <td>{{res.flake_attempted}}</td>
+            <td>{{res.flake_attempted_perc|round(2)|string + '%'}}</td>
+            <td>{{res.flake_rescheduled}}</td>
+            <td>{{res.flake_rescheduled_perc|round(2)|string + '%'}}</td>
+            <td>{{res.flake_chase_remaining}}</td>
+            <td>{{res.flake_chase_remaining_perc|round(2)|string + '%'}}</td>
+        </tr>  
+    {% endfor %}
 {% endblock %}

@@ -1,6 +1,8 @@
-from app import app, db
+from app import app, db, engine
 from models import db, SyncShift, Volunteer, Shift, Location
 from datetime import datetime
+from setup_config import black_list, rural_locations
+from setup_config import dashboard_query
 
 def update_shifts():
     date = datetime.today().strftime('%Y-%m-%d')
@@ -11,24 +13,33 @@ def update_shifts():
         print(update_shift)
 
         if not update_shift:
-            location = Location.query.filter_by(locationid=today_shift.locationid).first()
+            if today_shift.locationid is not None:
+                location = Location.query.filter_by(locationid=today_shift.locationid).first()
+            print(location)
             if not location:
-                location = Location(today_shift.locationid, today_shift.locationname, today_shift.locationname[0:2])
+                location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
                 db.session.add(location)
             
             volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()
             if not volunteer:
+                if today_shift.firstname is None:
+                    today_shift.firstname = '_____'
+                if today_shift.lastname is None:
+                    today_shift.lastname = '_____'
                 volunteer = Volunteer(today_shift.vanid, today_shift.firstname, today_shift.lastname, today_shift.phone, today_shift.mobilephone)
                 db.session.add(volunteer)
                 db.session.commit()
                 volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()
             
 
-            
-            update_shift = Shift(today_shift.eventtype, today_shift.starttime, today_shift.startdate, today_shift.status, today_shift.role, volunteer.id, location.locationid)
-            db.session.add(update_shift)
+            if today_shift.status in ['Invited', 'Left Msg', 'Confirmed', 'Scheduled', 'Sched-Web']:
+                update_shift = Shift(today_shift.eventtype, today_shift.starttime, today_shift.startdate, today_shift.status, today_shift.role, volunteer.id, location.locationid)
+                db.session.add(update_shift)
 
     db.session.commit()
+
+
+    engine.execute(dashboard_query)
 
 
 def main():

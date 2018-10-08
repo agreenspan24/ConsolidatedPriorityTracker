@@ -1,0 +1,37 @@
+{% extends 'dashboard_tabs.html' %}
+
+{% block headers %}
+    <th>Office</th>
+    <th>Canvassers All Day</th>
+    <th>Actual Doors All Day</th>
+    <th>Door Goal All Day</th>
+    <th>Packets Out All Day</th>
+    <th>Knocks Per Shift</th>
+    <th>Canvassers Out Now</th>
+    <th>Actual Doors Out Now</th>
+    <th>Door Goal Out Now</th>
+    <th>Packets Out Now</th>
+    <th>Knocks Per Hour</th>
+    <th>Overdue Check Ins</th>
+{% endblock %}
+
+{% block rows %}
+    {% for res in results %}
+        <tr>
+            <td class="item-info">
+                <a class="item-name" href="/consolidated/{{res.office[0:3]}}/review">{{res.office}}</a>
+            </td>
+            <td>{{res.canvassers_all_day}}</td>
+            <td>{{res.actual_all_day}}</td>
+            <td>{{res.goal_all_day}}</td>
+            <td>{{res.packets_all_day}}</td>
+            <td>{{res.kps}}</td>
+            <td>{{res.canvassers_out_now}}</td>
+            <td>{{res.actual_out_now}}</td>
+            <td>{{res.goal_out_now}}</td>
+            <td>{{res.packets_out_now}}</td>
+            <td>{{res.kph}}</td>
+            <td>{{res.overdue_check_ins}}</td>
+        </tr>  
+    {% endfor %}
+{% endblock %}
