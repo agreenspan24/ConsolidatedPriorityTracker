@@ -60,9 +60,7 @@ def login_auth():
             if user is not None and user.openid is None:
                 user.openid = user_info['sub']
             elif user is None:
-                user = User()
-                user.openid = user_info['sub']
-                user.email = user_info['email']
+                user = User(user_info['email'], user_info['sub'])
 
             db.session.add(user)
             db.session.commit()

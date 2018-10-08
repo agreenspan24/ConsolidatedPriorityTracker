@@ -5,8 +5,9 @@ from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 import os
+from config import settings
 
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
 
 def create_view(view, definition):
     create_view = CreateView(view, definition)
@@ -67,6 +68,11 @@ class User(db.Model):
     region = db.Column('region', db.String(120))
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
+
+    def __init__(self, email, openid):
+        
+        self.email = email
+        self.openid = openid
 
 
 class Volunteer(db.Model):
