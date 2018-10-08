@@ -6,7 +6,6 @@ from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 import os
-from config import settings
 
 def create_view(view, definition):
     create_view = CreateView(view, definition)
@@ -67,11 +66,6 @@ class User(db.Model):
     region = db.Column('region', db.String(120))
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
-
-    def __init__(self, email, openid):
-        
-        self.email = email
-        self.openid = openid
 
 
 class Volunteer(db.Model):
