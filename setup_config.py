@@ -10,7 +10,7 @@ rural_locations = {
 }
 
 dashboard_query = """
-CREATE VIEW consolidated.dashboard_totals AS 
+CREATE VIEW test.dashboard_totals AS 
 WITH confirm_attempt_totals AS (
 	
 	SELECT shift_location
