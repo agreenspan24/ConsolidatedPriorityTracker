@@ -182,7 +182,7 @@ def add_pass(office, page):
             return Response('Group Not Found', status=400)
 
         if group.last_user != g.user.id and group.last_update != None and group.last_update > page_load_time:
-            return Response('This Canvass Group has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+            return Response('This Canvass Group has been updated by a different user since you last loaded the page. Please refresh and try again.', 400)
 
         if shift_ids:
             for id in shift_ids:

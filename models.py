@@ -261,11 +261,10 @@ class CanvassGroup(db.Model):
 
     def update_shifts(self, shift_ids):
         self.canvass_shifts = []
-        return_var = ''
 
         if len(shift_ids) < 1:
             return abort(400, 'Group must have at least one canvasser')
-            
+
         for id in shift_ids:
             shift = Shift.query.get(id)
 
