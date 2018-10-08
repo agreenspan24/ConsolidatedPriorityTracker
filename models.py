@@ -263,6 +263,9 @@ class CanvassGroup(db.Model):
         self.canvass_shifts = []
         return_var = ''
 
+        if len(shift_ids) < 1:
+            return abort(400, 'Group must have at least one canvasser')
+            
         for id in shift_ids:
             shift = Shift.query.get(id)
 
@@ -271,7 +274,7 @@ class CanvassGroup(db.Model):
 
             if shift.canvass_group != None:
                 return abort(400, 'Canvasser can only be in one group')
-                ','
+                
             self.canvass_shifts.append(shift)
 
         return self.canvass_shifts

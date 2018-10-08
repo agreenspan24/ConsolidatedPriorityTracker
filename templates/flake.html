@@ -18,7 +18,7 @@
             </tr>
         </thead>
         <tbody class="tbody">
-            {% for shift in shifts if shift.status == "No Show" %}
+            {% for shift in shifts if shift.flake %}
                 <tr id="row-{{shift.id}}">
                     <td>{{loop.index}}</td>
                     <td id="name-{{shift.id}}">
@@ -38,10 +38,13 @@
                     </td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
+                            {% if shift.status not in ['No Show', 'Resched', 'Declined', 'Same Day Confirmed'] %}
+                                <option value={{shift.status}}>{{shift.status}}</option>
+                            {% endif %}
                             <option value="No Show">Not Contacted</option>
-                            <option value='Resched'>Rescheduled</option>
-                            <option value='Declined'>Completed - Not Rescheduled</option>
-                            <option value='Same Day Confirmed'>Completed - Same Day Confirmed</option>
+                            <option value='Resched' {{"selected" if shift.status == "Resched"}}>Rescheduled</option>
+                            <option value='Declined' {{"selected" if shift.status == "Declined"}}>Completed - Not Rescheduled</option>
+                            <option value='Same Day Confirmed' {{"selected" if shift.status == "Same Day Confirmed"}}>Completed - Same Day Confirmed</option>
                         </select>
                     </td>
                     <td>
