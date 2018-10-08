@@ -505,7 +505,7 @@ def testdash():
     sccanvassers = 0
     scactual = 0
     scdoors_out = 0
-    for group.canvass_shifts in groups:
+    for group in groups:
         for shift in group.canvass_shifts:
             if shift.shift_location == 8617:
                 cwecanvassers += len(group.canvass_shifts)
