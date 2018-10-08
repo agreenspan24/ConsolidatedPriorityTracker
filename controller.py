@@ -495,6 +495,22 @@ def user():
 
     return render_template('user.html', offices=offices)
 
+@oid.require_login
+@app.route('/dashboardtest', methods=['GET', 'POST'])
+def testdash():
+    groups = CanvassGroup.query.all()
+    canvassers = 0
+    actual = 0
+    doors_out = 0
+    for group in groups:
+        canvassers += len(group.canvass_shifts)
+        actual += group.actual
+        doors_out += group.goal
+
+
+    return render_template('dashboardtest.html', canvassers=canvassers, actual=actual, doors_out=doors_out)
+
+
 
 @app.errorhandler(404)
 def page_not_found(e):
