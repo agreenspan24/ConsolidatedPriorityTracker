@@ -63,9 +63,9 @@ SELECT l.region, l.locationname AS office
 , COALESCE(cat.canvass_completed, 0) canvass_completed
 , COALESCE(cat.canvass_completed * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END), 0) canvass_completed_perc
 , COALESCE(cat.canvass_declined, 0) canvass_declined
-, COALESCE(cat.canvass_declined * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END)) canvass_declined_perc
+, COALESCE(cat.canvass_declined * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END), 0) canvass_declined_perc
 , COALESCE(cat.canvass_flaked, 0) canvass_flaked
-, COALESCE(cat.canvass_flaked * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END)) canvass_flaked_perc
+, COALESCE(cat.canvass_flaked * 1.0 / (CASE WHEN cat.canvass_total_scheduled < 1 THEN 1 ELSE cat.canvass_total_scheduled END), 0) canvass_flaked_perc
 , COALESCE(cat.phone_total_scheduled, 0) phone_total_scheduled
 , COALESCE(cat.phone_same_day_confirmed, 0) phone_same_day_confirmed
 , COALESCE(cat.phone_same_day_confirmed * 1.0 / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_same_day_confirmed_perc
@@ -74,7 +74,7 @@ SELECT l.region, l.locationname AS office
 , COALESCE(cat.phone_declined, 0) phone_declined
 , COALESCE(cat.phone_declined * 1.0 / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_declined_perc
 , COALESCE(cat.phone_flaked, 0) phone_flaked
-, COALESCE(cat.phone_flaked * 1.0 / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END)) phone_flaked_perc
+, COALESCE(cat.phone_flaked * 1.0 / (CASE WHEN cat.phone_total_scheduled < 1 THEN 1 ELSE cat.phone_total_scheduled END), 0) phone_flaked_perc
 , COALESCE(cat.flake_total, 0) flake_total
 , COALESCE(cat.flake_attempts, 0) flake_attempts
 , COALESCE(cat.flake_attempts * 1.0 / (CASE WHEN cat.flake_total < 1 THEN 1 ELSE cat.flake_total END), 0) flake_attempts_perc

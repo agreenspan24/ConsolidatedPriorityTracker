@@ -44,3 +44,4 @@ class DashboardTotal(db.Model):
         Column('kph', db.Numeric),
         Column('overdue_check_ins', db.BigInteger),
         autoload=True, autoload_with=engine, schema='test')
+
