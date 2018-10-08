@@ -506,14 +506,15 @@ def testdash():
     scactual = 0
     scdoors_out = 0
     for group in groups:
-        if group.shift_location == 8617:
-            cwecanvassers += len(group.canvass_shifts)
-            cweactual += group.actual
-            cwedoors_out += group.goal
-        if group.shift_location == 8687:
-            sccanvassers += len(group.canvass_shifts)
-            scactual += group.actual
-            scdoors_out += group.goal
+        for shift in group:
+            if shift.shift_location == 8617:
+                cwecanvassers += len(group.canvass_shifts)
+                cweactual += group.actual
+                cwedoors_out += group.goal
+            if shift.shift_location == 8687:
+                sccanvassers += len(group.canvass_shifts)
+                scactual += group.actual
+                scdoors_out += group.goal
 
 
     return render_template('dashboardtest.html', cwecanvassers=cwecanvassers, cweactual=cweactual, cwedoors_out=cwedoors_out, sccanvasses=sccanvassers, scactual=scactual, scdoors_out=scdoors_out)
