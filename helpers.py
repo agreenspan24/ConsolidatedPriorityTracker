@@ -13,7 +13,7 @@ def update_shifts():
         print(update_shift)
 
         if not update_shift:
-            if update_shift[0].locationid is not None:
+            if today_shift.locationid is not None:
                 location = Location.query.filter_by(locationid=today_shift.locationid).first()
             print(location)
             if not location:
