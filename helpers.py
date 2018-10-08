@@ -22,6 +22,10 @@ def update_shifts():
             
             volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()
             if not volunteer:
+                if today_shift.firstname is None:
+                    today_shift.firstname = '_____'
+                if today_shift.lastname is None:
+                    today_shift.lastname = '_____'
                 volunteer = Volunteer(today_shift.vanid, today_shift.firstname, today_shift.lastname, today_shift.phone, today_shift.mobilephone)
                 db.session.add(volunteer)
                 db.session.commit()
