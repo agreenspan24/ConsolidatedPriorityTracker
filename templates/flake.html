@@ -8,6 +8,7 @@
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Cell</th>
+                <th>Next Shift</th>
                 <th>Time</th>
                 <th>Location Name</th>
                 <th>Role</th>
@@ -29,6 +30,7 @@
                     <td>
                         <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
+                    <td>{{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}</td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.location.actual_location_name}}</td>
                     <td>{{shift.role}}</td>

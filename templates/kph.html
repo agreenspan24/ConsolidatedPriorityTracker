@@ -57,6 +57,7 @@
             <th>Name</th>
             <th>Phone Number</th>
             <th>Cell</th>
+            <th>Next Shift</th>
             <th>Time of Departure</th>
             <th>Actual</th>
             <th>Goal</th>
@@ -81,7 +82,12 @@
                     <select class="input-element" name="shift_id[]" id="shift_id-{{group.id}}"
                         onchange="updateElem('shift_id-{{group.id}}', 'shift_id[]', updateNames)" multiple>
                         <option></option>
-                        {% for shift in shifts if (shift.canvass_group == None and shift.status == "In") or shift.canvass_group == group.id %}
+                        {% for shift in group.canvass_shifts %}
+                            <option value={{shift.id}}>
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
+                            </option>
+                        {% endfor %}
+                        {% for shift in shifts if shift.canvass_group == None and shift.status == "In" and shift.canvass_group != group.id %}
                             <option value={{shift.id}}>
                                 {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
                             </option>
@@ -113,6 +119,11 @@
                         <p>
                             <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                         </p>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for shift in group.canvass_shifts %}
+                        <p>{{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}</p>
                     {% endfor %}
                 </td>
                 <td id='departure-{{group.id}}'>{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}</td>
