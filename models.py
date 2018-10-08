@@ -5,6 +5,7 @@ from sqlalchemy.sql import text
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
+from dashboard_totals import DashboardTotal
 import os
 
 def create_view(view, definition):
