@@ -30,7 +30,7 @@ def logout_before():
     redir = False
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
-        if g.user == None:
+        if g.user == None or (g.user.rank == None and g.user.region != 'R1'):
             redir = True
     else:
         redir = True
@@ -181,7 +181,7 @@ def add_pass(office, page):
 
         if group.last_user != g.user.id and group.last_update != None and group.last_update > page_load_time:
             return Response('This Canvass Group has been updated by a different user since you last loaded the page. Please refresh and try again.', 400)
-
+        
         if shift_ids:
             for id in shift_ids:
                 if not id.isdigit():
