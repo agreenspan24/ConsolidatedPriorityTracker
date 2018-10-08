@@ -61,7 +61,7 @@
 
 {% block table %}
   {% if shifts %}
-    <form action="/consolidated/sync_to_van" method="POST">
+    <form action="/consolidated/{{office}}/sync_to_van" method="POST">
       <thead class="thead">
           <tr>
               <th></th>

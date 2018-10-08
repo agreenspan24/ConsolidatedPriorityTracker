@@ -68,6 +68,13 @@ class User(db.Model):
     openid = db.Column('openid', db.String(50))
     is_allowed = db.Column('is_allowed', db.Boolean)
 
+class ShiftStatus(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+    __tablename__ = 'shiftstatus'
+
+    id = db.Column('statusid', db.Integer, primary_key=True)
+    name = db.Column('name', db.String(100))
+
 
 class Volunteer(db.Model):
     __table_args__ = {'schema':'consolidated'}

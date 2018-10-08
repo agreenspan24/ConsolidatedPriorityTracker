@@ -12,7 +12,10 @@ from app import app, oid
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup
 from datetime import datetime
+from vanservice import VanService
 #from dashboard_totals import DashboardTotal
+
+vanservice = VanService()
 
 oid.init_app(app)
 
@@ -444,14 +447,17 @@ def add_walk_in(office, page):
     return redirect('/consolidated/' + office + '/' + page)
 
 @oid.require_login
-@app.route('/consolidated/sync_to_van', methods=['POST'])
-def sync_to_van():
+@app.route('/consolidated/<office>/sync_to_van', methods=['POST'])
+def sync_to_van(office):
+
     vanids = request.form.getlist('vanids[]')
     statuses = request.form.getlist('statuses[]')
     print('hello')
-    print(statuses, vanids)
     for i, id in enumerate(vanids):
         print(statuses[i], vanids[i])
+        vanservice.sync_shifts(statuses[i])
+
+    return redirect('/consolidated/' + office + '/review')
 
 @oid.require_login
 @app.route('/dashboard/<page>', methods=['GET'])
