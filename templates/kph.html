@@ -76,12 +76,20 @@
         {% if groups %}
         {% for group in groups %}
             <tr id="row-{{group.id}}">
-                <td>{{loop.index}}</td>
+                <td>
+                    {{loop.index}}&nbsp;&nbsp;
+                    <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                </td>
                 <td style="vertical-align: top">
                     <select class="input-element" name="shift_id[]" id="shift_id-{{group.id}}"
                         onchange="updateElem('shift_id-{{group.id}}', 'shift_id[]', updateNames)" multiple>
                         <option></option>
-                        {% for shift in shifts if (shift.canvass_group == None and shift.status == "In") or shift.canvass_group == group.id %}
+                        {% for shift in group.canvass_shifts %}
+                            <option value={{shift.id}}>
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
+                            </option>
+                        {% endfor %}
+                        {% for shift in shifts if shift.canvass_group == None and shift.status == "In" and shift.canvass_group != group.id %}
                             <option value={{shift.id}}>
                                 {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
                             </option>

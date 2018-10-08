@@ -193,6 +193,9 @@ class Shift(db.Model):
     def serialize(self):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
+    def updated_by_other(self, page_load_time, user):
+        return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
+
 
 class ShiftStats:
     def __init__(self, shifts, groups):
@@ -321,3 +324,6 @@ class CanvassGroup(db.Model):
             return_var = shift.add_note(page, text)
 
         return return_var
+
+    def updated_by_other(self, page_load_time, user):
+        return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time

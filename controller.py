@@ -185,7 +185,7 @@ def add_pass(office, page):
         if not group:
             return Response('Group Not Found', status=400)
 
-        if group.last_user != g.user.id and group.last_update != None and group.last_update > page_load_time:
+        if group.updated_by_other(page_load_time, g.user):
             return Response('This Canvass Group has been updated by a different user since you last loaded the page. Please refresh and try again.', 400)
         
         if shift_ids:
@@ -292,7 +292,7 @@ def add_pass(office, page):
         if not shift:
             return Response('Shift not found', status=400)
         
-        if shift.last_user != g.user.id and shift.last_update != None and shift.last_update > page_load_time:
+        if shift.updated_by_other(page_load_time, g.user):
             return Response('This Shift has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
         
         if status:
@@ -450,7 +450,7 @@ def add_walk_in(office, page):
 @oid.require_login
 @app.route('/dashboard/<page>')
 def dashboard(page):
-    dashboard_permission = g.user.rank == 'DATA' or g.user.rank == 'Field Director'
+    dashboard_permission = g.user.rank == 'DATA' or g.user.rank == 'FD'
 
     if not dashboard_permission:
         return redirect('/consolidated')
@@ -503,6 +503,34 @@ def user():
     return render_template('user.html', offices=offices)
 
 @oid.require_login
+@app.route('/consolidated/<office>/<page>/recently_updated', methods=['GET'])
+def get_recently_updated(office, page):
+    page_load_time = datetime.strptime(urllib.parse.unquote(request.args.get('page_load_time')), '%I:%M %p').time()
+    print(page_load_time)
+
+    office = escape(office)
+    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
+    location_ids = list(map(lambda l: l.locationid, locations))
+    print(location_ids[0])
+
+    update_ids = []
+    if page == 'kph':
+        all_groups = CanvassGroup.query.all()
+
+        for gr in all_groups:
+            if (gr.canvass_shifts[0].shift_location in location_ids) and gr.updated_by_other(page_load_time, g.user):
+                update_ids.append(gr.id)
+
+    else:
+        shifts = Shift.query.filter(Shift.shift_location.in_(location_ids)).all()
+
+        for shift in shifts:
+            if shift.updated_by_other(page_load_time, g.user):
+                update_ids.append(shift.id)
+
+    return jsonify(update_ids)
+
+@oid.require_login
 @app.route('/dashboardtest', methods=['GET', 'POST'])
 def testdash():
     groups = CanvassGroup.query.all()
@@ -525,7 +553,6 @@ def testdash():
 
 
     return render_template('dashboardtest.html', cwecanvassers=cwecanvassers, cweactual=cweactual, cwedoors_out=cwedoors_out, sccanvassers=sccanvassers, scactual=scactual, scdoors_out=scdoors_out)
-
 
 
 @app.errorhandler(404)
