@@ -517,7 +517,7 @@ def testdash():
                 scdoors_out += group.goal
 
 
-    return render_template('dashboardtest.html', cwecanvassers=cwecanvassers, cweactual=cweactual, cwedoors_out=cwedoors_out, sccanvasses=sccanvassers, scactual=scactual, scdoors_out=scdoors_out)
+    return render_template('dashboardtest.html', cwecanvassers=cwecanvassers, cweactual=cweactual, cwedoors_out=cwedoors_out, sccanvassers=sccanvassers, scactual=scactual, scdoors_out=scdoors_out)
 
 
 
