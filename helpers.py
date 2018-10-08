@@ -13,7 +13,7 @@ def update_shifts():
         print(update_shift)
 
         if not update_shift:
-            if update_shift.locationid is not None:
+            if update_shift[0].locationid is not None:
                 location = Location.query.filter_by(locationid=today_shift.locationid).first()
             print(location)
             if not location:
@@ -21,7 +21,7 @@ def update_shifts():
                 db.session.add(location)
             
             volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()
-            if not volunteer and volunteer is not None:
+            if not volunteer:
                 volunteer = Volunteer(today_shift.vanid, today_shift.firstname, today_shift.lastname, today_shift.phone, today_shift.mobilephone)
                 db.session.add(volunteer)
                 db.session.commit()
