@@ -281,7 +281,7 @@ class CanvassGroup(db.Model):
         self.last_check_in = datetime.now().time()
         self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
         self.check_ins += 1
-        self.actual += int(check_in_amount)
+        self.actual = int(check_in_amount)
 
         return self
 

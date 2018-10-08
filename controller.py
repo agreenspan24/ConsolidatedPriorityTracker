@@ -221,7 +221,7 @@ def add_pass(office, page):
 
             group = group.check_in(check_in_amount)
 
-            note = group.add_note('kph', check_in_amount + " doors added")
+            note = group.add_note('kph', check_in_amount + " doors")
 
             return_var = jsonify({
                 'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
