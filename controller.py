@@ -449,9 +449,8 @@ def dashboard(page):
     if not dashboard_permission:
         return redirect('/consolidated')
     
-    totals = DashboardTotal.query.order_by(DashboardTotal.office).all()
+    totals = DashboardTotal.query.all()
 
- 
     if page == 'prod':
 
         return render_template('dashboard_production.html', active_tab=page, results=totals)
