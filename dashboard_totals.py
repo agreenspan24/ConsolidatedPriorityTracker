@@ -2,7 +2,7 @@ from app import engine, db, app
 from sqlalchemy import Table, MetaData, Column
 
 class DashboardTotal(db.Model):
-    __table_args__ = {'schema':'consolidated'}
+    #__table_args__ = {'schema':'test'}
 
     __table__ = Table('dashboard_totals', MetaData(),
         Column('region', db.String(2)),
@@ -43,4 +43,4 @@ class DashboardTotal(db.Model):
         Column('packets_out_now', db.BigInteger),
         Column('kph', db.Numeric),
         Column('overdue_check_ins', db.BigInteger),
-        autoload=True, autoload_with=engine)
+        autoload=True, autoload_with=engine, schema='test')
