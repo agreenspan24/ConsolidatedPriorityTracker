@@ -10,8 +10,9 @@ import urllib
 from app import app, oid
 
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, DashboardTotal
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup
 from datetime import datetime
+#from dashboard_totals import DashboardTotal
 
 oid.init_app(app)
 
@@ -84,7 +85,7 @@ def logout():
 @oid.require_login
 @app.route('/consolidated', methods=['POST','GET'])
 def consolidated():
-    offices = Location.query.order_by(asc(Location.locationname)).all()
+    offices = Location.query.distinct(Location.locationname).order_by(asc(Location.locationname)).all()
     if request.method == 'POST':
         option = request.form.get('target')
 
@@ -179,7 +180,7 @@ def add_pass(office, page):
             return Response('Group Not Found', status=400)
 
         if group.last_user != g.user.id and group.last_update != None and group.last_update > page_load_time:
-            return Response('This Canvass Group has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+            return Response('This Canvass Group has been updated by a different user since you last loaded the page. Please refresh and try again.', 400)
 
         if shift_ids:
             for id in shift_ids:
@@ -214,11 +215,11 @@ def add_pass(office, page):
 
         if check_in_amount:
             if not check_in_amount.isdigit():
-                return Response('Check In Amount must be a nuber"', status=400)
+                return Response('Check In Amount must be a number"', status=400)
 
             group = group.check_in(check_in_amount)
 
-            note = group.add_note('kph', check_in_amount + " doors added")
+            note = group.add_note('kph', check_in_amount + " doors")
 
             return_var = jsonify({
                 'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
@@ -278,6 +279,7 @@ def add_pass(office, page):
         first = request.form.get('first_name')
         last = request.form.get('last_name')
         phone = request.form.get('phone')
+        passes = 'passes' in request.form.keys()
 
         shift = Shift.query.get(parent_id)
 
@@ -337,7 +339,11 @@ def add_pass(office, page):
         if note_text:
             note_text = escape(note_text)
 
-            return_var = shift.add_call_pass(page, note_text)
+            return_var = shift.add_note(page, note_text)
+
+        if passes:
+            return_var = str(shift.add_pass())
+            print(return_var)
         
         shift.last_update = datetime.now().time()
         shift.last_user = g.user.id
@@ -395,6 +401,7 @@ def add_walk_in(office, page):
     phone = request.form.get('phone')
     time = request.form.get('time')
     role = request.form.get('activity')
+    phone_sanitized = ''
 
     if firstname:
         firstname = escape(firstname)
@@ -461,6 +468,7 @@ def user():
         user = User.query.get(g.user.id)
 
         firstname = request.form.get('firstname')
+        print(user.id, firstname)
 
         if firstname:
             firstname = escape(firstname)

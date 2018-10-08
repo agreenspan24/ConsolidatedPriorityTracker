@@ -1,13 +1,12 @@
-from app import app, db
+from app import app, db, engine
 from sqlalchemy import create_engine, Table, MetaData, Column, orm
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import text
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 import os
 from config import settings
-
-engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))
 
 def create_view(view, definition):
     create_view = CreateView(view, definition)
@@ -60,9 +59,9 @@ class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'users'
     id = db.Column('id', db.Integer, primary_key=True)
-    #fullname = db.Column('full_name', db.String(240))
-    #firstname = db.Column('first_name', db.String(120))
-    #lastname = db.Column('last_name', db.String(120))
+    fullname = db.Column('full_name', db.String(240))
+    firstname = db.Column('first_name', db.String(120))
+    lastname = db.Column('last_name', db.String(120))
     email = db.Column('email', db.String(120), unique=True)
     rank = db.Column('rank', db.String(120))
     region = db.Column('region', db.String(120))
@@ -177,19 +176,21 @@ class Shift(db.Model):
 
         self.status = status
 
-    def add_call_pass(self, page, text):
-        if page != 'kph':
-            if self.call_pass == None:
-                self.call_pass = 1
-            else:
-                self.call_pass += 1
-
+    def add_note(self, page, text):
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
         note = Note(page, self.last_contact, text, self.person, self.id)
 
         db.session.add(note)
 
         return self.last_contact + ": " + text
+
+    def add_pass(self):
+        if self.call_pass == None:
+            self.call_pass = 1
+        else:
+            self.call_pass += 1
+        print('hello', self.call_pass)
+        return self.call_pass
 
     def serialize(self):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
@@ -266,7 +267,9 @@ class CanvassGroup(db.Model):
 
     def update_shifts(self, shift_ids):
         self.canvass_shifts = []
-        return_var = ''
+
+        if len(shift_ids) < 1:
+            return abort(400, 'Group must have at least one canvasser')
 
         for id in shift_ids:
             shift = Shift.query.get(id)
@@ -276,7 +279,7 @@ class CanvassGroup(db.Model):
 
             if shift.canvass_group != None:
                 return abort(400, 'Canvasser can only be in one group')
-                ','
+                
             self.canvass_shifts.append(shift)
 
         return self.canvass_shifts
@@ -286,7 +289,7 @@ class CanvassGroup(db.Model):
         self.last_check_in = datetime.now().time()
         self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
         self.check_ins += 1
-        self.actual += int(check_in_amount)
+        self.actual = int(check_in_amount)
 
         return self
 
@@ -317,49 +320,6 @@ class CanvassGroup(db.Model):
     def add_note(self, page, text):
         return_var = ''
         for shift in self.canvass_shifts:
-            return_var = shift.add_call_pass(page, text)
+            return_var = shift.add_note(page, text)
 
         return return_var
-
-
-class DashboardTotal(db.Model):
-    __table_args__ = {'schema':'consolidated'}
-    __table__ = Table('dashboard_totals', MetaData(),
-        Column('region', db.String),
-        Column('office', db.String, primary_key=True),
-        Column('canvass_total_scheduled', db.Integer),
-        Column('canvass_same_day_confirmed', db.Integer),
-        Column('canvass_completed', db.Integer),
-        Column('canvass_declined', db.Integer),
-        Column('canvass_flaked', db.Integer),
-        Column('phone_total_scheduled', db.Integer),
-        Column('phone_same_day_confirmed', db.Integer),
-        Column('phone_completed', db.Integer),
-        Column('phone_declined', db.Integer),
-        Column('phone_flaked', db.Integer),
-        Column('flake_total', db.Integer),
-        Column('flake_attempts', db.Integer),
-        Column('flake_attempts_perc', db.Integer),
-        Column('flake_rescheduled', db.Integer),
-        Column('flake_rescheduled_perc', db.Integer),
-        Column('flake_chase_remaining', db.Integer),
-        Column('flake_chase_remaining_perc', db.Integer),
-        Column('canvassers_all_day', db.Integer),
-        Column('actual_all_day', db.Integer),
-        Column('goal_all_day', db.Integer),
-        Column('packets_out_all_day', db.Integer),
-        Column('kps', db.Integer),
-        Column('canvassers_out_now', db.Integer),
-        Column('actual_out_now', db.Integer),
-        Column('goal_out_now', db.Integer),
-        Column('packets_out_now', db.Integer),
-        Column('kph', db.Integer),
-        Column('overdue_check_ins', db.Integer),
-        autoload=True, autoload_with=engine)
-
-
-
-
-
-
-

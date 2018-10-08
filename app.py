@@ -2,8 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_oidc import OpenIDConnect
 import os
-from flask_oidc import OpenIDConnect
 from config import settings
+from sqlalchemy import create_engine
 
 app = Flask(__name__)
 app.config['DEBUG'] = False
@@ -16,3 +16,4 @@ app.config['OIDC_ID_TOKEN_COOKIE_SECURE'] = False
 db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = settings.get('secret_key')
+engine = create_engine('postgresql+psycopg2://' + settings.get('sql_username') + ':' + settings.get('sql_pass') +  '@' + settings.get('server'))

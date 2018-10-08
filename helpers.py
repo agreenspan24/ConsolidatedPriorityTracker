@@ -1,7 +1,8 @@
-from app import app, db
+from app import app, db, engine
 from models import db, SyncShift, Volunteer, Shift, Location
 from datetime import datetime
 from setup_config import black_list, rural_locations
+from setup_config import dashboard_query
 
 def update_shifts():
     date = datetime.today().strftime('%Y-%m-%d')
@@ -30,6 +31,9 @@ def update_shifts():
             db.session.add(update_shift)
 
     db.session.commit()
+
+
+    engine.execute(dashboard_query)
 
 
 def main():
