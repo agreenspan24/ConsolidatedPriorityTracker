@@ -66,6 +66,7 @@ class User(db.Model):
     region = db.Column('region', db.String(120))
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
+    is_allowed = db.Column('is_allowed', db.Boolean)
 
 
 class Volunteer(db.Model):
@@ -83,6 +84,7 @@ class Volunteer(db.Model):
     notes = db.relationship('Note', backref='note')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
+    #next_shift = db.Column(db.Date)
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -95,6 +97,7 @@ class Volunteer(db.Model):
         self.is_intern = is_intern
         self.last_user = None
         self.last_update = None
+        #self.next_shift = None
 
     def serialize(self):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
