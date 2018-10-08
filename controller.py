@@ -217,7 +217,7 @@ def add_pass(office, page):
 
         if check_in_amount:
             if not check_in_amount.isdigit():
-                return Response('Check In Amount must be a nuber"', status=400)
+                return Response('Check In Amount must be a number"', status=400)
 
             group = group.check_in(check_in_amount)
 
@@ -281,6 +281,7 @@ def add_pass(office, page):
         first = request.form.get('first_name')
         last = request.form.get('last_name')
         phone = request.form.get('phone')
+        passes = 'passes' in request.form.keys()
 
         shift = Shift.query.get(parent_id)
 
@@ -340,7 +341,11 @@ def add_pass(office, page):
         if note_text:
             note_text = escape(note_text)
 
-            return_var = shift.add_call_pass(page, note_text)
+            return_var = shift.add_note(page, note_text)
+
+        if passes:
+            return_var = str(shift.add_pass())
+            print(return_var)
         
         shift.last_update = datetime.now().time()
         shift.last_user = g.user.id
@@ -398,6 +403,7 @@ def add_walk_in(office, page):
     phone = request.form.get('phone')
     time = request.form.get('time')
     role = request.form.get('activity')
+    phone_sanitized = ''
 
     if firstname:
         firstname = escape(firstname)

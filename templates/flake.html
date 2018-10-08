@@ -30,10 +30,12 @@
                         <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
+                    <td>{{shift.location.actual_location_name}}</td>
                     <td>{{shift.role}}</td>
-                    <td>{shift.location.actual_location_name}}</td>
                     <td>{{shift.eventtype}}</td>
-                    <td id="check_ins-{{shift.id}}">{{shift.call_pass}}</td>
+                    <td>
+                        <a id='passes-{{shift.id}}' name="passes" onclick="updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.call_pass}}</a>
+                    </td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
                             <option value="No Show">Not Contacted</option>
@@ -47,7 +49,7 @@
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
-                            {% if note.type == "flake"}
+                            {% if note.type == "flake" %}
                                 <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
                             {% endif %}
                         {% endfor %}

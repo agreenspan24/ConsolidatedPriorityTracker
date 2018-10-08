@@ -170,19 +170,21 @@ class Shift(db.Model):
 
         self.status = status
 
-    def add_call_pass(self, page, text):
-        if page != 'kph':
-            if self.call_pass == None:
-                self.call_pass = 1
-            else:
-                self.call_pass += 1
-
+    def add_note(self, page, text):
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
         note = Note(page, self.last_contact, text, self.person, self.id)
 
         db.session.add(note)
 
         return self.last_contact + ": " + text
+
+    def add_pass(self):
+        if self.call_pass == None:
+            self.call_pass = 1
+        else:
+            self.call_pass += 1
+        print('hello', self.call_pass)
+        return self.call_pass
 
     def serialize(self):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
@@ -310,6 +312,6 @@ class CanvassGroup(db.Model):
     def add_note(self, page, text):
         return_var = ''
         for shift in self.canvass_shifts:
-            return_var = shift.add_call_pass(page, text)
+            return_var = shift.add_note(page, text)
 
         return return_var

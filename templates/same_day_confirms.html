@@ -100,8 +100,8 @@
                         <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
-                    <td>{{shift.eventtype}}</td>
                     <td>{{shift.location.actual_location_name}}</td>
+                    <td>{{shift.eventtype}}</td>
                     <td>{{shift.role}}</td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
@@ -115,7 +115,9 @@
                             <option value="No Show" {{"selected" if shift.status == "No Show"}}>Flake</option>
                         </select>
                     </td>
-                    <td id="check_ins-{{shift.id}}">{{shift.call_pass}}</td>
+                    <td>
+                        <a id='passes-{{shift.id}}' name="passes" onclick="updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.call_pass}}</a>
+                    </td>
                     <td>
                         <input id='note-{{shift.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">
                     </td>

@@ -82,6 +82,10 @@ function updateCheckIns(parent_id, res, elem) {
     addNote(parent_id, res.note);
 }
 
+function updatePasses(parent_id, res, elem) {
+    getRowElem(parent_id, 'passes').html(res);
+}
+
 function updateNames(parent_id, res, elem) {
     var vanid = '';
     var name = '';
