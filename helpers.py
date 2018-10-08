@@ -28,9 +28,9 @@ def update_shifts():
                 volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()
             
 
-            
-            update_shift = Shift(today_shift.eventtype, today_shift.starttime, today_shift.startdate, today_shift.status, today_shift.role, volunteer.id, location.locationid)
-            db.session.add(update_shift)
+            if today_shift.status in ['Invited', 'Left Msg', 'Confirmed', 'Scheduled', 'Sched-Web']:
+                update_shift = Shift(today_shift.eventtype, today_shift.starttime, today_shift.startdate, today_shift.status, today_shift.role, volunteer.id, location.locationid)
+                db.session.add(update_shift)
 
     db.session.commit()
 
