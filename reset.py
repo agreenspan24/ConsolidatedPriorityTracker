@@ -3,7 +3,7 @@ from models import Volunteer, Shift, Location, Note, CanvassGroup
 from app import engine
 
 def main():
-    engine.execute('DROP VIEW  IF EXISTS consolidated.dashboard_totals')
+    #engine.execute('DROP VIEW  IF EXISTS consolidated.dashboard_totals')
     Note.__table__.drop(engine)
     Shift.__table__.drop(engine)
     CanvassGroup.__table__.drop(engine)
