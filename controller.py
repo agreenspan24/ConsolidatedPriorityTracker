@@ -12,7 +12,7 @@ from app import app, oid
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup
 from datetime import datetime
-#from dashboard_totals import DashboardTotal
+from dashboard_totals import DashboardTotal
 
 oid.init_app(app)
 
@@ -449,9 +449,12 @@ def dashboard(page):
     if not dashboard_permission:
         return redirect('/consolidated')
     
-    totals = DashboardTotal.query.all()
+    totals = DashboardTotal.query.order_by(DashboardTotal.office).all()
+
+    region_totals = DashboardTotal.query(DashboardTotal.region, func.sum(DashboardTotal.canvass_total_scheduled)).group_by(DashboardTotal.region).all()
 
     if page == 'prod':
+
         return render_template('dashboard_production.html', active_tab=page, results=totals)
 
     elif page == 'top':
