@@ -146,8 +146,7 @@ def office(office, page):
             groups = []
 
             for gr in all_groups:
-
-                if gr.canvass_shifts[0].shift_location == location.locationid and gr.canvass_shifts[0].date == date:
+                if gr.canvass_shifts[0].shift_location == location.locationid:
                     groups.append(gr)
 
     if page == 'sdc':
