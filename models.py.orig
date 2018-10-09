@@ -5,7 +5,6 @@ from sqlalchemy.sql import text
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
-from dashboard_totals import DashboardTotal
 import os
 
 def create_view(view, definition):
@@ -68,13 +67,6 @@ class User(db.Model):
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
     is_allowed = db.Column('is_allowed', db.Boolean)
-
-class ShiftStatus(db.Model):
-    __table_args__ = {'schema':'consolidated'}
-    __tablename__ = 'shiftstatus'
-
-    id = db.Column('statusid', db.Integer, primary_key=True)
-    name = db.Column('name', db.String(100))
 
 
 class Volunteer(db.Model):
@@ -194,14 +186,11 @@ class Shift(db.Model):
             self.call_pass = 1
         else:
             self.call_pass += 1
-        
+        print('hello', self.call_pass)
         return self.call_pass
 
     def serialize(self):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
-
-    def updated_by_other(self, page_load_time, user):
-        return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
 
 
 class ShiftStats:
@@ -228,7 +217,7 @@ class ShiftStats:
                     self.vol_completed += 1
                 if s.status == "Declined":
                     self.vol_declined += 1
-                if s.status in ["Scheduled", 'Confirmed', 'Same Day Confirmed']:
+                if s.status == "Scheduled":
                     self.vol_unflipped += 1
                 if s.status == "No Show":
                     self.vol_flaked += 1
@@ -237,7 +226,10 @@ class ShiftStats:
         for g in groups:
             if g.is_returned:
                 knocks += g.actual
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
         shifts = self.intern_completed + self.vol_completed
         self.kps = knocks / (shifts if shifts > 0 else 1)
 
@@ -331,6 +323,3 @@ class CanvassGroup(db.Model):
             return_var = shift.add_note(page, text)
 
         return return_var
-
-    def updated_by_other(self, page_load_time, user):
-        return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time

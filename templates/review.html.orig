@@ -61,7 +61,7 @@
 
 {% block table %}
   {% if shifts %}
-    <form action="/consolidated/{{office}}/sync_to_van" method="POST">
+    <form action="/consolidated/sync_to_van" method="POST">
       <thead class="thead">
           <tr>
               <th></th>
@@ -84,10 +84,18 @@
                     {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                 </td>
                 <td>{{shift.eventtype}}</td>
+<<<<<<< HEAD
+=======
+                <td>{{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) if shift.volunteer.cellphone }}</td>
+>>>>>>> master
                 <td>
                     <input name="statuses[]" value="{{shift.status}}" type="hidden" />
                     {{shift.status}}
                 </td>
+                <td>
+          
+                    <input type='submit' class="btn btn-full btn-blue">Sync Shifts To VAN</button>
+                  </td>
             </tr>
         {% endfor %}
         

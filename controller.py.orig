@@ -12,8 +12,12 @@ from app import app, oid
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup
 from datetime import datetime
-from vanservice import VanService
+<<<<<<< HEAD
 from dashboard_totals import DashboardTotal
+=======
+from vanservice import VanService
+#from dashboard_totals import DashboardTotal
+>>>>>>> @{-1}
 
 vanservice = VanService()
 
@@ -458,7 +462,7 @@ def sync_to_van(office):
 
     vanids = request.form.getlist('vanids[]')
     statuses = request.form.getlist('statuses[]')
-    
+    print('hello')
     for i, id in enumerate(vanids):
         print(statuses[i], vanids[i])
         vanservice.sync_shifts(statuses[i])
@@ -483,33 +487,6 @@ def dashboard(page):
         return render_template('dashboard_toplines.html', active_tab=page, results=totals)
 
     return render_template('dashboard.html', active_tab=page, results=totals)
-
-@oid.require_login
-@app.route('/consolidated/<office>/<page>/recently_updated', methods=['GET'])
-def get_recently_updated(office, page):
-    page_load_time = datetime.strptime(urllib.parse.unquote(request.args.get('page_load_time')), '%I:%M %p').time()
-
-    office = escape(office)
-    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
-    location_ids = list(map(lambda l: l.locationid, locations))
-
-    update_ids = []
-
-    if page == 'kph':
-        all_groups = CanvassGroup.query.all()
-
-        for gr in all_groups:
-            if (gr.canvass_shifts[0].shift_location in location_ids) and gr.updated_by_other(page_load_time, g.user):
-                update_ids.append(gr.id)
-
-    else:
-       shifts = Shift.query.filter(Shift.shift_location.in_(location_ids)).all()
-
-    for shift in shifts:
-        if shift.updated_by_other(page_load_time, g.user):
-            update_ids.append(shift.id)
-
-    return jsonify(update_ids)
 
 @oid.require_login
 @app.route('/user', methods=['GET', 'POST'])
@@ -547,6 +524,62 @@ def user():
 
     return render_template('user.html', offices=offices)
 
+<<<<<<< HEAD
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/recently_updated', methods=['GET'])
+def get_recently_updated(office, page):
+    page_load_time = datetime.strptime(urllib.parse.unquote(request.args.get('page_load_time')), '%I:%M %p').time()
+    print(page_load_time)
+
+    office = escape(office)
+    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
+    location_ids = list(map(lambda l: l.locationid, locations))
+    print(location_ids[0])
+
+    update_ids = []
+    if page == 'kph':
+        all_groups = CanvassGroup.query.all()
+
+        for gr in all_groups:
+            if (gr.canvass_shifts[0].shift_location in location_ids) and gr.updated_by_other(page_load_time, g.user):
+                update_ids.append(gr.id)
+
+    else:
+        shifts = Shift.query.filter(Shift.shift_location.in_(location_ids)).all()
+
+        for shift in shifts:
+            if shift.updated_by_other(page_load_time, g.user):
+                update_ids.append(shift.id)
+
+    return jsonify(update_ids)
+
+@oid.require_login
+@app.route('/dashboardtest', methods=['GET', 'POST'])
+def testdash():
+    groups = CanvassGroup.query.all()
+    cwecanvassers = 0
+    cweactual = 0
+    cwedoors_out = 0
+    sccanvassers = 0
+    scactual = 0
+    scdoors_out = 0
+    for group in groups:
+        for shift in group.canvass_shifts:
+            if shift.shift_location == 8617:
+                cwecanvassers += len(group.canvass_shifts)
+                cweactual += group.actual
+                cwedoors_out += group.goal
+            if shift.shift_location == 8687:
+                sccanvassers += len(group.canvass_shifts)
+                scactual += group.actual
+                scdoors_out += group.goal
+
+
+    return render_template('dashboardtest.html', cwecanvassers=cwecanvassers, cweactual=cweactual, cwedoors_out=cwedoors_out, sccanvassers=sccanvassers, scactual=scactual, scdoors_out=scdoors_out)
+
+
+=======
+>>>>>>> @{-1}
 @app.errorhandler(404)
 def page_not_found(e):
     return redirect('/consolidated')
