@@ -507,9 +507,9 @@ def get_recently_updated(office, page):
     else:
        shifts = Shift.query.filter(Shift.shift_location.in_(location_ids)).all()
 
-    for shift in shifts:
-        if shift.updated_by_other(page_load_time, g.user):
-            update_ids.append(shift.id)
+        for shift in shifts:
+            if shift.updated_by_other(page_load_time, g.user):
+                update_ids.append(shift.id)
 
     return jsonify(update_ids)
 
