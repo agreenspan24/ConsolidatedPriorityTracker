@@ -141,8 +141,7 @@ def office(office, page):
             all_shifts.append(shift)
         
         if page in ['kph', 'review']:
-            
-            all_groups = CanvassGroup.query.filter_by(date=date).all()
+            all_groups = CanvassGroup.query.all()
             groups = []
 
             for gr in all_groups:
