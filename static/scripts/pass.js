@@ -62,7 +62,9 @@ function addNote(parent_id, res, elem) {
     child.innerText = res;
     getRowElem(parent_id, 'row').append(child);
     
-    elem.val('');
+    if (elem.attr('name') == 'note') {
+        elem.val('');
+    }
 }
 
 function updateGoalActual(parent_id, res, elem) {

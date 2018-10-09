@@ -313,7 +313,7 @@ def add_pass(office, page):
             if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
                 return Response('Invalid status', status=400)
 
-            shift.flip(status)    
+            return_var = shift.flip(page, status)    
 
         if first:
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
@@ -361,7 +361,6 @@ def add_pass(office, page):
 
         if passes:
             return_var = str(shift.add_pass())
-            print(return_var)
         
         shift.last_update = datetime.now().time()
         shift.last_user = g.user.id
