@@ -6,6 +6,7 @@ from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 from dashboard_totals import DashboardTotal
+from flask import abort
 import os
 
 def create_view(view, definition):
@@ -51,9 +52,6 @@ class Location(db.Model):
         self.actual_location_name = actual_location_name
         self.locationname = locationname
         self.region = region
-
-    def serialize(self):
-        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
 class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -173,10 +171,7 @@ class Shift(db.Model):
         self.last_update = None
 
     def flip(self, status):
-        if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
-            return
-
-        elif status == 'No Show':
+        if status == 'No Show':
             self.flake = True
 
         self.status = status
@@ -202,6 +197,26 @@ class Shift(db.Model):
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'eventtype': self.eventtype,
+            'time': self.time,
+            'date': self.date,
+            'status': self.status,
+            'role': self.role,
+            'flake': self.flake,
+            'last_contact': self.last_contact,
+            'person': self.person,
+            'volunteer': self.volunteer.serialize(),
+            'shift_location': self.shift_location.serialize(),
+            'call_pass': self.call_pass,
+            'last_user': self.last_user,
+            'last_update': self.last_update,
+            'notes': list(map(lambda x: x.serialize()))
+        }
+        
 
         
 class CanvassGroup(db.Model):
@@ -296,6 +311,11 @@ class CanvassGroup(db.Model):
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
+
+    def serialize(self):
+        return {
+            ''
+        }
 
 
 class ShiftStats:

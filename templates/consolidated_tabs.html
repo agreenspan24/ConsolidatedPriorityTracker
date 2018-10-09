@@ -17,17 +17,25 @@
         <div class="tab {{'active' if active_tab == 'kph'}} dropdown-notifications">
             <a href="{{'/consolidated/' + office + '/kph' if active_tab != 'kph'}}">  
                 <h6>
-                    <span>KPH
-                            <span class="notification">
-                                <span class="notification-num">{{header_stats.overdue_check_ins}}</span>
-                            </span></span>
-                    
+                    KPH
                 </h6>
+                {% if header_stats.overdue_check_ins > 0 %}
+                    <span class="notification" title="Overdue Check Ins" style="height: 25px;font-size: 15px;line-height: 25px;width: 25px;right: 15px;">
+                        <span class="notification-num">{{header_stats.overdue_check_ins}}</span>
+                    </span>
+                {% endif %}
             </a>
         </div>
-        <div class="tab {{'active' if active_tab == 'flake'}}">
+        <div class="tab {{'active' if active_tab == 'flake'}} dropdown-notifications">
             <a href="{{'/consolidated/' + office + '/flake' if active_tab != 'flake'}}">  
-                <h6>Flake Chase</h6>
+                <h6>
+                    Flake Chase
+                </h6>
+                {% if header_stats.flakes_not_chased > 0 %}
+                    <span class="notification" title="Flakes Not Chased" style="height: 25px;font-size: 15px;line-height: 25px;width: 25px;right: 15px;">
+                        <span class="notification-num">{{header_stats.flakes_not_chased}}</span>
+                    </span>
+                {% endif %}
             </a>
         </div>
         <div class="tab {{'active' if active_tab == 'review'}}">
@@ -42,7 +50,7 @@
         </div>
     </header>
     <section class="panel-content">  
-        <span id="page_load_time" class="hide">{{g.time_now}}</span>     
+        <span id="page_load_time" class="hide">{{g.time_now.strftime('%I:%M %p')}}</span>     
         {% block above_table %} 
 
         {% endblock %}

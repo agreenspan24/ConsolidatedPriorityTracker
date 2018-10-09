@@ -71,7 +71,6 @@ function updateGoalActual(parent_id, res, elem) {
 }
 
 function updateCheckIns(parent_id, res, elem) {
-    getRowElem(parent_id, 'check_in').val('');
     getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
@@ -107,18 +106,18 @@ function updateNames(parent_id, res, elem) {
 }
 
 function setOut(parent_id, res, elem) {
-    getRowElem(parent_id, 'out').html(res.is_returned ? 'Not Returned' : 'Returned');
+    getRowElem(parent_id, 'out').html(res.is_returned ? 'Set "Not Returned"' : 'Set "Returned"');
     getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
     getRowElem(parent_id, 'departure').html(res.departure);
 
     if (!res.check_in_time){
-        getRowElem(parent_id, 'check_in').prop('disabled', 'disabled');
-        getRowElem(parent_id, 'check_in').attr('disabled');
+        getRowElem(parent_id, 'actual').prop('disabled', 'disabled');
+        getRowElem(parent_id, 'actual').attr('disabled');
     } else {
-        getRowElem(parent_id, 'check_in').removeAttr('disabled');
-        getRowElem(parent_id, 'check_in').prop('disabled', false);
+        getRowElem(parent_id, 'actual').removeAttr('disabled');
+        getRowElem(parent_id, 'actual').prop('disabled', false);
     }
 }
 
@@ -141,16 +140,14 @@ function setUpListener() {
             } else if (name == 'cellphone') {
                 updateElem(id, name, null);
             } else if (name == 'actual') {
-                updateElem(id, name, updateGoalActual);
+                updateElem(id, name, updateCheckIns);
             } else if (name == 'goal') {
                 updateElem(id, name, updateGoalActual);
             } else if (name == 'packets_given') {
                 updateElem(id, name, null);
             } else if (name == 'packet_names') {
                 updateElem(id, name, null);
-            } else if (name == 'check_in') {
-                updateElem(id, name, updateCheckIns);
-            }
+            } 
         }
     });
 }
@@ -188,4 +185,33 @@ function get_recently_updated() {
 
 if (!window.location.pathname.endsWith('review')) {
     setInterval(get_recently_updated, 30000);
+}
+
+function deleteElement(parent_id) {
+    console.log({
+        type: 'DELETE', 
+        url: window.location.pathname + '/delete_element',
+        data: {
+            parent_id: parent_id
+        }
+    });
+    $.ajax({
+        type: 'DELETE', 
+        url: window.location.pathname + '/delete_element',
+        data: {
+            parent_id: parent_id
+        }
+    }).done(function (name) {
+        showAlert('success', 'Deleted ' + name + ' from the database.');
+
+        $('#row-' + parent_id).remove();
+    }).fail(function (res) {
+        var message = 'Could not delete.';
+
+        if (res.responseText) {
+            message += ' Error message: ' + res.responseText
+        }
+        
+        showAlert('error', message);
+    })
 }

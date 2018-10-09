@@ -78,9 +78,12 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                <tr id="row-{{shift.id}}">
+                <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('text-red7' if shift.status in ['Declined', 'No Show'])}}">
                     <td>
                         {{loop.index}}&nbsp;&nbsp;
+                        {% if shift.volunteer.van_id == None %}
+                            <span class="glyphicons glyphicons-remove" onclick="deleteElement({{shift.id}})" style="cursor:pointer"></span>&nbsp;&nbsp;
+                        {% endif %}
                         <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
                     </td>
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>

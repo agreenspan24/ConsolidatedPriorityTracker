@@ -28,7 +28,7 @@ def logout_before():
     if request.path.startswith('/oidc_callback'):
         return
 
-    g.time_now = datetime.now().time().strftime('%I:%M %p')
+    g.time_now = datetime.now().time()
 
     g.user = None
     redir = False
@@ -137,7 +137,7 @@ def office(office, page):
     extra_shifts = []
 
     for shift in shifts:
-        if shift.status in ['Completed', 'Declined', 'No Show']:
+        if shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
             extra_shifts.append(shift)
         else: 
             all_shifts.append(shift)
@@ -164,7 +164,16 @@ def office(office, page):
 
     elif page == 'review':
         stats = ShiftStats(all_shifts, groups)
-        return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=all_shifts)
+
+        review_shifts = []
+        sync_shifts = SyncShift.query.filter(SyncShift.locationid.in_(location_ids), SyncShift.startdate==date).all()
+        for shift in all_shifts:
+            if not shifts.status in ['Invited', 'Left Msg', 'Scheduled', 'Same Day Confirmed', 'In'] and not shift.volunteer.van_id == None:
+                old_shift = find(lambda x: shift.volunteer.van_id == x.vanid and shift.time == x.starttime, sync_shifts)
+                if not old_shift.status in ['Invited', 'Left Msg'] and old_shift.status != shift.status:
+                    review_shifts.append(shift)
+
+        return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=review_shifts)
 
     else:
         return redirect('/consolidated/' + office + '/sdc')
@@ -172,11 +181,12 @@ def office(office, page):
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/pass', methods=['POST'])
 def add_pass(office, page):
+    keys = list(request.form.keys())
     parent_id = request.form.get('parent_id')
     page_load_time = datetime.strptime(urllib.parse.unquote(request.form.get('page_load_time')), '%I:%M %p').time()
-    note_text = request.form.get('note')
-    cellphone = request.form.get('cellphone')
-    vol_id = request.form.get('vol_id')
+    has_note_text = 'note' in keys
+    has_cellphone = 'cellphone' in keys
+    has_vol_id = 'vol_id' in keys
 
     if not parent_id:
         return abort(400)
@@ -184,14 +194,6 @@ def add_pass(office, page):
     return_var = None
 
     if page == 'kph':
-        shift_ids = request.form.getlist('shift_id[]')
-        out = 'out' in request.form.keys()
-        check_in_amount = request.form.get('check_in')
-        actual = request.form.get('actual')
-        goal = request.form.get('goal')
-        packets_given = request.form.get('packets_given')
-        packet_names = request.form.get('packet_names')
-
         group = CanvassGroup.query.get(parent_id)
 
         if not group:
@@ -200,7 +202,9 @@ def add_pass(office, page):
         if group.updated_by_other(page_load_time, g.user):
             return Response('This Canvass Group has been updated by a different user since you last loaded the page. Please refresh and try again.', 400)
         
-        if shift_ids:
+        if 'shift_id[]' in keys:
+            shift_ids = request.form.getlist('shift_id[]')
+
             for id in shift_ids:
                 if not id.isdigit():
                     return Response('Invalid shift id', status=400)
@@ -220,7 +224,7 @@ def add_pass(office, page):
 
             return_var = jsonify(return_var)
 
-        if out:
+        if 'out' in keys:
             group = group.setOut()
 
             return_var  = jsonify({
@@ -231,7 +235,9 @@ def add_pass(office, page):
                 'check_ins': group.check_ins
             })
 
-        if check_in_amount:
+        if 'actual' in keys:
+            check_in_amount = request.form.get('actual')
+
             if not check_in_amount.isdigit():
                 return Response('Check In Amount must be a number"', status=400)
 
@@ -244,47 +250,53 @@ def add_pass(office, page):
                 'last_check_in': group.last_check_in.strftime('%I:%M %p'),
                 'check_ins': group.check_ins,
                 'actual': group.actual,
-                'check_in_amount': check_in_amount,
                 'note': note
             })
 
-        if note_text:
+        if has_note_text:
+            note_text = request.form.get('note')
+
             note_text = escape(note_text)
 
             return_var = group.add_note(page, note_text)
             
-        if cellphone:
+        if has_cellphone and has_vol_id:
+            cellphone = request.form.get('cellphone')
+
             phone_sanitized = re.sub('[- ().+]', '', cellphone)
 
             if not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
 
+            vol_id = request.form.get('vol_id')
             volunteer = Volunteer.query.get(vol_id)
+
+            if not volunteer:
+                return Response('Could not find volunteer', status=400)
+
             if volunteer.last_user != g.user.id and volunteer.last_update != None and volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
             volunteer.cellphone = phone_sanitized
             volunteer.last_user = g.user.id
             volunteer.last_update = datetime.now().time()
-
-        if actual:
-            if not actual.isdigit():
-                return Response('"Actual" must be a number"', status=400)
-
-            group.actual = int(actual)
         
-        if goal: 
+        if 'goal' in keys: 
+            goal = request.form.get('goal')
+
             if not goal.isdigit():
                 return Response('"Goal" must be a number"', status=400)
             group.goal = int(goal)
 
-        if packets_given:
+        if 'packets_given' in keys:
+            packets_given = request.form.get('packets_given')
             if not packets_given.isdigit():
                 return Response('"packets_given" must be a number"', status=400)
 
             group.packets_given = int(packets_given)
 
-        if packet_names:
+        if 'packet_names' in keys:
+            packet_names = request.form.get('packet_names')
             packet_names = escape(packet_names)
 
             group.packet_names = packet_names
@@ -293,12 +305,6 @@ def add_pass(office, page):
         group.last_user = g.user.id
 
     else: 
-        status = request.form.get('status')
-        first = request.form.get('first_name')
-        last = request.form.get('last_name')
-        phone = request.form.get('phone')
-        passes = 'passes' in request.form.keys()
-
         shift = Shift.query.get(parent_id)
 
         if not shift:
@@ -307,7 +313,8 @@ def add_pass(office, page):
         if shift.updated_by_other(page_load_time, g.user):
             return Response('This Shift has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
         
-        if status:
+        if 'status' in keys:
+            status = request.form.get('status')
             status = escape(status)
 
             if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
@@ -315,21 +322,27 @@ def add_pass(office, page):
 
             shift.flip(status)    
 
-        if first:
+        if 'first' in keys:
+            first = request.form.get('first_name')
+
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
             first = escape(first)
             shift.volunteer.first_name = first 
 
-        if last:
+        if 'last' in keys:
+            last = request.form.get('last_name')
+
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
             last = escape(last)
             shift.volunteer.last_name = last 
         
-        if phone:
+        if 'phone' in keys:
+            phone = request.form.get('phone')
+
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
@@ -340,7 +353,8 @@ def add_pass(office, page):
             
             shift.volunteer.phone_number = phone_sanitized 
 
-        if cellphone:
+        if has_cellphone:
+            cellphone = request.form.get('cellphone')
             
             if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
@@ -354,12 +368,14 @@ def add_pass(office, page):
             shift.volunteer.last_user = g.user.id
             shift.volunteer.last_update = datetime.now().time()
 
-        if note_text:
+        if has_note_text:
+            note_text = request.form.get('note')
+
             note_text = escape(note_text)
 
             return_var = shift.add_note(page, note_text)
 
-        if passes:
+        if 'passes' in keys:
             return_var = str(shift.add_pass())
             print(return_var)
         
@@ -517,6 +533,29 @@ def get_recently_updated(office, page):
                 update_ids.append(shift.id)
 
     return jsonify(update_ids)
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/delete_element', methods=['DELETE'])
+def delete_element(office, page):
+    parent_id = request.form.get('parent_id')
+    name = ''
+
+    if page == 'kph':
+        group = CanvassGroup.query.get(parent_id)
+        name = ','.join(list(map(lambda s: s.volunteer.first_name + ' ' + s.volunteer.last_name, group.canvass_shifts)))
+        db.session.delete(group)
+    
+    else: 
+        shift = Shift.query.get(parent_id)
+
+        if shift.canvass_group:
+            return Response('Please delete shift from canvass group first', 400)
+            
+        name = shift.volunteer.first_name + ' ' + shift.volunteer.last_name
+        db.session.delete(shift)
+
+    db.session.commit()
+    return name
 
 @oid.require_login
 @app.route('/user', methods=['GET', 'POST'])
