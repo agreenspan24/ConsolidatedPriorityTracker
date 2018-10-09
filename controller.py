@@ -34,7 +34,7 @@ def logout_before():
     redir = False
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
-        print(g.user)
+        print(g.user.email)
         if g.user == None or not g.user.is_allowed:
             redir = True
     else:
