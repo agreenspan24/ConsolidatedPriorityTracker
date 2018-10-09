@@ -141,11 +141,13 @@ def office(office, page):
             all_shifts.append(shift)
         
         if page in ['kph', 'review']:
+
             all_groups = CanvassGroup.query.all()
             groups = []
 
             for gr in all_groups:
-                if gr.canvass_shifts[0].shift_location == location.locationid:
+
+                if gr.canvass_shifts[0].shift_location == location.locationid and gr.canvass_shifts[0].date == date:
                     groups.append(gr)
 
     if page == 'sdc':
