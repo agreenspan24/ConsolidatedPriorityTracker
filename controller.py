@@ -19,6 +19,7 @@ oid.init_app(app)
 @app.before_request
 def logout_before():
     print(session)
+    
     if request.path.startswith('/static') or request.path.startswith('/favicon'):
         return
     if request.path.startswith('/oidc_callback'):
@@ -30,6 +31,7 @@ def logout_before():
     redir = False
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
+        print(g.user)
         if g.user == None or not g.user.is_allowed:
             redir = True
     else:
