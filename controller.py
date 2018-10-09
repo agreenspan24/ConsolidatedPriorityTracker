@@ -22,6 +22,7 @@ oid.init_app(app)
 @app.before_request
 def logout_before():
     print(session)
+    
     if request.path.startswith('/static') or request.path.startswith('/favicon'):
         return
     if request.path.startswith('/oidc_callback'):
@@ -33,6 +34,7 @@ def logout_before():
     redir = False
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
+        print(g.user.email)
         if g.user == None or not g.user.is_allowed:
             redir = True
     else:
@@ -91,7 +93,7 @@ def logout():
 @app.route('/consolidated', methods=['POST','GET'])
 def consolidated():
     
-    if g.user.rank in ['FO', 'Intern']:
+    if g.user.rank == None:
         region = g.user.region
         offices = Location.query.distinct(Location.locationname).filter_by(region=region).order_by(asc(Location.locationname)).all()
     else:
@@ -146,10 +148,10 @@ def office(office, page):
     groups = []
 
     for gr in all_groups:
-        if gr.canvass_shifts[0].shift_location in location_ids:
+        if gr.canvass_shifts[0].shift_location in location_ids and gr.canvass_shifts[0].id in list(map(lambda s: s.id, all_shifts)):
             groups.append(gr)
 
-    header_stats = HeaderStats(shifts, groups)
+    header_stats = HeaderStats(all_shifts, groups)
 
     if page == 'sdc':
         return render_template('same_day_confirms.html', active_tab=page, header_stats=header_stats, office=office, shifts=all_shifts)
