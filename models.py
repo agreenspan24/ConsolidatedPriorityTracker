@@ -203,44 +203,6 @@ class Shift(db.Model):
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
 
-
-class ShiftStats:
-    def __init__(self, shifts, groups):
-        self.vol_confirmed = 0
-        self.vol_completed = 0
-        self.vol_declined = 0
-        self.vol_unflipped = 0
-        self.vol_flaked = 0
-        self.intern_completed = 0
-        self.intern_declined = 0
-        self.kps = 0
-
-        for s in shifts:
-            if s.eventtype == "Intern DVC":
-                if s.status == "Completed":
-                    self.intern_completed += 1
-                if s.status == "Declined":
-                    self.intern_declined += 1
-            else:
-                if s.status == "Same Day Confirmed":
-                    self.vol_confirmed += 1
-                if s.status == "Completed":
-                    self.vol_completed += 1
-                if s.status == "Declined":
-                    self.vol_declined += 1
-                if s.status in ["Scheduled", 'Confirmed', 'Same Day Confirmed']:
-                    self.vol_unflipped += 1
-                if s.status == "No Show":
-                    self.vol_flaked += 1
-
-        knocks = 0
-        for g in groups:
-            if g.is_returned:
-                knocks += g.actual
-
-        shifts = self.intern_completed + self.vol_completed
-        self.kps = knocks / (shifts if shifts > 0 else 1)
-
         
 class CanvassGroup(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -334,3 +296,49 @@ class CanvassGroup(db.Model):
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
+
+
+class ShiftStats:
+    def __init__(self, shifts, groups):
+        self.vol_confirmed = 0
+        self.vol_completed = 0
+        self.vol_declined = 0
+        self.vol_unflipped = 0
+        self.vol_flaked = 0
+        self.intern_completed = 0
+        self.intern_declined = 0
+        self.kps = 0
+
+        for s in shifts:
+            if s.eventtype == "Intern DVC":
+                if s.status == "Completed":
+                    self.intern_completed += 1
+                if s.status == "Declined":
+                    self.intern_declined += 1
+            else:
+                if s.status == "Same Day Confirmed":
+                    self.vol_confirmed += 1
+                if s.status == "Completed":
+                    self.vol_completed += 1
+                if s.status == "Declined":
+                    self.vol_declined += 1
+                if s.status in ["Scheduled", 'Confirmed', 'Same Day Confirmed']:
+                    self.vol_unflipped += 1
+                if s.status == "No Show":
+                    self.vol_flaked += 1
+
+        knocks = 0
+        for g in groups:
+            if g.is_returned:
+                knocks += g.actual
+
+        shifts = self.intern_completed + self.vol_completed
+        self.kps = knocks / (shifts if shifts > 0 else 1)
+
+
+class HeaderStats:
+    def __init__(self, shifts, groups):
+        time_now = datetime.now().time()
+
+        self.overdue_check_ins = sum(1 for x in groups if x.check_in_time != None and x.check_in_time < time_now)
+        self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show')

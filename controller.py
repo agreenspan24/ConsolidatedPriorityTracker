@@ -10,7 +10,7 @@ import urllib
 from app import app, oid
 
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats
 from datetime import datetime
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
@@ -126,38 +126,43 @@ def office(office, page):
     if not locations:
         return redirect('/consolidated')
 
+
+    location_ids = list(map(lambda l: l.locationid, locations))
+
+    shifts = Shift.query.filter(Shift.shift_location.in_(location_ids), Shift.date==date).order_by(asc(Shift.time), asc(Shift.person)).all()
+
     all_shifts = []
     extra_shifts = []
-    for location in locations:
-        shifts = Shift.query.filter_by(shift_location=location.locationid, date=date).order_by(asc(Shift.time), asc(Shift.person)).all()
-        for shift in shifts:
-            if shift.status in ['Completed', 'Declined', 'No Show']:
-                extra_shifts.append(shift)
-            else: 
-                all_shifts.append(shift)
-        for shift in extra_shifts:
-            all_shifts.append(shift)
-        
-        if page in ['kph', 'review']:
-            all_groups = CanvassGroup.query.all()
-            groups = []
 
-            for gr in all_groups:
-                if gr.canvass_shifts[0].shift_location == location.locationid:
-                    groups.append(gr)
+    for shift in shifts:
+        if shift.status in ['Completed', 'Declined', 'No Show']:
+            extra_shifts.append(shift)
+        else: 
+            all_shifts.append(shift)
+    for shift in extra_shifts:
+        all_shifts.append(shift)
+        
+    all_groups = CanvassGroup.query.all()
+    groups = []
+
+    for gr in all_groups:
+        if gr.canvass_shifts[0].shift_location in location_ids:
+            groups.append(gr)
+
+    header_stats = HeaderStats(shifts, groups)
 
     if page == 'sdc':
-        return render_template('same_day_confirms.html', active_tab="sdc", location=location, shifts=all_shifts)
+        return render_template('same_day_confirms.html', active_tab=page, header_stats=header_stats, office=office, shifts=all_shifts)
 
     elif page == 'kph':
-        return render_template('kph.html', active_tab="kph", location=location, shifts=all_shifts, groups=groups)
+        return render_template('kph.html', active_tab=page, header_stats=header_stats, office=office, shifts=all_shifts, groups=groups)
 
     elif page == 'flake':
-        return render_template('flake.html', active_tab="flake", location=location, shifts=all_shifts)
+        return render_template('flake.html', active_tab=page, header_stats=header_stats, office=office, shifts=all_shifts)
 
     elif page == 'review':
         stats = ShiftStats(all_shifts, groups)
-        return render_template('review.html', active_tab="review", location=location, stats=stats, shifts=all_shifts)
+        return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=all_shifts)
 
     else:
         return redirect('/consolidated/' + office + '/sdc')
@@ -503,11 +508,11 @@ def get_recently_updated(office, page):
                 update_ids.append(gr.id)
 
     else:
-       shifts = Shift.query.filter(Shift.shift_location.in_(location_ids)).all()
-
-    for shift in shifts:
-        if shift.updated_by_other(page_load_time, g.user):
-            update_ids.append(shift.id)
+        shifts = Shift.query.filter(Shift.shift_location.in_(location_ids)).all()
+        
+        for shift in shifts:
+            if shift.updated_by_other(page_load_time, g.user):
+                update_ids.append(shift.id)
 
     return jsonify(update_ids)
 
