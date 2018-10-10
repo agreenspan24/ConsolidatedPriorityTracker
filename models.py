@@ -349,7 +349,7 @@ class ShiftStats:
             else:
                 if s.status == "Same Day Confirmed":
                     self.vol_confirmed += 1
-                if s.status == "Completed" s.status == "In":
+                if s.status == "Completed" and s.status == "In":
                     self.vol_completed += 1
                 if s.status == "Declined":
                     self.vol_declined += 1
