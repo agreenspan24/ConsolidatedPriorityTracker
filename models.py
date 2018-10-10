@@ -304,7 +304,7 @@ class CanvassGroup(db.Model):
         if self.departure == None:
             self.departure = datetime.now().time()
             self.last_check_in = datetime.now().time()
-            self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
+            self.check_in_time = self.last_check_in + timedelta(minutes=45)
 
             return self
 
@@ -388,5 +388,5 @@ class HeaderStats:
     def __init__(self, shifts, groups):
         time_now = datetime.now().time()
 
-        self.overdue_check_ins = sum(1 for x in groups if x.check_in_time != None and x.check_in_time < time_now)
+        self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now)
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.call_pass < 1)

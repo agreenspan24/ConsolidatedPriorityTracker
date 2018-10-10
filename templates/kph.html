@@ -17,7 +17,7 @@
     <table class="table">
         <tbody class="tbody">
             <tr>
-                <td>
+                <td style="min-width:300px;max-width:300px">
                     <label class="input-label" for="shift_id">Volunteers</label>
                     <select class="input-element" name="shift_id[]" id="shift_id" multiple>
                         <option></option>
@@ -87,12 +87,12 @@
                         <option></option>
                         {% for shift in group.canvass_shifts %}
                             <option value={{shift.id}}>
-                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.volunteer.van_id}}
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.volunteer.van_id|string}}
                             </option>
                         {% endfor %}
                         {% for shift in shifts if shift.canvass_group == None and shift.status == "In" and shift.canvass_group != group.id %}
                             <option value={{shift.id}}>
-                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.volunteer.van_id}}
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.volunteer.van_id|string}}
                             </option>
                         {% endfor %}
                     </select>
