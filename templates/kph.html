@@ -75,7 +75,7 @@
     <tbody class="tbody">
         {% if groups %}
         {% for group in groups %}
-            <tr id="row-{{group.id}}" class="{{'text-red7' if group.check_in_time != None and group.check_in_time < g.time_now}}">
+            <tr id="row-{{group.id}}" class="{{'text-green7' if group.is_returned else ('text-red7' if group.check_in_time != None and group.check_in_time < g.time_now)}}">
                 <td>
                     {{loop.index}}&nbsp;&nbsp;
                     <span class="glyphicons glyphicons-remove" onclick="deleteElement({{group.id}})" style="cursor:pointer"></span>&nbsp;&nbsp;
@@ -87,12 +87,12 @@
                         <option></option>
                         {% for shift in group.canvass_shifts %}
                             <option value={{shift.id}}>
-                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.volunteer.van_id}}
                             </option>
                         {% endfor %}
                         {% for shift in shifts if shift.canvass_group == None and shift.status == "In" and shift.canvass_group != group.id %}
                             <option value={{shift.id}}>
-                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.volunteer.van_id}}
                             </option>
                         {% endfor %}
                     </select>

@@ -156,9 +156,6 @@ function setUpListener() {
 $(document).ready(setUpListener);
 
 function show_recently_updated(ids) {
-    $('tr').removeClass('text-red7');
-    $('tr .glyphicons.glyphicons-refresh').addClass('hide');
-
     ids.forEach(function(id) {
         $('#row-' + id).addClass('text-red7');
         $('#row-' + id + ' .glyphicons.glyphicons-refresh').removeClass('hide');

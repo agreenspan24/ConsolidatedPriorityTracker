@@ -1,105 +1,123 @@
 {% extends "consolidated_tabs.html" %}
 
 {% block above_table %}
-{% if stats %}
-    <ul class="stat-board stat-board-four">
-        <li class="stat-item">
-          <div class="stat-info">
-            <div class="stat-data">{{stats.vol_confirmed}}</div>
-            <div class="stat-title">Vol Shifts Same Day Confirmed</div>
-          </div>
-        </li>
-        <li class="stat-item">
-          <div class="stat-info">
-            <div class="stat-data">{{stats.vol_completed}}</div>
-            <div class="stat-title">Volunteer Shifts Completed</div>
-          </div>
-        </li>
-        <li class="stat-item">
-          <div class="stat-info">
-            <div class="stat-data">{{stats.vol_declined}}</div>
-            <div class="stat-title">Volunteer Shifts Declined</div>
-          </div>
-        </li>
-        <li class="stat-item">
-          <div class="stat-info">
-            <div class="stat-data">{{stats.vol_unflipped}}</div>
-            <div class="stat-title">Vol Canvass Yet to Complete</div>
-          </div>
-        </li>
-        <li class="stat-item">
-            <div class="stat-info">
-                <div class="stat-data">{{stats.vol_flaked}}</div>
-                <div class="stat-title">Volunteer Canvass Flaked</div>
-            </div>
-        </li>
-        <li class="stat-item">
-            <div class="stat-info">
-                <div class="stat-data">{{stats.intern_completed}}</div>
-                <div class="stat-title">Intern Shifts Completed</div>
-            </div>
-        </li>
-        <li class="stat-item">
-            <div class="stat-info">
-                <div class="stat-data">{{stats.intern_declined}}</div>
-                <div class="stat-title">Intern Shifts Declined</div>
-            </div>
-        </li>
-        <li class="stat-item">
-            <div class="stat-info">
-                <div class="stat-data">{{stats.kps|round(2)}}</div>
-                <div class="stat-title">KPS</div>
-            </div>
-        </li>
-      </ul>
-      <hr />
-      <h3>
-        Sync to VAN
-      </h3>
-{% endif %}
-{% endblock %}
-
-{% block table %}
-  {% if shifts %}
-    <form action="/consolidated/{{office}}/sync_to_van" method="POST">
-      <thead class="thead">
-          <tr>
-              <th></th>
-              <th>VanID</th>
-              <th>Name</th>
-              <th>Event</th>
-              <th>Status</th>
-          </tr>
-      </thead>
-      <tbody class="tbody">
-        {% for shift in shifts 
-          if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In'] and not shift.volunteer.van_id == None %}
-            <tr>
-                <td>{{loop.index}}</td>
-                <td>
-                    <input name="vanids[]" value="{{shift.volunteer.van_id}}" type="hidden" />
-                    {{shift.volunteer.van_id}}
-                </td>
-                <td>
-                    {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
-                </td>
-                <td>{{shift.eventtype}}</td>
-                <td>
-                    <input name="statuses[]" value="{{shift.status}}" type="hidden" />
-                    {{shift.status}}
-                </td>
-            </tr>
-        {% endfor %}
-        
-      </tbody>
-    </form>
+  {% if stats %}
+  <ul class="stat-board stat-board-six">
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.vol_confirmed}}</div>
+        <div class="stat-title">Vol Shifts Same Day Confirmed</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.vol_completed}}</div>
+        <div class="stat-title">Volunteer Shifts Completed</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.vol_declined}}</div>
+        <div class="stat-title">Volunteer Shifts Declined</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.vol_unflipped}}</div>
+        <div class="stat-title">Vol Canvass Yet to Complete</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.vol_flaked}}</div>
+        <div class="stat-title">Volunteer Canvass Flaked</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.intern_completed}}</div>
+        <div class="stat-title">Intern Shifts Completed</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.intern_declined}}</div>
+        <div class="stat-title">Intern Shifts Declined</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.kps|round(2)}}</div>
+        <div class="stat-title">KPS</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.actual}}</div>
+        <div class="stat-title">Total Actual</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.goal}}</div>
+        <div class="stat-title">Total Goal</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.percent_to_goal|round(2)|string + '%' if stats.percent_to_goal else 0}}</div>
+        <div class="stat-title">Total % to Goal</div>
+      </div>
+    </li>
+  </ul>
+  <hr />
   {% endif %}
-{% endblock %}
-
-{% block footer %}
-  {% if (g.user.rank == "DATA" or g.user.rank == "FD") and shifts %}
-    <p>By clicking this button, you will sync all of these shifts to the status on the right. (Feature coming soon)</p>
-
-    <button class="btn btn-full btn-blue" disabled>Sync Shifts To VAN</button>
+  {% if shifts %}
+  <h3>
+    Sync to VAN
+  </h3>
+  <form action="/consolidated/{{office}}/sync_to_van" method="POST">
+    <div class="table-wrapper">
+      <table class="table table-panel table-striped table-small">
+        <thead class="thead">
+          <tr>
+            <th></th>
+            <th>VanID</th>
+            <th>Name</th>
+            <th>Event</th>
+            <th>Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody class="tbody">
+          {% for shift in shifts %}
+          <tr id="{{loop.index}}">
+            <td>
+              {{loop.index}}
+              <span class="glyphicons glyphicons-refresh hide" aria-hidden="true" onclick="deleteRow({{loop.index}})"></span>
+            </td>
+            <td>
+              <input name="shift_id[]" value="{{shift.id}}" type="hidden" />
+              {{shift.volunteer.van_id}}
+            </td>
+            <td>
+              {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
+            </td>
+            <td>{{shift.eventtype}}</td>
+            <td>{{shift.time.strftime('%I:%M %p')}}</td>
+            <td>
+              {{shift.status}}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if (g.user.rank == "DATA") %}
+        <p>By clicking this button, you will sync all of these shifts to the status on the right.</p>
+        
+        <input type='submit' class="btn btn-full btn-blue" value="Sync Shifts To VAN" />
+      {% endif %}
+    </div>
+  </form>
   {% endif %}
 {% endblock %}

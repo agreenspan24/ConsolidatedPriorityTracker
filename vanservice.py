@@ -1,39 +1,87 @@
 import requests
 from requests.auth import HTTPBasicAuth
-from flask import jsonify
+from flask import jsonify, Response
 import json
 import os
-from models import ShiftStatus
+from models import ShiftStatus, Shift, EventType, SyncShift
+from datetime import datetime, time, timedelta
+from dateutil.parser import parse
+from app import app, db
 
 class VanService:
 
     def __init__(self):
-        print('init')
-        os.environ['api_user'] = 'demo.wzigler.api'
-        os.environ['api_key'] = 'a95c16b1-34e8-abd7-adb6-44a6eb232ef8|1'
+        os.environ['api_user'] = 'mdp.internal.api '
+        os.environ['api_key'] = '383b5e54-4374-2059-414f-698c1045fb2c'
 
         self.client = requests.Session()
-        self.client.auth = (os.environ['api_user'], os.environ['api_key'])
+        self.client.auth = (os.environ['api_user'], os.environ['api_key'] + '|1')
         self.client.headers.update({
-            "user": os.environ['api_user'] + ":" + 'a95c16b1-34e8-abd7-adb6-44a6eb232ef8|1',
+            "user": os.environ['api_user'] + ":" + os.environ['api_key'] + '|1',
             "Content-Type": "application/json"
         })
 
-    def sync_shifts(self, status):
+    def sync_shifts(self, shift_ids):
+        event_type_dict = {}
 
-        result = self.client.get('https://api.securevan.com/v4/signups/' + str(26250)).json()
+        shifts = Shift.query.filter(Shift.id.in_(shift_ids)).all()
 
-        print(result)
+        for shift in shifts:
+            if shift.eventtype in event_type_dict.keys():
+                event_type_dict[shift.eventtype].append(shift.id)
+            else: 
+                event_type_dict[shift.eventtype] = [shift.id]
 
-        status = ShiftStatus.query.filter_by(name=status).first()
+        self.yesterday = datetime.today() - timedelta(days=1)
+        self.tomorrow = datetime.today() + timedelta(days=1)
 
-        result['status'] = {
-            'statusId': status.id,
-        }
-
-        result = self.client.put('https://api.securevan.com/v4/signups/' + str(26250), data=json.dumps(result))
-
-        print(result.text, result)
-
-        return result
+        unflipped_shifts = []
         
+        for key, shift_ids in event_type_dict.items():
+            event = self.get_event(key)
+
+            if not event:
+                return Response('Could not find event', 400)
+
+            signups_json = self.client.get('https://api.securevan.com/v4/signups?eventId=' + str(event['eventId'])).json()
+
+            signups = list(signups_json['items'])
+
+            for shift_id in shift_ids:
+                shift = next(x for x in shifts if x.id == shift_id)
+
+                signup = next((x for x in signups if x['person']['vanId'] == shift.volunteer.van_id and parse(x['startTimeOverride']).time() == shift.time), None)
+
+                if signup:
+                    status = ShiftStatus.query.filter_by(name=shift.status).first()
+
+                    if signup['status']['statusId'] != shift.status:
+                        signup['status'] = {
+                            'statusId': status.id,
+                        }
+
+                        print('this would be flipped', signup)
+                
+                        #response = self.client.put('https://api.securevan.com/v4/signups/' + str(signup['eventSignupId']), data=json.dumps(signup))
+
+                        #if response.status_code < 400:
+                            #shift.shift_flipped = True
+                        #else: 
+                            #return Response('Error updating shifts', 400)
+                    else:
+                        shift.shift_flipped = True
+
+                else:
+                    unflipped_shifts.append(shift_id)
+
+            db.session.commit()
+
+        return len(unflipped_shifts) > 0
+
+    def get_event(self, eventtype):
+        eventType = EventType.query.filter_by(name=eventtype).first()
+
+        queryString = 'eventTypeIds=' + str(eventType.id) + '&startingAfter=' + self.yesterday.strftime('%Y-%m-%d') + '&startingBefore=' + self.tomorrow.strftime('%Y-%m-%d')
+        events = self.client.get('https://api.securevan.com/v4/events?' + queryString).json()
+
+        return next((x for x in list(events['items'])), None)
