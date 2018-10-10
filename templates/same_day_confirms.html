@@ -78,7 +78,7 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('text-red7' if shift.status in ['Declined', 'No Show'])}}">
+                <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed', 'Resched'] else ('text-red7' if shift.status in ['Declined', 'No Show'])}}">
                     <td>
                         {{loop.index}}&nbsp;&nbsp;
                         {% if shift.volunteer.van_id == None %}

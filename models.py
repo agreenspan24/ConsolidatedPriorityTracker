@@ -372,4 +372,4 @@ class HeaderStats:
         time_now = datetime.now().time()
 
         self.overdue_check_ins = sum(1 for x in groups if x.check_in_time != None and x.check_in_time < time_now)
-        self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show')
+        self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.call_pass < 1)
