@@ -55,14 +55,15 @@ function updateElem(elem_id, elem_name, success_callback) {
     });
 }
 
-
 // success callbacks
 function addNote(parent_id, res, elem) {
     var child = document.createElement('td');
-    child.innerText = res;
+    child.innerHTML = res;
     getRowElem(parent_id, 'row').append(child);
     
-    elem.val('');
+    if (elem.attr('name') == 'note') {
+        elem.val('');
+    }
 }
 
 function updateGoalActual(parent_id, res, elem) {
@@ -188,13 +189,6 @@ if (!window.location.pathname.endsWith('review')) {
 }
 
 function deleteElement(parent_id) {
-    console.log({
-        type: 'DELETE', 
-        url: window.location.pathname + '/delete_element',
-        data: {
-            parent_id: parent_id
-        }
-    });
     $.ajax({
         type: 'DELETE', 
         url: window.location.pathname + '/delete_element',
@@ -207,6 +201,34 @@ function deleteElement(parent_id) {
         $('#row-' + parent_id).remove();
     }).fail(function (res) {
         var message = 'Could not delete.';
+
+        if (res.responseText) {
+            message += ' Error message: ' + res.responseText
+        }
+        
+        showAlert('error', message);
+    })
+}
+
+function deleteNote(shift_id, text) {
+    $.ajax({
+        type: 'DELETE', 
+        url: window.location.pathname + '/delete_note',
+        data: {
+            shift_id: shift_id,
+            text: text
+        }
+    }).done(function () {
+        showAlert('success', 'Deleted note "' + text + '" from the database.');
+
+
+        if (window.location.pathname.endsWith('kph')) {
+            $('td#notes-' + shift_id + ':contains("' + text + '")').remove();
+        } else {
+            $('#row-' + shift_id + ' > td:contains("' + text + '")').remove();
+        }
+    }).fail(function (res) {
+        var message = 'Could not delete note.';
 
         if (res.responseText) {
             message += ' Error message: ' + res.responseText

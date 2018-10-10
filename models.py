@@ -108,6 +108,9 @@ class Volunteer(db.Model):
     def serialize(self):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
+    def updated_by_other(self, page_load_time, user):
+        return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
+
 
 class Note(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -170,17 +173,30 @@ class Shift(db.Model):
         self.last_user = None
         self.last_update = None
 
-    def flip(self, status):
-        if status == 'No Show':
+    def flip(self, page, status):
+        if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
+            return
+
+        elif status == 'No Show':
             self.flake = True
 
+        note = self.add_note(page, self.status + ' to ' + status)
         self.status = status
+        return note
+
 
     def add_note(self, page, text):
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
-        note = Note(page, self.last_contact, text, self.person, self.id)
 
-        db.session.add(note)
+        five_min_ago = datetime.now() - timedelta(minutes=5)
+        recent_note = next((x for x in self.notes if x.type == page and x.time > five_min_ago.time()), None)
+
+        if recent_note:
+            recent_note.time = datetime.now().time()
+            recent_note.text = recent_note.text + '; ' + text
+        else:
+            note = Note(page, self.last_contact, text, self.person, self.id)
+            db.session.add(note)
 
         return self.last_contact + ": " + text
 
@@ -191,9 +207,6 @@ class Shift(db.Model):
             self.call_pass += 1
         
         return self.call_pass
-
-    def serialize(self):
-        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
@@ -216,8 +229,6 @@ class Shift(db.Model):
             'last_update': self.last_update,
             'notes': list(map(lambda x: x.serialize()))
         }
-        
-
         
 class CanvassGroup(db.Model):
     __table_args__ = {'schema':'consolidated'}

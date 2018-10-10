@@ -10,7 +10,7 @@ import urllib
 from app import app, oid
 
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift
 from datetime import datetime
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
@@ -238,7 +238,7 @@ def add_pass(office, page):
         if 'actual' in keys:
             check_in_amount = request.form.get('actual')
 
-            if not check_in_amount.isdigit():
+            if check_in_amount and not check_in_amount.isdigit():
                 return Response('Check In Amount must be a number"', status=400)
 
             group = group.check_in(check_in_amount)
@@ -265,7 +265,7 @@ def add_pass(office, page):
 
             phone_sanitized = re.sub('[- ().+]', '', cellphone)
 
-            if not phone_sanitized.isdigit():
+            if phone_sanitized and not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
 
             vol_id = request.form.get('vol_id')
@@ -274,7 +274,7 @@ def add_pass(office, page):
             if not volunteer:
                 return Response('Could not find volunteer', status=400)
 
-            if volunteer.last_user != g.user.id and volunteer.last_update != None and volunteer.last_update > page_load_time:
+            if volunteer.updated_by_other(page_load_time, g.user):
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
             volunteer.cellphone = phone_sanitized
@@ -284,13 +284,13 @@ def add_pass(office, page):
         if 'goal' in keys: 
             goal = request.form.get('goal')
 
-            if not goal.isdigit():
+            if goal and not goal.isdigit():
                 return Response('"Goal" must be a number"', status=400)
             group.goal = int(goal)
 
         if 'packets_given' in keys:
             packets_given = request.form.get('packets_given')
-            if not packets_given.isdigit():
+            if packets_given and not packets_given.isdigit():
                 return Response('"packets_given" must be a number"', status=400)
 
             group.packets_given = int(packets_given)
@@ -320,12 +320,12 @@ def add_pass(office, page):
             if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
                 return Response('Invalid status', status=400)
 
-            shift.flip(status)    
+            return_var = shift.flip(page, status)    
 
         if 'first' in keys:
             first = request.form.get('first_name')
 
-            if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
+            if shift.volunteer.updated_by_other(page_load_time, g.user):
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
             first = escape(first)
@@ -334,7 +334,7 @@ def add_pass(office, page):
         if 'last' in keys:
             last = request.form.get('last_name')
 
-            if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
+            if shift.volunteer.updated_by_other(page_load_time, g.user):
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
             last = escape(last)
@@ -343,12 +343,12 @@ def add_pass(office, page):
         if 'phone' in keys:
             phone = request.form.get('phone')
 
-            if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
+            if shift.volunteer.updated_by_other(page_load_time, g.user):
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
             phone_sanitized = re.sub('[- ().+]', '', phone)
 
-            if not phone_sanitized.isdigit():
+            if phone_sanitized and not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
             
             shift.volunteer.phone_number = phone_sanitized 
@@ -356,12 +356,12 @@ def add_pass(office, page):
         if has_cellphone:
             cellphone = request.form.get('cellphone')
             
-            if shift.volunteer.last_user != g.user.id and shift.volunteer.last_update != None and shift.volunteer.last_update > page_load_time:
+            if shift.volunteer.updated_by_other(page_load_time, g.user):
                 return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
             phone_sanitized = re.sub('[- ().+]', '', cellphone)
 
-            if not phone_sanitized.isdigit():
+            if phone_sanitized and not phone_sanitized.isdigit():
                 return Response('Invalid Phone', status=400)
 
             shift.volunteer.cellphone = phone_sanitized
@@ -377,7 +377,6 @@ def add_pass(office, page):
 
         if 'passes' in keys:
             return_var = str(shift.add_pass())
-            print(return_var)
         
         shift.last_update = datetime.now().time()
         shift.last_user = g.user.id
@@ -556,6 +555,19 @@ def delete_element(office, page):
 
     db.session.commit()
     return name
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/delete_note', methods=['DELETE'])
+def delete_note(office, page):
+    shift_id = request.form.get('shift_id')
+    text = request.form.get('text')
+    print(shift_id, text)
+
+    note = Note.query.filter_by(type=page, text=text, note_shift=shift_id).first()
+    db.session.delete(note)
+    db.session.commit()
+
+    return ''
 
 @oid.require_login
 @app.route('/user', methods=['GET', 'POST'])

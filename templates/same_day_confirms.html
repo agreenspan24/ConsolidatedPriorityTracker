@@ -110,7 +110,7 @@
                     <td>{{shift.eventtype}}</td>
                     <td>{{shift.role}}</td>
                     <td>
-                        <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
+                        <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status', addNote)" value='{{shift.status}}'>
                             {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show'] %}
                                 <option value={{shift.status}}>{{shift.status}}</option>
                             {% endif %}
@@ -130,7 +130,10 @@
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
                             {% if note.type == "sdc" %}
-                                <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>  
+                                <td>
+                                    {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                                    <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                                </td>  
                             {% endif %}
                         {% endfor %}
                     {% endif %}

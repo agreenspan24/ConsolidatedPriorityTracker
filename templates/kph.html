@@ -68,7 +68,6 @@
             <th>Actual</th>
             <th>Goal</th>
             <th>% to Goal</th>
-            <th>Update Doors</th>
             <th>New Note</th>
             <th>Notes</th>
         </tr>
@@ -153,7 +152,10 @@
                 {% if group.canvass_shifts[0].notes != 0 %}
                     {% for note in group.canvass_shifts[0].notes[::-1] %}
                         {% if note.type == 'kph' %}
-                            <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                            <td id="notes-{{group.canvass_shifts[0].id}}">
+                                {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                                <span class="glyphicons glyphicons-remove" onclick="deleteNote({{group.canvass_shifts[0].id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                            </td>
                         {% endif %}
                     {% endfor %}
                 {% endif %}
