@@ -304,7 +304,7 @@ class CanvassGroup(db.Model):
         if self.departure == None:
             self.departure = datetime.now().time()
             self.last_check_in = datetime.now().time()
-            self.check_in_time = self.last_check_in + timedelta(minutes=45)
+            self.check_in_time = datetime.now() + timedelta(minutes=45)
 
             return self
 
