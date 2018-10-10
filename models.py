@@ -342,14 +342,14 @@ class ShiftStats:
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
-                if s.status == "Completed":
+                if s.status in ["Completed", "In"]:
                     self.intern_completed += 1
                 if s.status == "Declined":
                     self.intern_declined += 1
             else:
                 if s.status == "Same Day Confirmed":
                     self.vol_confirmed += 1
-                if s.status == "Completed" and s.status == "In":
+                if s.status in ["Completed", "In"]:
                     self.vol_completed += 1
                 if s.status == "Declined":
                     self.vol_declined += 1
