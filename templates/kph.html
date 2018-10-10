@@ -13,7 +13,7 @@
         }
     );
 </script>
-<form action="/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/add_group" method="POST">
+<form action="/consolidated/{{office}}/{{active_tab}}/add_group" method="POST">
     <table class="table">
         <tbody class="tbody">
             <tr>
@@ -29,16 +29,17 @@
                     </select>
                 </td>
                 <td>
-                    <label class="input-label" for="goal">Goal</label>
-                    <input class="input-element" type="number" id="goal" name="goal" min="0" />
-                </td>
-                <td>
                     <label class="input-label" for="packets_given"># Packets Given</label>
                     <input class="input-element" type="number" name="packets_given" id="packets_given" min="0" />
                 </td>
                 <td>
                     <label class="input-label" for="packet_names">Packets</label>
                     <input class="input-element" type="text" name="packet_names" id="packet_names" maxlength="255"/> 
+                </td>
+
+                <td>
+                    <label class="input-label" for="goal">Goal</label>
+                    <input class="input-element" type="number" id="goal" name="goal" min="0" />
                 </td>
                 <td>
                     <input class="btn btn-blue" style="margin-top:30px" type="submit" value="Create Canvass Group" />
@@ -57,17 +58,16 @@
             <th>Name</th>
             <th>Phone Number</th>
             <th>Cell</th>
-            <th>Time of Departure</th>
-            <th>Actual</th>
-            <th>Goal</th>
-            <th>% to Goal</th>
             <th># Packets Out</th>
             <th>Packets</th>
             <th></th>
+            <th>Time of Departure</th>
             <th>Next Check In</th>
             <th>Last Check In</th>
             <th>Check Ins</th>
-            <th>Update Doors</th>
+            <th>Actual</th>
+            <th>Goal</th>
+            <th>% to Goal</th>
             <th>New Note</th>
             <th>Notes</th>
         </tr>
@@ -75,9 +75,10 @@
     <tbody class="tbody">
         {% if groups %}
         {% for group in groups %}
-            <tr id="row-{{group.id}}">
+            <tr id="row-{{group.id}}" class="{{'text-red7' if group.check_in_time != None and group.check_in_time < g.time_now}}">
                 <td>
                     {{loop.index}}&nbsp;&nbsp;
+                    <span class="glyphicons glyphicons-remove" onclick="deleteElement({{group.id}})" style="cursor:pointer"></span>&nbsp;&nbsp;
                     <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
                 </td>
                 <td style="vertical-align: top">
@@ -123,14 +124,6 @@
                         </p>
                     {% endfor %}
                 </td>
-                <td id='departure-{{group.id}}'>{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}</td>
-                <td>
-                    <input id="actual-{{group.id}}" name="actual" min="0" type="number" value="{{group.actual if not group.actual == None}}" style="max-width: 50px" />
-                </td>
-                <td>
-                    <input id="goal-{{group.id}}" name="goal" min="0"  type="number" value="{{group.goal if not group.goal == None}}" style="max-width: 50px"  />
-                </td>
-                <td id="perc-{{group.id}}">{{((group.actual / (group.goal if group.goal != 0 else 1))*100)|round(2)|string + '%'}}</td>
                 <td>
                     <input id="packets_given-{{group.id}}" name="packets_given" type="number" min="0" value="{{group.packets_given if not group.packets_given == None}}" style="max-width: 50px"  />
                 </td>
@@ -139,22 +132,30 @@
                 </td>
                 <td>
                     <a id='out-{{group.id}}' name='out' onclick="updateElem('out-{{group.id}}', 'out', setOut)">
-                        {{'Depart' if group.departure == None else 'Not Returned' if group.is_returned else 'Returned'}}
+                        {{'Depart' if group.departure == None else 'Set "Not Returned"' if group.is_returned else 'Set "Returned"'}}
                     </a>
                 </td>
+                <td id='departure-{{group.id}}'>{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}</td>
                 <td id='check_in_time-{{group.id}}'>{{group.check_in_time.strftime('%I:%M %p') if group.check_in_time != None else ''}}</td> 
                 <td id='last_check_in-{{group.id}}'>{{group.last_check_in.strftime('%I:%M %p') if group.last_check_in != None else ''}}</td>
                 <td id='check_ins-{{group.id}}'>{{group.check_ins}}</td>
                 <td>
-                    <input id='check_in-{{group.id}}' name="check_in" min="0" type='number' style="max-width: 50px"  {{'disabled' if group.is_returned == True else ''}}>
+                    <input id="actual-{{group.id}}" name="actual" min="0" type="number" value="{{group.actual if not group.actual == None}}" style="max-width: 50px" />
                 </td>
+                <td>
+                    <input id="goal-{{group.id}}" name="goal" min="0"  type="number" value="{{group.goal if not group.goal == None}}" style="max-width: 50px"  />
+                </td>
+                <td id="perc-{{group.id}}">{{((group.actual / (group.goal if group.goal != 0 else 1))*100)|round(2)|string + '%'}}</td>
                 <td>
                     <input id='note-{{group.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">
                 </td>
                 {% if group.canvass_shifts[0].notes != 0 %}
                     {% for note in group.canvass_shifts[0].notes[::-1] %}
                         {% if note.type == 'kph' %}
-                            <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                            <td id="notes-{{group.canvass_shifts[0].id}}">
+                                {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                                <span class="glyphicons glyphicons-remove" onclick="deleteNote({{group.canvass_shifts[0].id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                            </td>
                         {% endif %}
                     {% endfor %}
                 {% endif %}

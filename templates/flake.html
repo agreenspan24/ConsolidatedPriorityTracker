@@ -56,7 +56,10 @@
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
                             {% if note.type == "flake" %}
-                                <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                                <td>
+                                    {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                                    <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                                </td>
                             {% endif %}
                         {% endfor %}
                     {% endif %}

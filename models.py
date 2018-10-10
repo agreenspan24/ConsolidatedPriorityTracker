@@ -6,6 +6,7 @@ from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 from dashboard_totals import DashboardTotal
+from flask import abort
 import os
 
 def create_view(view, definition):
@@ -51,9 +52,6 @@ class Location(db.Model):
         self.actual_location_name = actual_location_name
         self.locationname = locationname
         self.region = region
-
-    def serialize(self):
-        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
 
 class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -109,6 +107,9 @@ class Volunteer(db.Model):
 
     def serialize(self):
         return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+
+    def updated_by_other(self, page_load_time, user):
+        return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
 
 
 class Note(db.Model):
@@ -172,20 +173,30 @@ class Shift(db.Model):
         self.last_user = None
         self.last_update = None
 
-    def flip(self, status):
+    def flip(self, page, status):
         if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
             return
 
         elif status == 'No Show':
             self.flake = True
 
+        note = self.add_note(page, self.status + ' to ' + status)
         self.status = status
+        return note
+
 
     def add_note(self, page, text):
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
-        note = Note(page, self.last_contact, text, self.person, self.id)
 
-        db.session.add(note)
+        five_min_ago = datetime.now() - timedelta(minutes=5)
+        recent_note = next((x for x in self.notes if x.type == page and x.time > five_min_ago.time()), None)
+
+        if recent_note:
+            recent_note.time = datetime.now().time()
+            recent_note.text = recent_note.text + '; ' + text
+        else:
+            note = Note(page, self.last_contact, text, self.person, self.id)
+            db.session.add(note)
 
         return self.last_contact + ": " + text
 
@@ -197,50 +208,27 @@ class Shift(db.Model):
         
         return self.call_pass
 
-    def serialize(self):
-        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
-
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
 
-
-class ShiftStats:
-    def __init__(self, shifts, groups):
-        self.vol_confirmed = 0
-        self.vol_completed = 0
-        self.vol_declined = 0
-        self.vol_unflipped = 0
-        self.vol_flaked = 0
-        self.intern_completed = 0
-        self.intern_declined = 0
-        self.kps = 0
-
-        for s in shifts:
-            if s.eventtype == "Intern DVC":
-                if s.status == "Completed":
-                    self.intern_completed += 1
-                if s.status == "Declined":
-                    self.intern_declined += 1
-            else:
-                if s.status == "Same Day Confirmed":
-                    self.vol_confirmed += 1
-                if s.status == "Completed":
-                    self.vol_completed += 1
-                if s.status == "Declined":
-                    self.vol_declined += 1
-                if s.status in ["Scheduled", 'Confirmed', 'Same Day Confirmed']:
-                    self.vol_unflipped += 1
-                if s.status == "No Show":
-                    self.vol_flaked += 1
-
-        knocks = 0
-        for g in groups:
-            if g.is_returned:
-                knocks += g.actual
-
-        shifts = self.intern_completed + self.vol_completed
-        self.kps = knocks / (shifts if shifts > 0 else 1)
-
+    def serialize(self):
+        return {
+            'id': self.id,
+            'eventtype': self.eventtype,
+            'time': self.time,
+            'date': self.date,
+            'status': self.status,
+            'role': self.role,
+            'flake': self.flake,
+            'last_contact': self.last_contact,
+            'person': self.person,
+            'volunteer': self.volunteer.serialize(),
+            'shift_location': self.shift_location.serialize(),
+            'call_pass': self.call_pass,
+            'last_user': self.last_user,
+            'last_update': self.last_update,
+            'notes': list(map(lambda x: x.serialize()))
+        }
         
 class CanvassGroup(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -334,3 +322,54 @@ class CanvassGroup(db.Model):
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
+
+    def serialize(self):
+        return {
+            ''
+        }
+
+
+class ShiftStats:
+    def __init__(self, shifts, groups):
+        self.vol_confirmed = 0
+        self.vol_completed = 0
+        self.vol_declined = 0
+        self.vol_unflipped = 0
+        self.vol_flaked = 0
+        self.intern_completed = 0
+        self.intern_declined = 0
+        self.kps = 0
+
+        for s in shifts:
+            if s.eventtype == "Intern DVC":
+                if s.status == "Completed":
+                    self.intern_completed += 1
+                if s.status == "Declined":
+                    self.intern_declined += 1
+            else:
+                if s.status == "Same Day Confirmed":
+                    self.vol_confirmed += 1
+                if s.status == "Completed":
+                    self.vol_completed += 1
+                if s.status == "Declined":
+                    self.vol_declined += 1
+                if s.status in ["Scheduled", 'Confirmed', 'Same Day Confirmed']:
+                    self.vol_unflipped += 1
+                if s.status == "No Show":
+                    self.vol_flaked += 1
+
+        knocks = 0
+        for g in groups:
+            if g.is_returned:
+                knocks += g.actual
+
+        shifts = self.intern_completed + self.vol_completed
+        self.kps = knocks / (shifts if shifts > 0 else 1)
+
+
+class HeaderStats:
+    def __init__(self, shifts, groups):
+        time_now = datetime.now().time()
+
+        self.overdue_check_ins = sum(1 for x in groups if x.check_in_time != None and x.check_in_time < time_now)
+        self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.call_pass < 1)
