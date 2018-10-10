@@ -165,15 +165,7 @@ def office(office, page):
     elif page == 'review':
         stats = ShiftStats(all_shifts, groups)
 
-        review_shifts = []
-        sync_shifts = SyncShift.query.filter(SyncShift.locationid.in_(location_ids), SyncShift.startdate==date).all()
-        for shift in all_shifts:
-            if not shifts.status in ['Invited', 'Left Msg', 'Scheduled', 'Same Day Confirmed', 'In'] and not shift.volunteer.van_id == None:
-                old_shift = find(lambda x: shift.volunteer.van_id == x.vanid and shift.time == x.starttime, sync_shifts)
-                if not old_shift.status in ['Invited', 'Left Msg'] and old_shift.status != shift.status:
-                    review_shifts.append(shift)
-
-        return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=review_shifts)
+        return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=all_shifts)
 
     else:
         return redirect('/consolidated/' + office + '/sdc')
