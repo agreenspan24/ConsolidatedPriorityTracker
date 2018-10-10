@@ -11,8 +11,6 @@ from app import app, db
 class VanService:
 
     def __init__(self):
-        os.environ['api_user'] = 'mdp.internal.api '
-        os.environ['api_key'] = '383b5e54-4374-2059-414f-698c1045fb2c'
 
         self.client = requests.Session()
         self.client.auth = (os.environ['api_user'], os.environ['api_key'] + '|1')
