@@ -422,7 +422,7 @@ def add_group(office, page):
         group.goal = int(goal)
     
     if packets_given:
-        if not goal.isdigit():
+        if not packets_given.isdigit():
             return abort(400, '# of Packets must be a number')
 
         group.packets_given = int(packets_given)
