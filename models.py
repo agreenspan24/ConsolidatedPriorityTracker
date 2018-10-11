@@ -159,7 +159,7 @@ class Shift(db.Model):
     role = db.Column(db.String(120))
     knocks = db.Column(db.Integer)
     flake = db.Column(db.Boolean)
-    sd_pass = db.Column(db.Integer)
+    call_pass = db.Column(db.Integer)
     flake_pass = db.Column(db.Integer)
     person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
@@ -184,7 +184,7 @@ class Shift(db.Model):
         #self.event_id = event_id
         self.person = person
         self.shift_location = shift_location
-        self.sd_pass = 0
+        self.call_pass = 0
         self.flake_pass = 0
         self.last_user = None
         self.last_update = None
@@ -223,15 +223,15 @@ class Shift(db.Model):
             if self.flake_pass == None:
                 self.flake_pass = 1
             else:
-                self.flake_pass += 
+                self.flake_pass += 1
             return self.flake_pass
 
         if page == 'sdc':
-            if self.sd_pass == None:
-                self.sd_pass = 1
+            if self.call_pass == None:
+                self.call_pass = 1
             else:
-                self.sd_pass += 1
-            return self.sd_pass
+                self.call_pass += 1
+            return self.call_pass
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
