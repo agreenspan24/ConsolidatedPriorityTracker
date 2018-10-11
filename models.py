@@ -67,6 +67,10 @@ class User(db.Model):
     openid = db.Column('openid', db.String(50))
     is_allowed = db.Column('is_allowed', db.Boolean)
 
+    def __init__(self, email, openid):
+        self.email = email
+        self.openid = openid
+
 class ShiftStatus(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'shiftstatus'
