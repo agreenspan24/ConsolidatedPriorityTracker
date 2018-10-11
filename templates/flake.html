@@ -5,6 +5,7 @@
         <thead class="thead">
             <tr>
                 <th></th>
+                <th>Claim</th>
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Cell</th>
@@ -23,7 +24,12 @@
                 <tr id="row-{{shift.id}}">
                     <td>
                         {{loop.index}}&nbsp;&nbsp;
-                        <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                        <span class="glyphicons glyphicons-refresh hide" aria-hidden="true" style="margin:0"></span>
+                    </td>
+                    <td>
+                        <a id="claim-{{shift.id}}" name="claim" onclick="updateElem('claim-{{shift.id}}', 'claim', updateClaim)" {{'disabled' if shift.claim != None and shift.claim != g.user.id}}>
+                            {{'Claim' if shift.claim != g.user.id else (shift.claim_user.firstname if shift.claim_user.firstname != None else shift.claim_user.email.split('@')[0])}}
+                        </a>
                     </td>
                     <td id="name-{{shift.id}}">
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>

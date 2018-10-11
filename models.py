@@ -54,6 +54,14 @@ class Location(db.Model):
         self.locationname = locationname
         self.region = region
 
+    def serialize(self):
+        return {
+            'locationid': self.locationid,
+            'actual_location_name': self.actual_location_name,
+            'locationname': self.locationname,
+            'region': self.region
+        }
+
 class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'users'
@@ -67,10 +75,23 @@ class User(db.Model):
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
     is_allowed = db.Column('is_allowed', db.Boolean)
+    shifts = db.relationship('Shift', backref='claim_user')
 
     def __init__(self, email, openid):
         self.email = email
         self.openid = openid
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'fullname': self.fullname,
+            'firstname': self.firstname,
+            'lastname': self.lastname,
+            'email': self.email,
+            'rank': self.rank,
+            'region': self.region,
+            'office': self.office,
+        }
 
 class ShiftStatus(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -119,7 +140,17 @@ class Volunteer(db.Model):
         self.next_shift = next_shift
 
     def serialize(self):
-        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+        return {
+            'id': self.id,
+            'van_id': self.van_id,
+            'knocks': self.knocks,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'phone_number': self.phone_number,
+            'cellphone': self.cellphone,
+            'last_user': self.last_user,
+            'last_update': self.last_update
+        }
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
@@ -144,7 +175,11 @@ class Note(db.Model):
         self.note_shift = note_shift
 
     def serialize(self):
-        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+        return {
+            'type': self.type,
+            'time': self.time,
+            'text': self.text
+        }
 
 
 class Shift(db.Model):
@@ -170,6 +205,7 @@ class Shift(db.Model):
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     shift_flipped = db.Column(db.Boolean)
+    claim = db.Column(db.Integer, db.ForeignKey('consolidated.users.id'))
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -254,7 +290,9 @@ class Shift(db.Model):
             'call_pass': self.call_pass,
             'last_user': self.last_user,
             'last_update': self.last_update,
-            'notes': list(map(lambda x: x.serialize()))
+            'notes': list(map(lambda x: x.serialize(), self.notes)),
+            'volunteer': self.volunteer.serialize(),
+            'location': self.location.serialize()
         }
         
 class CanvassGroup(db.Model):
@@ -352,7 +390,19 @@ class CanvassGroup(db.Model):
 
     def serialize(self):
         return {
-            ''
+            'id': self.id,
+            'actual': self.actual,
+            'goal': self.goal,
+            'packets_given': self.packets_given,
+            'packet_names': self.packet_names,
+            'is_returned': self.is_returned,
+            'departure': self.departure,
+            'last_contact': self.last_contact,
+            'check_in_time': self.check_in_time,
+            'check_ins': self.check_ins,
+            'last_user': self.last_user,
+            'last_update': self.last_update
+            'canvass_shifts': list(map(lambda x: x.serialize(), self.canvass_shifts))
         }
 
 

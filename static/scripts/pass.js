@@ -113,7 +113,7 @@ function setOut(parent_id, res, elem) {
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
     getRowElem(parent_id, 'departure').html(res.departure);
 
-    if (!res.check_in_time){
+    if (!res.check_in_time) {
         getRowElem(parent_id, 'actual').prop('disabled', 'disabled');
         getRowElem(parent_id, 'actual').attr('disabled');
     } else {
@@ -122,6 +122,10 @@ function setOut(parent_id, res, elem) {
     }
 }
 
+function updateClaim(parent_id, res, elem) {
+    getRowElem(parent_id, 'claim').html(res)
+}
+ 
 function setUpListener() {
     $('body').on('keyup', function(e) {
         e.preventDefault();

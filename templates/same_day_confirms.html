@@ -63,6 +63,7 @@
         <thead class="thead">
             <tr>
                 <th></th>
+                <th>Claim</th>
                 <th>VanID</th>
                 <th>Name</th>
                 <th>Phone</th>
@@ -82,10 +83,15 @@
                 <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('text-red7' if shift.status in ['Declined', 'No Show', 'Resched'])}}">
                     <td>
                         {{loop.index}}&nbsp;&nbsp;
-                        {% if shift.volunteer.van_id == None %}
-                            <span class="glyphicons glyphicons-remove" onclick="deleteElement({{shift.id}})" style="cursor:pointer"></span>&nbsp;&nbsp;
-                        {% endif %}
                         <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                        {% if shift.volunteer.van_id == None %}
+                            <span class="glyphicons glyphicons-remove" onclick="deleteElement({{shift.id}})" style="cursor:pointer;margin-right:0"></span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a id="claim-{{shift.id}}" name="claim" onclick="updateElem('claim-{{shift.id}}', 'claim', updateClaim)" {{'disabled' if shift.claim != None and shift.claim != g.user.id}}>
+                            {{'Claim' if shift.claim != g.user.id else (shift.claim_user.firstname if not shift.claim_user.firstname in [None, ''] else shift.claim_user.email.split('@')[0])}}
+                        </a>
                     </td>
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
                     <td id="name-{{shift.id}}">

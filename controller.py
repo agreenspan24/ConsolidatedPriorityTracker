@@ -378,6 +378,14 @@ def add_pass(office, page):
 
         if 'passes' in keys:
             return_var = str(shift.add_pass(page))
+
+        if 'claim' in keys:
+            if shift.claim:
+                shift.claim = None
+                return_var = 'Claim'
+            else:
+                shift.claim = g.user.id
+                return_var = g.user.firstname if not g.user.firstname in [None, ''] else g.user.email.split('@')[0]
         
         shift.last_update = datetime.now().time()
         shift.last_user = g.user.id
@@ -576,23 +584,22 @@ def user():
 
     if request.method == "POST":
         user = User.query.get(g.user.id)
+        keys = request.form.keys()
 
-        firstname = request.form.get('firstname')
-        print(user.id, firstname)
+        if 'firstname' in keys:
+            firstname = request.form.get('firstname')
 
-        if firstname:
             firstname = escape(firstname)
             user.firstname = firstname
 
-        lastname = request.form.get('lastname')
-
-        if lastname:
+        if 'lastname' in keys:
+            lastname = request.form.get('lastname')
             lastname = escape(lastname)
             user.lastname = lastname
 
-        fullname = request.form.get('fullname')
 
-        if fullname:
+        if 'fullname' in keys:
+            fullname = request.form.get('fullname')
             fullname = escape(fullname)
             user.fullname = fullname
 
