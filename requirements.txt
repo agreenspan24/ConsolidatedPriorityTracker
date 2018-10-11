@@ -9,3 +9,4 @@ newrelic==2.70.0.51
 psycopg2-binary==2.7.5
 Jinja2==2.8
 sqlalchemy_views==0.2.1
+python-dateutil==2.7.3

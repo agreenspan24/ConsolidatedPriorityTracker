@@ -1,0 +1,113 @@
+{% extends "consolidated_tabs.html" %}
+
+{% block above_table %}
+{% if stats %}
+    <ul class="stat-board stat-board-four">
+        <li class="stat-item">
+          <div class="stat-info">
+            <div class="stat-data">{{stats.vol_confirmed}}</div>
+            <div class="stat-title">Vol Shifts Same Day Confirmed</div>
+          </div>
+        </li>
+        <li class="stat-item">
+          <div class="stat-info">
+            <div class="stat-data">{{stats.vol_completed}}</div>
+            <div class="stat-title">Volunteer Shifts Completed</div>
+          </div>
+        </li>
+        <li class="stat-item">
+          <div class="stat-info">
+            <div class="stat-data">{{stats.vol_declined}}</div>
+            <div class="stat-title">Volunteer Shifts Declined</div>
+          </div>
+        </li>
+        <li class="stat-item">
+          <div class="stat-info">
+            <div class="stat-data">{{stats.vol_unflipped}}</div>
+            <div class="stat-title">Vol Canvass Yet to Complete</div>
+          </div>
+        </li>
+        <li class="stat-item">
+            <div class="stat-info">
+                <div class="stat-data">{{stats.vol_flaked}}</div>
+                <div class="stat-title">Volunteer Canvass Flaked</div>
+            </div>
+        </li>
+        <li class="stat-item">
+            <div class="stat-info">
+                <div class="stat-data">{{stats.intern_completed}}</div>
+                <div class="stat-title">Intern Shifts Completed</div>
+            </div>
+        </li>
+        <li class="stat-item">
+            <div class="stat-info">
+                <div class="stat-data">{{stats.intern_declined}}</div>
+                <div class="stat-title">Intern Shifts Declined</div>
+            </div>
+        </li>
+        <li class="stat-item">
+            <div class="stat-info">
+                <div class="stat-data">{{stats.kps|round(2)}}</div>
+                <div class="stat-title">KPS</div>
+            </div>
+        </li>
+      </ul>
+      <hr />
+      <h3>
+        Sync to VAN
+      </h3>
+{% endif %}
+{% endblock %}
+
+{% block table %}
+  {% if shifts %}
+    <form action="/consolidated/sync_to_van" method="POST">
+      <thead class="thead">
+          <tr>
+              <th></th>
+              <th>VanID</th>
+              <th>Name</th>
+              <th>Event</th>
+              <th>Status</th>
+          </tr>
+      </thead>
+      <tbody class="tbody">
+        {% for shift in shifts 
+          if shift.status not in ['Invited', 'Scheduled', 'Same Day Confirmed', 'In'] and not shift.volunteer.van_id == None %}
+            <tr>
+                <td>{{loop.index}}</td>
+                <td>
+                    <input name="vanids[]" value="{{shift.volunteer.van_id}}" type="hidden" />
+                    {{shift.volunteer.van_id}}
+                </td>
+                <td>
+                    {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
+                </td>
+                <td>{{shift.eventtype}}</td>
+<<<<<<< HEAD
+=======
+                <td>{{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) if shift.volunteer.cellphone }}</td>
+>>>>>>> master
+                <td>
+                    <input name="statuses[]" value="{{shift.status}}" type="hidden" />
+                    {{shift.status}}
+                </td>
+                <td>
+          
+                    <input type='submit' class="btn btn-full btn-blue">Sync Shifts To VAN</button>
+                  </td>
+            </tr>
+        {% endfor %}
+        
+      </tbody>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+  {% if (g.user.rank == "DATA" or g.user.rank == "FD") and shifts %}
+    <p>By clicking this button, you will sync all of these shifts to the status on the right. (Feature coming soon)</p>
+
+    <button class="btn btn-full btn-blue" disabled>Sync Shifts To VAN</button>
+  {% endif %}
+{% endblock %}

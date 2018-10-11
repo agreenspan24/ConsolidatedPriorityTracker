@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from models import Volunteer, Shift, Location, Note, CanvassGroup
 from app import engine
+from setup_config import dashboard_query
 
 def main():
     engine.execute('DROP VIEW  IF EXISTS consolidated.dashboard_totals')
@@ -14,6 +15,7 @@ def main():
     CanvassGroup.__table__.create(engine)
     Shift.__table__.create(engine)
     Note.__table__.create(engine)
+    engine.execute(dashboard_query)
     
 
 if __name__ == '__main__':

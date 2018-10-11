@@ -20,12 +20,15 @@
         <tbody class="tbody">
             {% for shift in shifts if shift.flake %}
                 <tr id="row-{{shift.id}}">
-                    <td>{{loop.index}}</td>
+                    <td>
+                        {{loop.index}}&nbsp;&nbsp;
+                        <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                    </td>
                     <td id="name-{{shift.id}}">
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>
                         {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                     </td>
-                    <td>{{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) }}</td>
+                    <td>{{('({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:])) if shift.volunteer.phone_number }}</td>
                     <td>
                         <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
@@ -53,7 +56,10 @@
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
                             {% if note.type == "flake" %}
-                                <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>
+                                <td>
+                                    {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                                    <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                                </td>
                             {% endif %}
                         {% endfor %}
                     {% endif %}
