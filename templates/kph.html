@@ -121,7 +121,7 @@
                 <td id="cellphone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
                         <p>
-                            <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                            <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" style="width:125px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                         </p>
                     {% endfor %}
                 </td>
