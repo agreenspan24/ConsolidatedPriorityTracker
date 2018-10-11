@@ -155,6 +155,7 @@ class Shift(db.Model):
     time = db.Column(db.Time)
     date = db.Column(db.Date)
     status = db.Column(db.String(120))
+    o_status = db.Column(db.String(120))
     role = db.Column(db.String(120))
     knocks = db.Column(db.Integer)
     flake = db.Column(db.Boolean)
@@ -176,6 +177,7 @@ class Shift(db.Model):
         self.time = time
         self.date = date
         self.status = status
+        self.o_status = status
         self.role = role
         self.flake = False
         self.last_contact = None
