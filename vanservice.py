@@ -36,50 +36,62 @@ class VanService:
         unflipped_shifts = []
         
         for key, shift_ids in event_type_dict.items():
-            event = self.get_event(key)
+            events = self.get_events(key)
 
-            if not event:
-                return Response('Could not find event', 400)
+            if not events or len(events) < 1:
+                return Response('Could not find events', 400)
 
-            signups_json = self.client.get('https://api.securevan.com/v4/signups?eventId=' + str(event['eventId'])).json()
+            unflipped_shifts = shift_ids
 
-            signups = list(signups_json['items'])
-
-            for shift_id in shift_ids:
-                shift = next(x for x in shifts if x.id == shift_id)
-
-                signup = next((x for x in signups if x['person']['vanId'] == shift.volunteer.van_id and parse(x['startTimeOverride']).time() == shift.time), None)
-
-                if signup:
-                    status = ShiftStatus.query.filter_by(name=shift.status).first()
-
-                    if signup['status']['statusId'] != shift.status:
-                        signup['status'] = {
-                            'statusId': status.id,
-                        }
-
-                        print('this would be flipped', signup)
+            for event in events:
+                if len(unflipped_shifts) == 0:
+                    break
                 
-                        #response = self.client.put('https://api.securevan.com/v4/signups/' + str(signup['eventSignupId']), data=json.dumps(signup))
+                shift_ids = unflipped_shifts
+                unflipped_shifts = []
 
-                        #if response.status_code < 400:
-                            #shift.shift_flipped = True
-                        #else: 
-                            #return Response('Error updating shifts', 400)
+                signups_json = self.client.get('https://api.securevan.com/v4/signups?eventId=' + str(event['eventId'])).json()
+
+                signups = list(signups_json['items'])
+
+                for shift_id in shift_ids:
+                    shift = next(x for x in shifts if x.id == shift_id)
+
+                    signup = next((x for x in signups if x['person']['vanId'] == shift.volunteer.van_id and parse(x['startTimeOverride']).time() == shift.time), None)
+
+                    if signup:
+                        status = ShiftStatus.query.filter_by(name=shift.status).first()
+
+                        if signup['status']['statusId'] != shift.status:
+                            signup['status'] = {
+                                'statusId': status.id,
+                            }
+
+                            #print('this would be flipped', signup)
+                    
+                            response = self.client.put('https://api.securevan.com/v4/signups/' + str(signup['eventSignupId']), data=json.dumps(signup))
+
+                            if response.status_code < 400:
+                                shift.shift_flipped = True
+                            else: 
+                                return Response('Error updating shifts', 400)
+                        else:
+                            shift.shift_flipped = True
+
                     else:
-                        shift.shift_flipped = True
+                        unflipped_shifts.append(shift_id)
 
-                else:
-                    unflipped_shifts.append(shift_id)
+            if len(unflipped_shifts) > 0:
+                return False   
 
             db.session.commit()
 
-        return len(unflipped_shifts) > 0
+        return True
 
-    def get_event(self, eventtype):
+    def get_events(self, eventtype):
         eventType = EventType.query.filter_by(name=eventtype).first()
 
         queryString = 'eventTypeIds=' + str(eventType.id) + '&startingAfter=' + self.yesterday.strftime('%Y-%m-%d') + '&startingBefore=' + self.tomorrow.strftime('%Y-%m-%d')
         events = self.client.get('https://api.securevan.com/v4/events?' + queryString).json()
 
-        return next((x for x in list(events['items'])), None)
+        return list(events['items'])

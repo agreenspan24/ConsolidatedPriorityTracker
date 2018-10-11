@@ -490,10 +490,9 @@ def add_walk_in(office, page):
 def sync_to_van(office):
 
     shift_ids = request.form.getlist('shift_id[]')
-    
-    failed = vanservice.sync_shifts(shift_ids)
+    success = vanservice.sync_shifts(shift_ids)
 
-    if not failed:
+    if success:
         return redirect('/consolidated/' + office + '/review')
     else: 
         return Response('The remaining shifts could not be found. Please flip them manually in VAN.', 400)
