@@ -19,18 +19,20 @@
     {% for res in results %}
         <tr>
             <td class="item-info">
-                <a class="item-name" href="/consolidated/{{res.office[0:3]}}/review">{{res.office}}</a>
+                <a class="item-name" href="/consolidated/{{res.office[0:3]}}/review">
+                    {{res.office}}
+                </a>
             </td>
             <td>{{res.canvassers_all_day}}</td>
             <td>{{res.actual_all_day}}</td>
             <td>{{res.goal_all_day}}</td>
-            <td>{{res.packets_all_day}}</td>
-            <td>{{res.kps}}</td>
+            <td>{{res.packets_out_all_day}}</td>
+            <td>{{res.kps|round(2)}}</td>
             <td>{{res.canvassers_out_now}}</td>
             <td>{{res.actual_out_now}}</td>
             <td>{{res.goal_out_now}}</td>
             <td>{{res.packets_out_now}}</td>
-            <td>{{res.kph}}</td>
+            <td>{{res.kph|round(2)}}</td>
             <td>{{res.overdue_check_ins}}</td>
         </tr>  
     {% endfor %}

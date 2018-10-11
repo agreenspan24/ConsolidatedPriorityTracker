@@ -2,7 +2,7 @@
 
 {% block above_table %}
 
-<form action="/consolidated/{{location.locationname[0:3]}}/{{active_tab}}/walk_in" method="POST">
+<form action="/consolidated/{{office}}/{{active_tab}}/walk_in" method="POST">
     <table class="table">
         <tbody class="tbody">
             <tr>
@@ -79,8 +79,14 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                <tr id="row-{{shift.id}}">
-                    <td>{{loop.index}}</td>
+                <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('text-red7' if shift.status in ['Declined', 'No Show', 'Resched'])}}">
+                    <td>
+                        {{loop.index}}&nbsp;&nbsp;
+                        {% if shift.volunteer.van_id == None %}
+                            <span class="glyphicons glyphicons-remove" onclick="deleteElement({{shift.id}})" style="cursor:pointer"></span>&nbsp;&nbsp;
+                        {% endif %}
+                        <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                    </td>
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
                     <td id="name-{{shift.id}}">
                         {% if shift.volunteer.van_id == None %}
@@ -106,8 +112,8 @@
                     <td>{{shift.eventtype}}</td>
                     <td>{{shift.role}}</td>
                     <td>
-                        <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
-                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show'] %}
+                        <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status', addNote)" value='{{shift.status}}'>
+                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show', 'Resched'] %}
                                 <option value={{shift.status}}>{{shift.status}}</option>
                             {% endif %}
                             <option value='Same Day Confirmed'>Same Day Confirmed</option>
@@ -115,6 +121,7 @@
                             <option value='Completed' {{"selected" if shift.status == "Completed"}}>Completed</option>
                             <option value='Declined' {{"selected" if shift.status == "Declined"}}>Declined</option>
                             <option value="No Show" {{"selected" if shift.status == "No Show"}}>Flake</option>
+                            <option value='Resched' {{"selected" if shift.status == "Resched"}}>Rescheduled</option>
                         </select>
                     </td>
                     <td>
@@ -126,7 +133,10 @@
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes[::-1] %}
                             {% if note.type == "sdc" %}
-                                <td>{{note.time.strftime('%I:%M %p')}}: {{note.text}}</td>  
+                                <td>
+                                    {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                                    <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                                </td>  
                             {% endif %}
                         {% endfor %}
                     {% endif %}

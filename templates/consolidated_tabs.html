@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+{% block head %}
+    <script src="{{ url_for('static', filename='scripts/pass.js') }}" type="text/javascript"></script>
+{% endblock %}
 
 {% block content %}
     {% include "add_walk_in_modal.html" %}
@@ -7,22 +10,36 @@
     {% endblock %}
     <header class="panel-tabs functional">
         <div class="tab {{'active' if active_tab == 'sdc'}}">
-            <a href="{{'/consolidated/' + location.locationname[0:3] + '/sdc' if active_tab != 'sdc'}}">
+            <a href="{{'/consolidated/' + office + '/sdc' if active_tab != 'sdc'}}">
                 <h6>Same Day Confirms</h6>
             </a>
         </div>
-        <div class="tab {{'active' if active_tab == 'kph'}}">
-            <a href="{{'/consolidated/' + location.locationname[0:3] + '/kph' if active_tab != 'kph'}}">  
-                <h6>KPH</h6>
+        <div class="tab {{'active' if active_tab == 'kph'}} dropdown-notifications">
+            <a href="{{'/consolidated/' + office + '/kph' if active_tab != 'kph'}}">  
+                <h6>
+                    KPH
+                </h6>
+                {% if header_stats.overdue_check_ins > 0 %}
+                    <span class="notification" title="Overdue Check Ins" style="height: 25px;font-size: 15px;line-height: 25px;width: 25px;right: 15px;">
+                        <span class="notification-num">{{header_stats.overdue_check_ins}}</span>
+                    </span>
+                {% endif %}
             </a>
         </div>
-        <div class="tab {{'active' if active_tab == 'flake'}}">
-            <a href="{{'/consolidated/' + location.locationname[0:3] + '/flake' if active_tab != 'flake'}}">  
-                <h6>Flake Chase</h6>
+        <div class="tab {{'active' if active_tab == 'flake'}} dropdown-notifications">
+            <a href="{{'/consolidated/' + office + '/flake' if active_tab != 'flake'}}">  
+                <h6>
+                    Flake Chase
+                </h6>
+                {% if header_stats.flakes_not_chased > 0 %}
+                    <span class="notification" title="Flakes Not Chased" style="height: 25px;font-size: 15px;line-height: 25px;width: 25px;right: 15px;">
+                        <span class="notification-num">{{header_stats.flakes_not_chased}}</span>
+                    </span>
+                {% endif %}
             </a>
         </div>
         <div class="tab {{'active' if active_tab == 'review'}}">
-            <a href="{{'/consolidated/' + location.locationname[0:3] + '/review' if active_tab != 'review'}}">  
+            <a href="{{'/consolidated/' + office + '/review' if active_tab != 'review'}}">  
                 <h6>Review</h6>
             </a>
         </div>
@@ -33,7 +50,7 @@
         </div>
     </header>
     <section class="panel-content">  
-        <span id="page_load_time" class="hide">{{g.time_now}}</span>     
+        <span id="page_load_time" class="hide">{{g.time_now.strftime('%I:%M %p')}}</span>     
         {% block above_table %} 
 
         {% endblock %}
@@ -45,11 +62,6 @@
             </table> 
         </div>   
     </section>
-    <footer class="panel-footer">
-        {% block footer %}
-
-        {% endblock %}
-    </footer>
 {% endblock %}
 
 
