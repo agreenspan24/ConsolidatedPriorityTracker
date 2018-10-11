@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="panel-content">  
+    {% if shifts %}
+    <div class="table-wrapper">
+        <h3>Shifts</h3>
+        <table class="table table-panel table-striped table-small">
+            <thead class="thead">
+                <tr>
+                    <th>VanID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Cell</th>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Location</th>
+                    <th>Role</th>
+                    <th>Final Status</th>
+                    <th>Flipped?</th>
+                </tr>
+            </thead>
+            <tbody class="tbody">
+                {% for shift in shifts %}
+                    <tr>
+                        <td>{{shift.volunteer.van_id}}</td>
+                        <td>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</td>
+                        <td>
+                            {{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) if shift.volunteer.phone_number != None}}
+                        </td>
+                        <td>
+                            {{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) if shift.volunteer.cellphone != None}}
+                        </td>
+                        <td>{{shift.eventtype}}</td>
+                        <td>{{shift.date}}</td>
+                        <td>{{shift.time}}</td>
+                        <td>{{shift.location.actual_location_name}}</td>
+                        <td>{{shift.role}}</td>
+                        <td>{{shift.status}}</td>
+                        <td>{{'Yes' if shift.shift_flipped else 'No'}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if groups %}
+    <div class="table-wrapper">
+        <h3>Groups</h3>
+        <table class="table table-panel table-striped table-small">
+            <thead class="thead">
+                <tr>
+                    <th>VanID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Cell</th>
+                    <th>Actual</th>
+                    <th>Goal</th>
+                    <th>% to Goal</th>
+                    <th>Returned</th>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody class="tbody">
+                {% for group in groups %}
+                    <tr>
+                        <td>
+                            {% for shift in group.canvass_shifts %}
+                                <p>{{shift.volunteer.van_id}}</p>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for shift in group.canvass_shifts %}
+                                <p>{{shift.volunteer.first_name + shift.volunteer.last_name}}</p>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for shift in group.canvass_shifts %}
+                                <p>{{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) if shift.volunteer.phone_number else '' }}</p>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for shift in group.canvass_shifts %}
+                                <p>{{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) if shift.volunteer.cellphone else '' }}</p>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {{group.actual}}
+                        </td>
+                        <td>
+                            {{group.goal}}
+                        </td>
+                        <td>
+                            {{((group.actual / (group.goal if group.goal != 0 else 1))*100)|round(2)|string + '%'}}
+                        </td>
+                        <td>
+                            {{'Yes' if group.is_returned else 'No'}}
+                        </td>
+                        <td>
+                            {{group.canvass_shifts[0].eventtype if group.canvass_shifts and group.canvass_shifts[0]}}
+                        </td>
+                        <td>
+                            {{group.canvass_shifts[0].date if group.canvass_shifts and group.canvass_shifts[0]}}
+                        </td>
+                        <td>
+                            {{group.canvass_shifts[0].time if group.canvass_shifts and group.canvass_shifts[0]}}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

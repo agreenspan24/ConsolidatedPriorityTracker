@@ -1,7 +1,7 @@
 {% extends "consolidated_tabs.html" %}
 
 {% block above_table %}
-
+<p><a href="/consolidated/{{office}}/{{active_tab}}/backup">Click here to see past shifts</a></p>
 <form action="/consolidated/{{office}}/{{active_tab}}/walk_in" method="POST">
     <table class="table">
         <tbody class="tbody">
