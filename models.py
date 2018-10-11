@@ -78,6 +78,13 @@ class ShiftStatus(db.Model):
     id = db.Column('statusid', db.Integer, primary_key=True)
     name = db.Column('name', db.String(100))
 
+class EventType(db.Model):
+    __table_args__ = {'schema':'consolidated'}
+    __tablename__ = 'event_type'
+
+    id = db.Column('id', db.Integer, primary_key=True)
+    name = db.Column('name', db.String(100))
+
 
 class Volunteer(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -158,6 +165,7 @@ class Shift(db.Model):
     canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'))
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
+    shift_flipped = db.Column(db.Boolean)
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -176,16 +184,18 @@ class Shift(db.Model):
         self.call_pass = 0
         self.last_user = None
         self.last_update = None
+        self.shift_flipped = False
 
     def flip(self, page, status):
-        if self.status in ['Invited', 'Left Message'] and not status in ['Completed', 'Same Day Confirmed', 'In']:
-            return
-
-        elif status == 'No Show':
+        if status == 'No Show':
             self.flake = True
 
         note = self.add_note(page, self.status + ' to ' + status)
+        
         self.status = status
+
+        self.shift_flipped = False
+
         return note
 
 
@@ -298,7 +308,7 @@ class CanvassGroup(db.Model):
         if self.departure == None:
             self.departure = datetime.now().time()
             self.last_check_in = datetime.now().time()
-            self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
+            self.check_in_time = datetime.now() + timedelta(minutes=45)
 
             return self
 
@@ -343,6 +353,9 @@ class ShiftStats:
         self.intern_completed = 0
         self.intern_declined = 0
         self.kps = 0
+        self.actual = 0
+        self.goal = 0
+        self.percent_to_goal = 0.00
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
@@ -366,14 +379,18 @@ class ShiftStats:
         for g in groups:
             if g.is_returned:
                 knocks += g.actual
+            self.actual += g.actual
+            self.goal += g.goal
 
         shifts = self.intern_completed + self.vol_completed
         self.kps = knocks / (shifts if shifts > 0 else 1)
+
+        self.percent_to_goal = self.actual / (self.goal if self.goal > 0 else 1)
 
 
 class HeaderStats:
     def __init__(self, shifts, groups):
         time_now = datetime.now().time()
 
-        self.overdue_check_ins = sum(1 for x in groups if x.check_in_time != None and x.check_in_time < time_now)
+        self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now)
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.call_pass < 1)

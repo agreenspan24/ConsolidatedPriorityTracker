@@ -78,8 +78,11 @@ def login_auth():
 @oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
-    if g.user.office:
+    if g.user.office and g.user.office != "None":
         return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
+    
+    if g.user.region:
+        return redirect('/consolidated/' + g.user.region + '/sdc')
 
     return redirect('/consolidated')    
 
@@ -165,7 +168,26 @@ def office(office, page):
     elif page == 'review':
         stats = ShiftStats(all_shifts, groups)
 
-        return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=all_shifts)
+        review_shifts = []
+        sync_shifts = SyncShift.query.filter(SyncShift.locationid.in_(location_ids), SyncShift.startdate==date).all()
+
+        for shift in all_shifts:
+            if shift.volunteer.van_id == None:
+                continue
+
+            if shift.shift_flipped:
+                continue
+
+            sync = next((x for x in list(sync_shifts) if (x.vanid == shift.volunteer.van_id and x.starttime == shift.time and x.eventtype == shift.eventtype)), None)
+            
+            if not sync:
+                continue
+            
+            if sync.status != shift.status and shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
+                if shift.status in ['Completed', 'Resched'] or not sync.status in ['Left Msg', 'Invited']:
+                    review_shifts.append(shift)
+
+        return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=review_shifts)
 
     else:
         return redirect('/consolidated/' + office + '/sdc')
@@ -176,9 +198,6 @@ def add_pass(office, page):
     keys = list(request.form.keys())
     parent_id = request.form.get('parent_id')
     page_load_time = datetime.strptime(urllib.parse.unquote(request.form.get('page_load_time')), '%I:%M %p').time()
-    has_note_text = 'note' in keys
-    has_cellphone = 'cellphone' in keys
-    has_vol_id = 'vol_id' in keys
 
     if not parent_id:
         return abort(400)
@@ -245,14 +264,14 @@ def add_pass(office, page):
                 'note': note
             })
 
-        if has_note_text:
+        if 'note' in keys:
             note_text = request.form.get('note')
 
             note_text = escape(note_text)
 
             return_var = group.add_note(page, note_text)
             
-        if has_cellphone and has_vol_id:
+        if 'cellphone' in keys and 'vol_id' in keys:
             cellphone = request.form.get('cellphone')
 
             phone_sanitized = re.sub('[- ().+]', '', cellphone)
@@ -345,7 +364,7 @@ def add_pass(office, page):
             
             shift.volunteer.phone_number = phone_sanitized 
 
-        if has_cellphone:
+        if 'cellphone' in keys:
             cellphone = request.form.get('cellphone')
             
             if shift.volunteer.updated_by_other(page_load_time, g.user):
@@ -360,7 +379,7 @@ def add_pass(office, page):
             shift.volunteer.last_user = g.user.id
             shift.volunteer.last_update = datetime.now().time()
 
-        if has_note_text:
+        if 'note' in keys:
             note_text = request.form.get('note')
 
             note_text = escape(note_text)
@@ -470,14 +489,14 @@ def add_walk_in(office, page):
 @app.route('/consolidated/<office>/sync_to_van', methods=['POST'])
 def sync_to_van(office):
 
-    vanids = request.form.getlist('vanids[]')
-    statuses = request.form.getlist('statuses[]')
+    shift_ids = request.form.getlist('shift_id[]')
     
-    for i, id in enumerate(vanids):
-        print(statuses[i], vanids[i])
-        vanservice.sync_shifts(statuses[i])
+    failed = vanservice.sync_shifts(shift_ids)
 
-    return redirect('/consolidated/' + office + '/review')
+    if not failed:
+        return redirect('/consolidated/' + office + '/review')
+    else: 
+        return Response('The remaining shifts could not be found. Please flip them manually in VAN.', 400)
 
 @oid.require_login
 @app.route('/dashboard/<page>', methods=['GET'])

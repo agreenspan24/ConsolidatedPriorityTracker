@@ -78,7 +78,7 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed', 'Resched'] else ('text-red7' if shift.status in ['Declined', 'No Show'])}}">
+                <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('text-red7' if shift.status in ['Declined', 'No Show', 'Resched'])}}">
                     <td>
                         {{loop.index}}&nbsp;&nbsp;
                         {% if shift.volunteer.van_id == None %}
@@ -111,7 +111,7 @@
                     <td>{{shift.role}}</td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status', addNote)" value='{{shift.status}}'>
-                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show'] %}
+                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show', 'Resched'] %}
                                 <option value={{shift.status}}>{{shift.status}}</option>
                             {% endif %}
                             <option value='Same Day Confirmed'>Same Day Confirmed</option>
@@ -119,6 +119,7 @@
                             <option value='Completed' {{"selected" if shift.status == "Completed"}}>Completed</option>
                             <option value='Declined' {{"selected" if shift.status == "Declined"}}>Declined</option>
                             <option value="No Show" {{"selected" if shift.status == "No Show"}}>Flake</option>
+                            <option value='Resched' {{"selected" if shift.status == "Resched"}}>Rescheduled</option>
                         </select>
                     </td>
                     <td>
