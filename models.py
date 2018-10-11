@@ -45,6 +45,7 @@ class Location(db.Model):
     locationname = db.Column(db.String(50))
     region = db.Column(db.String(2))
     shifts = db.relationship('Shift', backref='location')
+    backup_shifts = db.relationship('BackupShift', backref='location')
 
     def __init__(self, locationid, actual_location_name, locationname, region):
 
@@ -98,6 +99,7 @@ class Volunteer(db.Model):
     phone_number = db.Column(db.String(120))
     cellphone = db.Column(db.String(120))
     shifts = db.relationship('Shift', backref='volunteer')
+    backup_shifts = db.relationship('BackupShift', backref='volunteer')
     notes = db.relationship('Note', backref='note')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
@@ -405,3 +407,46 @@ class HeaderStats:
 
         self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now)
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.call_pass < 1)
+
+class BackupShift(db.Model):
+    __table_args__ = {'schema':'backup'}
+    __tablename__ = 'backup_shift'
+
+    id = db.Column('id', db.Integer, primary_key=True)
+    eventtype = db.Column('eventtype', db.String(120))
+    date = db.Column(db.Date)
+    time = db.Column('time', db.Time)
+    role = db.Column(db.String(120))
+    status = db.Column('status', db.String(120))
+    shift_flipped = db.Column(db.Boolean)
+    shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
+    person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
+    canvass_group = db.Column(db.Integer, db.ForeignKey('backup.backup_group.id'))
+
+    def __init__(self, shift):
+        self.eventtype = shift.eventtype
+        self.date = shift.date
+        self.time = shift.time
+        self.role = shift.role
+        self.status = shift.status
+        self.shift_flipped = shift.shift_flipped
+        self.shift_location = shift.shift_location
+        self.person = shift.person
+
+
+class BackupGroup(db.Model):
+    __table_args__ = {'schema':'backup'}
+    __tablename__ = 'backup_group'
+
+    id = db.Column('id', db.Integer, primary_key=True)
+    actual = db.Column('actual', db.Integer)
+    goal = db.Column('goal', db.Integer)
+    packet_names = db.Column('packet_names', db.String(255))
+    is_returned = db.Column('is_returned', db.Boolean)
+    canvass_shifts = db.relationship('BackupShift', backref='group')
+
+    def __init__(self, group):
+        self.actual = group.actual
+        self.goal = group.goal
+        self.packet_names = group.packet_names
+        self.is_returned = group.is_returned

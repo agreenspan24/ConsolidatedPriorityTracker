@@ -97,7 +97,7 @@ function updateNames(parent_id, res, elem) {
         name += '<span>'+ shift.name + '</span>';
         phone += '<p>'+ shift.phone + '</p>';
         cellphone += '<p><input id="cell-' + shift.id + '" name="cellphone" maxlength="120"' +
-            'type="text" value="' + (shift.cellphone || '') + '"/></p>';
+            'type="text" style="width:125px" value="' + (shift.cellphone || '') + '"/></p>';
     });
 
     getRowElem(parent_id, 'vanid').html(vanid);

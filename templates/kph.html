@@ -1,6 +1,7 @@
 {% extends "consolidated_tabs.html" %}
 
 {% block above_table %}
+<p><a href="/consolidated/{{office}}/{{active_tab}}/backup">Click here to see past groups</a></p>
 <script src="{{ url_for('static', filename='scripts/select2.js') }}" type="text/javascript"></script>
 <script>
     $(document).ready(
@@ -56,6 +57,7 @@
         <tr>
             <th></th>
             <th>Name</th>
+            <th>VanID</th>
             <th>Phone Number</th>
             <th>Cell</th>
             <th># Packets Out</th>
@@ -87,12 +89,12 @@
                         <option></option>
                         {% for shift in group.canvass_shifts %}
                             <option value={{shift.id}}>
-                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.volunteer.van_id|string}}
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
                             </option>
                         {% endfor %}
                         {% for shift in shifts if shift.canvass_group == None and shift.status == "In" and shift.canvass_group != group.id %}
                             <option value={{shift.id}}>
-                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.volunteer.van_id|string}}
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
                             </option>
                         {% endfor %}
                     </select>
@@ -101,16 +103,16 @@
                             <span id="vol_id-{{shift.id}}">{{shift.volunteer.id}}</span>
                         {% endfor %}
                     </span>
-                    <span id="vanid-{{group.id}}" class="hide">
-                        {% for shift in group.canvass_shifts %}
-                            <span id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</span>
-                        {% endfor %}
-                    </span>
                     <span id="name-{{group.id}}" class="hide">
                         {% for shift in group.canvass_shifts %}
                             <span id="name-{{shift.id}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</span>
                         {% endfor %}
                     </span>
+                </td>
+                <td id="vanid-{{group.id}}">
+                    {% for shift in group.canvass_shifts %}
+                        <p id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</p>
+                    {% endfor %}
                 </td>
                 <td id="phone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
@@ -120,7 +122,7 @@
                 <td id="cellphone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
                         <p>
-                            <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                            <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" style="width:125px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                         </p>
                     {% endfor %}
                 </td>

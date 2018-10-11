@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response
 
-from sqlalchemy import and_, asc
+from sqlalchemy import and_, asc, desc
 
 import re
 import urllib
@@ -10,7 +10,7 @@ import urllib
 from app import app, oid
 
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, BackupGroup, BackupShift
 from datetime import datetime
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
@@ -120,6 +120,7 @@ def consolidated():
 
     return render_template('index.html', offices=offices, show_dashboard=dashboard_permission)
 
+
 @oid.require_login
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
 def office(office, page):
@@ -130,7 +131,6 @@ def office(office, page):
 
     if not locations:
         return redirect('/consolidated')
-
 
     location_ids = list(map(lambda l: l.locationid, locations))
 
@@ -604,6 +604,33 @@ def user():
         db.session.commit()
 
     return render_template('user.html', offices=offices)
+
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/backup')
+def backup(office, page):
+    office = escape(office)
+    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
+
+    if not locations:
+        return redirect('/consolidated')
+
+    location_ids = list(map(lambda l: l.locationid, locations))
+
+    if page == 'kph':
+        all_groups = BackupGroup.query.order_by(desc(BackupGroup.id)).all()
+        groups = []
+
+        for gr in all_groups:
+            if gr.canvass_shifts and gr.canvass_shifts[0].shift_location in location_ids:
+                groups.append(gr)
+
+        return render_template('backups.html', groups=groups)
+
+    else: 
+        shifts = BackupShift.query.filter(BackupShift.shift_location.in_(location_ids)).order_by(desc(BackupShift.id)).all()
+
+        return render_template('backups.html', shifts=shifts)
 
 @app.errorhandler(404)
 def page_not_found(e):

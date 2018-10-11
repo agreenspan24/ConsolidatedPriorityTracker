@@ -10,15 +10,14 @@ def update_shifts():
     
     for today_shift in syncshifts:
         update_shift = Shift.query.filter_by(date=today_shift.startdate, time=today_shift.starttime, person=today_shift.vanid).all()
-        print(update_shift)
 
         if not update_shift:
             if today_shift.locationid is not None:
                 location = Location.query.filter_by(locationid=today_shift.locationid).first()
-            print(location)
-            if not location:
-                location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
-                db.session.add(location)
+
+                if not location:
+                    location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
+                    db.session.add(location)
             
             volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()
             if not volunteer:
