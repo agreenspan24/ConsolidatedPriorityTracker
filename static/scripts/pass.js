@@ -234,3 +234,7 @@ function deleteNote(shift_id, text) {
         showAlert('error', message);
     })
 }
+
+function deleteRow(row) {
+    $('#' + row).remove();
+}

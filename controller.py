@@ -78,8 +78,11 @@ def login_auth():
 @oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
-    if g.user.office:
+    if g.user.office and g.user.office != "None":
         return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
+    
+    if g.user.region:
+        return redirect('/consolidated/' + g.user.region + '/sdc')
 
     return redirect('/consolidated')    
 

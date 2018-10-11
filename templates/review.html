@@ -65,7 +65,7 @@
     </li>
     <li class="stat-item">
       <div class="stat-info">
-        <div class="stat-data">{{stats.percent_to_goal|round(2)|string + '%' if stats.percent_to_goal else 0}}</div>
+        <div class="stat-data">{{(stats.percent_to_goal * 100)|round(2)|string + '%' if stats.percent_to_goal else 0}}</div>
         <div class="stat-title">Total % to Goal</div>
       </div>
     </li>
@@ -94,7 +94,7 @@
           <tr id="{{loop.index}}">
             <td>
               {{loop.index}}
-              <span class="glyphicons glyphicons-refresh hide" aria-hidden="true" onclick="deleteRow({{loop.index}})"></span>
+              <span class="glyphicons glyphicons-remove" aria-hidden="true" style="cursor:pointer" onclick="deleteRow({{loop.index}})"></span>
             </td>
             <td>
               <input name="shift_id[]" value="{{shift.id}}" type="hidden" />
