@@ -112,7 +112,7 @@
           {% endfor %}
         </tbody>
       </table>
-      {% if (g.user.rank in ["DATA", "FD"]) %}
+      {% if (g.user.rank in ["DATA", "FD"] and office != 'Out') %}
         <p>By clicking this button, you will sync all of these shifts to the status on the right.</p>
         
         <input type='submit' class="btn btn-full btn-blue" value="Sync Shifts To VAN" />
