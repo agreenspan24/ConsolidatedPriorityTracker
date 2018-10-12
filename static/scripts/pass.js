@@ -93,11 +93,11 @@ function updateNames(parent_id, res, elem) {
     var cellphone = ''; 
 
     res.forEach(function(shift, index) {
-        vanid += '<span id="shift-' + shift.id + '>'+ shift.van_id + '</span>';
+        vanid += '<p id="shift-' + shift.id + '">'+ shift.van_id + '</p>';
         name += '<span>'+ shift.name + '</span>';
         phone += '<p>'+ shift.phone + '</p>';
         cellphone += '<p><input id="cell-' + shift.id + '" name="cellphone" maxlength="120"' +
-            'type="text" value="' + (shift.cellphone || '') + '"/></p>';
+            'type="text" style="width:125px" value="' + (shift.cellphone || '') + '"/></p>';
     });
 
     getRowElem(parent_id, 'vanid').html(vanid);
@@ -113,7 +113,7 @@ function setOut(parent_id, res, elem) {
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
     getRowElem(parent_id, 'departure').html(res.departure);
 
-    if (!res.check_in_time){
+    if (!res.check_in_time) {
         getRowElem(parent_id, 'actual').prop('disabled', 'disabled');
         getRowElem(parent_id, 'actual').attr('disabled');
     } else {
@@ -122,6 +122,10 @@ function setOut(parent_id, res, elem) {
     }
 }
 
+function updateClaim(parent_id, res, elem) {
+    getRowElem(parent_id, 'claim').html(res)
+}
+ 
 function setUpListener() {
     $('body').on('keyup', function(e) {
         e.preventDefault();

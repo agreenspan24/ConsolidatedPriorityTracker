@@ -5,28 +5,34 @@ from setup_config import black_list, rural_locations
 from setup_config import dashboard_query
 
 def update_shifts():
-    date = datetime.today().strftime('%Y-%m-%d')
+    today = datetime.now().date()
+    date = today.strftime('%Y-%m-%d')
     syncshifts = SyncShift.query.filter_by(startdate=date).all()
     
     for today_shift in syncshifts:
         update_shift = Shift.query.filter_by(date=today_shift.startdate, time=today_shift.starttime, person=today_shift.vanid).all()
-        print(update_shift)
 
         if not update_shift:
             if today_shift.locationid is not None:
                 location = Location.query.filter_by(locationid=today_shift.locationid).first()
-            print(location)
-            if not location:
-                location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
-                db.session.add(location)
+
+                if not location:
+                    location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
+                    db.session.add(location)
             
             volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()
+            next_shift_date = None
+            if not volunteer or volunteer.next_shift == None or (volunteer.next_shift != None and volunteer.next_shift <= today):
+                
+                next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, SyncShift.startdate>date).order_by(SyncShift.startdate).first()
+                if next_shift:
+                    next_shift_date = next_shift.startdate
+
             if not volunteer:
-                if today_shift.firstname is None:
-                    today_shift.firstname = '_____'
-                if today_shift.lastname is None:
-                    today_shift.lastname = '_____'
-                volunteer = Volunteer(today_shift.vanid, today_shift.firstname, today_shift.lastname, today_shift.phone, today_shift.mobilephone)
+                firstname = today_shift.firstname if today_shift.firstname else '_____'
+                lastname = today_shift.lastname if today_shift.lastname else '_____'
+
+                volunteer = Volunteer(today_shift.vanid, firstname, lastname, today_shift.phone, today_shift.mobilephone, next_shift=next_shift_date)
                 db.session.add(volunteer)
                 db.session.commit()
                 volunteer = Volunteer.query.filter_by(van_id=today_shift.vanid).first()

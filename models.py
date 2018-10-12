@@ -45,6 +45,7 @@ class Location(db.Model):
     locationname = db.Column(db.String(50))
     region = db.Column(db.String(2))
     shifts = db.relationship('Shift', backref='location')
+    backup_shifts = db.relationship('BackupShift', backref='location')
 
     def __init__(self, locationid, actual_location_name, locationname, region):
 
@@ -52,6 +53,14 @@ class Location(db.Model):
         self.actual_location_name = actual_location_name
         self.locationname = locationname
         self.region = region
+
+    def serialize(self):
+        return {
+            'locationid': self.locationid,
+            'actual_location_name': self.actual_location_name,
+            'locationname': self.locationname,
+            'region': self.region
+        }
 
 class User(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -66,10 +75,23 @@ class User(db.Model):
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
     is_allowed = db.Column('is_allowed', db.Boolean)
+    shifts = db.relationship('Shift', backref='claim_user')
 
     def __init__(self, email, openid):
         self.email = email
         self.openid = openid
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'fullname': self.fullname,
+            'firstname': self.firstname,
+            'lastname': self.lastname,
+            'email': self.email,
+            'rank': self.rank,
+            'region': self.region,
+            'office': self.office
+        }
 
 class ShiftStatus(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -98,12 +120,13 @@ class Volunteer(db.Model):
     phone_number = db.Column(db.String(120))
     cellphone = db.Column(db.String(120))
     shifts = db.relationship('Shift', backref='volunteer')
+    backup_shifts = db.relationship('BackupShift', backref='volunteer')
     notes = db.relationship('Note', backref='note')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
-    #next_shift = db.Column(db.Date)
+    next_shift = db.Column(db.Date)
 
-    def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
+    def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0, next_shift=None):
         
         self.van_id = van_id
         self.first_name = first_name
@@ -114,10 +137,20 @@ class Volunteer(db.Model):
         self.is_intern = is_intern
         self.last_user = None
         self.last_update = None
-        #self.next_shift = None
+        self.next_shift = next_shift
 
     def serialize(self):
-        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+        return {
+            'id': self.id,
+            'van_id': self.van_id,
+            'knocks': self.knocks,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'phone_number': self.phone_number,
+            'cellphone': self.cellphone,
+            'last_user': self.last_user,
+            'last_update': self.last_update
+        }
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
@@ -142,7 +175,11 @@ class Note(db.Model):
         self.note_shift = note_shift
 
     def serialize(self):
-        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+        return {
+            'type': self.type,
+            'time': self.time,
+            'text': self.text
+        }
 
 
 class Shift(db.Model):
@@ -155,10 +192,12 @@ class Shift(db.Model):
     time = db.Column(db.Time)
     date = db.Column(db.Date)
     status = db.Column(db.String(120))
+    o_status = db.Column(db.String(120))
     role = db.Column(db.String(120))
     knocks = db.Column(db.Integer)
     flake = db.Column(db.Boolean)
     call_pass = db.Column(db.Integer)
+    flake_pass = db.Column(db.Integer)
     person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
     notes = db.relationship('Note', backref='shift')
@@ -166,6 +205,7 @@ class Shift(db.Model):
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     shift_flipped = db.Column(db.Boolean)
+    claim = db.Column(db.Integer, db.ForeignKey('consolidated.users.id'))
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -175,6 +215,7 @@ class Shift(db.Model):
         self.time = time
         self.date = date
         self.status = status
+        self.o_status = status
         self.role = role
         self.flake = False
         self.last_contact = None
@@ -182,6 +223,7 @@ class Shift(db.Model):
         self.person = person
         self.shift_location = shift_location
         self.call_pass = 0
+        self.flake_pass = 0
         self.last_user = None
         self.last_update = None
         self.shift_flipped = False
@@ -214,13 +256,20 @@ class Shift(db.Model):
 
         return self.last_contact + ": " + text
 
-    def add_pass(self):
-        if self.call_pass == None:
-            self.call_pass = 1
-        else:
-            self.call_pass += 1
-        
-        return self.call_pass
+    def add_pass(self, page):
+        if page == 'flake':
+            if self.flake_pass == None:
+                self.flake_pass = 1
+            else:
+                self.flake_pass += 1
+            return self.flake_pass
+
+        if page == 'sdc':
+            if self.call_pass == None:
+                self.call_pass = 1
+            else:
+                self.call_pass += 1
+            return self.call_pass
 
     def updated_by_other(self, page_load_time, user):
         return self.last_user != user.id and self.last_update != None and self.last_update > page_load_time
@@ -241,7 +290,9 @@ class Shift(db.Model):
             'call_pass': self.call_pass,
             'last_user': self.last_user,
             'last_update': self.last_update,
-            'notes': list(map(lambda x: x.serialize()))
+            'notes': list(map(lambda x: x.serialize(), self.notes)),
+            'volunteer': self.volunteer.serialize(),
+            'location': self.location.serialize()
         }
         
 class CanvassGroup(db.Model):
@@ -339,7 +390,19 @@ class CanvassGroup(db.Model):
 
     def serialize(self):
         return {
-            ''
+            'id': self.id,
+            'actual': self.actual,
+            'goal': self.goal,
+            'packets_given': self.packets_given,
+            'packet_names': self.packet_names,
+            'is_returned': self.is_returned,
+            'departure': self.departure,
+            'last_contact': self.last_contact,
+            'check_in_time': self.check_in_time,
+            'check_ins': self.check_ins,
+            'last_user': self.last_user,
+            'last_update': self.last_update,
+            'canvass_shifts': list(map(lambda x: x.serialize(), self.canvass_shifts))
         }
 
 
@@ -394,3 +457,46 @@ class HeaderStats:
 
         self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now)
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.call_pass < 1)
+
+class BackupShift(db.Model):
+    __table_args__ = {'schema':'backup'}
+    __tablename__ = 'backup_shift'
+
+    id = db.Column('id', db.Integer, primary_key=True)
+    eventtype = db.Column('eventtype', db.String(120))
+    date = db.Column(db.Date)
+    time = db.Column('time', db.Time)
+    role = db.Column(db.String(120))
+    status = db.Column('status', db.String(120))
+    shift_flipped = db.Column(db.Boolean)
+    shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
+    person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
+    canvass_group = db.Column(db.Integer, db.ForeignKey('backup.backup_group.id'))
+
+    def __init__(self, shift):
+        self.eventtype = shift.eventtype
+        self.date = shift.date
+        self.time = shift.time
+        self.role = shift.role
+        self.status = shift.status
+        self.shift_flipped = shift.shift_flipped
+        self.shift_location = shift.shift_location
+        self.person = shift.person
+
+
+class BackupGroup(db.Model):
+    __table_args__ = {'schema':'backup'}
+    __tablename__ = 'backup_group'
+
+    id = db.Column('id', db.Integer, primary_key=True)
+    actual = db.Column('actual', db.Integer)
+    goal = db.Column('goal', db.Integer)
+    packet_names = db.Column('packet_names', db.String(255))
+    is_returned = db.Column('is_returned', db.Boolean)
+    canvass_shifts = db.relationship('BackupShift', backref='group')
+
+    def __init__(self, group):
+        self.actual = group.actual
+        self.goal = group.goal
+        self.packet_names = group.packet_names
+        self.is_returned = group.is_returned

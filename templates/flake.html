@@ -5,9 +5,11 @@
         <thead class="thead">
             <tr>
                 <th></th>
+                <th>Claim</th>
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Cell</th>
+                <th>Next Shift</th>
                 <th>Time</th>
                 <th>Location Name</th>
                 <th>Role</th>
@@ -22,7 +24,12 @@
                 <tr id="row-{{shift.id}}">
                     <td>
                         {{loop.index}}&nbsp;&nbsp;
-                        <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                        <span class="glyphicons glyphicons-refresh hide" aria-hidden="true" style="margin:0"></span>
+                    </td>
+                    <td>
+                        <a id="claim-{{shift.id}}" name="claim" onclick="updateElem('claim-{{shift.id}}', 'claim', updateClaim)" {{'disabled' if shift.claim != None and shift.claim != g.user.id}}>
+                            {{'Claim' if shift.claim != g.user.id else (shift.claim_user.firstname if shift.claim_user.firstname != None else shift.claim_user.email.split('@')[0])}}
+                        </a>
                     </td>
                     <td id="name-{{shift.id}}">
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>
@@ -30,14 +37,15 @@
                     </td>
                     <td>{{('({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:])) if shift.volunteer.phone_number }}</td>
                     <td>
-                        <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:125px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
+                    <td>{{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}</td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.location.actual_location_name}}</td>
                     <td>{{shift.role}}</td>
                     <td>{{shift.eventtype}}</td>
                     <td>
-                        <a id='passes-{{shift.id}}' name="passes" onclick="updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.call_pass}}</a>
+                        <a id='passes-{{shift.id}}' name="passes" onclick="updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.flake_pass}}</a>
                     </td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>

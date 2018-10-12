@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response
 
-from sqlalchemy import and_, asc
+from sqlalchemy import and_, asc, desc
 
 import re
 import urllib
@@ -10,7 +10,7 @@ import urllib
 from app import app, oid
 
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
 from datetime import datetime
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
@@ -120,6 +120,7 @@ def consolidated():
 
     return render_template('index.html', offices=offices, show_dashboard=dashboard_permission)
 
+
 @oid.require_login
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
 def office(office, page):
@@ -130,7 +131,6 @@ def office(office, page):
 
     if not locations:
         return redirect('/consolidated')
-
 
     location_ids = list(map(lambda l: l.locationid, locations))
 
@@ -172,10 +172,7 @@ def office(office, page):
         sync_shifts = SyncShift.query.filter(SyncShift.locationid.in_(location_ids), SyncShift.startdate==date).all()
 
         for shift in all_shifts:
-            if shift.volunteer.van_id == None:
-                continue
-
-            if shift.shift_flipped:
+            if shift.volunteer.van_id == None or shift.shift_flipped:
                 continue
 
             sync = next((x for x in list(sync_shifts) if (x.vanid == shift.volunteer.van_id and x.starttime == shift.time and x.eventtype == shift.eventtype)), None)
@@ -333,7 +330,7 @@ def add_pass(office, page):
 
             return_var = shift.flip(page, status)    
 
-        if 'first' in keys:
+        if 'first_name' in keys:
             first = request.form.get('first_name')
 
             if shift.volunteer.updated_by_other(page_load_time, g.user):
@@ -342,7 +339,7 @@ def add_pass(office, page):
             first = escape(first)
             shift.volunteer.first_name = first 
 
-        if 'last' in keys:
+        if 'last_name' in keys:
             last = request.form.get('last_name')
 
             if shift.volunteer.updated_by_other(page_load_time, g.user):
@@ -387,7 +384,15 @@ def add_pass(office, page):
             return_var = shift.add_note(page, note_text)
 
         if 'passes' in keys:
-            return_var = str(shift.add_pass())
+            return_var = str(shift.add_pass(page))
+
+        if 'claim' in keys:
+            if shift.claim:
+                shift.claim = None
+                return_var = 'Claim'
+            else:
+                shift.claim = g.user.id
+                return_var = g.user.firstname if not g.user.firstname in [None, ''] else g.user.email.split('@')[0]
         
         shift.last_update = datetime.now().time()
         shift.last_user = g.user.id
@@ -586,23 +591,22 @@ def user():
 
     if request.method == "POST":
         user = User.query.get(g.user.id)
+        keys = request.form.keys()
 
-        firstname = request.form.get('firstname')
-        print(user.id, firstname)
+        if 'firstname' in keys:
+            firstname = request.form.get('firstname')
 
-        if firstname:
             firstname = escape(firstname)
             user.firstname = firstname
 
-        lastname = request.form.get('lastname')
-
-        if lastname:
+        if 'lastname' in keys:
+            lastname = request.form.get('lastname')
             lastname = escape(lastname)
             user.lastname = lastname
 
-        fullname = request.form.get('fullname')
 
-        if fullname:
+        if 'fullname' in keys:
+            fullname = request.form.get('fullname')
             fullname = escape(fullname)
             user.fullname = fullname
 
@@ -614,6 +618,33 @@ def user():
         db.session.commit()
 
     return render_template('user.html', offices=offices)
+
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/backup')
+def backup(office, page):
+    office = escape(office)
+    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
+
+    if not locations:
+        return redirect('/consolidated')
+
+    location_ids = list(map(lambda l: l.locationid, locations))
+
+    if page == 'kph':
+        all_groups = BackupGroup.query.order_by(desc(BackupGroup.id)).all()
+        groups = []
+
+        for gr in all_groups:
+            if gr.canvass_shifts and gr.canvass_shifts[0].shift_location in location_ids:
+                groups.append(gr)
+
+        return render_template('backups.html', groups=groups)
+
+    else: 
+        shifts = BackupShift.query.filter(BackupShift.shift_location.in_(location_ids)).order_by(desc(BackupShift.id)).all()
+
+        return render_template('backups.html', shifts=shifts)
 
 @app.errorhandler(404)
 def page_not_found(e):
