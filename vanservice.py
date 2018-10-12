@@ -34,6 +34,7 @@ class VanService:
         self.tomorrow = datetime.today() + timedelta(days=1)
 
         unflipped_shifts = []
+        success = True
         
         for key, shift_ids in event_type_dict.items():
             events = self.get_events(key)
@@ -82,11 +83,11 @@ class VanService:
                         unflipped_shifts.append(shift_id)
 
             if len(unflipped_shifts) > 0:
-                return False   
+                success = False   
 
-            db.session.commit()
+        db.session.commit()
 
-        return True
+        return success
 
     def get_events(self, eventtype):
         eventType = EventType.query.filter_by(name=eventtype).first()
