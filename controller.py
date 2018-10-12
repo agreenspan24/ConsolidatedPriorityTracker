@@ -10,7 +10,7 @@ import urllib
 from app import app, oid
 
 ##from cptvanapi import CPTVANAPI
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, BackupGroup, BackupShift
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
 from datetime import datetime
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
@@ -169,12 +169,19 @@ def office(office, page):
         stats = ShiftStats(all_shifts, groups)
 
         review_shifts = []
+        sync_shifts = SyncShift.query.filter(SyncShift.locationid.in_(location_ids), SyncShift.startdate==date).all()
+
         for shift in all_shifts:
             if shift.volunteer.van_id == None or shift.shift_flipped:
                 continue
 
-            if shift.o_status != shift.status and shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
-                if shift.status in ['Completed', 'Resched'] or not shift.o_status in ['Left Msg', 'Invited']:
+            sync = next((x for x in list(sync_shifts) if (x.vanid == shift.volunteer.van_id and x.starttime == shift.time and x.eventtype == shift.eventtype)), None)
+            
+            if not sync:
+                continue
+            
+            if sync.status != shift.status and shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
+                if shift.status in ['Completed', 'Resched'] or not sync.status in ['Left Msg', 'Invited']:
                     review_shifts.append(shift)
 
         return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=review_shifts)
