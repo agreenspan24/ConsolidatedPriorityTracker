@@ -32,7 +32,7 @@ WITH confirm_attempt_totals AS (
 	
 ), canvass_group_totals AS (
 	
-	SELECT s.shift_location, cg.id, cg.actual, cg.goal, cg.packets_given, cg.check_in_time, cg.is_returned
+	SELECT s.shift_location, cg.id, cg.actual, cg.goal, cg.packets_given, cg.check_in_time, cg.is_returned, cg.departure
 	, COUNT(*)::bigint group_canvassers
 	FROM consolidated.canvass_group cg
 	JOIN consolidated.shift s
