@@ -118,8 +118,8 @@
                     <td>{{shift.role}}</td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status', addNote)" value='{{shift.status}}'>
-                            {% if shift.status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show', 'Resched'] %}
-                                <option value={{shift.status}}>{{shift.status}}</option>
+                            {% if shift.o_status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show', 'Resched'] %}
+                                <option value={{shift.o_status}}>{{shift.o_status}}</option>
                             {% endif %}
                             <option value='Same Day Confirmed'>Same Day Confirmed</option>
                             <option value='In' {{"selected" if shift.status == "In"}}>In</option>
