@@ -15,7 +15,7 @@ from datetime import datetime
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 
-vanservice = VanService()
+#vanservice = VanService()
 
 oid.init_app(app)
 
@@ -323,7 +323,7 @@ def add_pass(office, page):
 
             return_var = shift.flip(page, status)    
 
-        if 'first' in keys:
+        if 'first_name' in keys:
             first = request.form.get('first_name')
 
             if shift.volunteer.updated_by_other(page_load_time, g.user):
@@ -332,7 +332,7 @@ def add_pass(office, page):
             first = escape(first)
             shift.volunteer.first_name = first 
 
-        if 'last' in keys:
+        if 'last_name' in keys:
             last = request.form.get('last_name')
 
             if shift.volunteer.updated_by_other(page_load_time, g.user):

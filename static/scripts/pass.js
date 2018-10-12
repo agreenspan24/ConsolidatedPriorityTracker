@@ -93,7 +93,7 @@ function updateNames(parent_id, res, elem) {
     var cellphone = ''; 
 
     res.forEach(function(shift, index) {
-        vanid += '<span id="shift-' + shift.id + '>'+ shift.van_id + '</span>';
+        vanid += '<p id="shift-' + shift.id + '">'+ shift.van_id + '</p>';
         name += '<span>'+ shift.name + '</span>';
         phone += '<p>'+ shift.phone + '</p>';
         cellphone += '<p><input id="cell-' + shift.id + '" name="cellphone" maxlength="120"' +

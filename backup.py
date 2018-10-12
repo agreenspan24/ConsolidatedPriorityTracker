@@ -16,7 +16,7 @@ def backup():
 
             db.session.add(backup_shift)
 
-    other_shifts = Shift.query.filter(Shift.canvass_group == None, Shift.shift_flipped == False).all()
+    other_shifts = Shift.query.filter(Shift.canvass_group == None).all()
 
     for shift in other_shifts:
         backup_shift = BackupShift(shift)

@@ -401,7 +401,7 @@ class CanvassGroup(db.Model):
             'check_in_time': self.check_in_time,
             'check_ins': self.check_ins,
             'last_user': self.last_user,
-            'last_update': self.last_update
+            'last_update': self.last_update,
             'canvass_shifts': list(map(lambda x: x.serialize(), self.canvass_shifts))
         }
 
