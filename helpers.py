@@ -45,9 +45,6 @@ def update_shifts():
     db.session.commit()
 
 
-    engine.execute(dashboard_query)
-
-
 def main():
     update_shifts()
 
