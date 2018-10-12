@@ -90,7 +90,7 @@ class User(db.Model):
             'email': self.email,
             'rank': self.rank,
             'region': self.region,
-            'office': self.office,
+            'office': self.office
         }
 
 class ShiftStatus(db.Model):

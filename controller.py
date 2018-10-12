@@ -15,7 +15,7 @@ from datetime import datetime
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 
-#vanservice = VanService()
+vanservice = VanService()
 
 oid.init_app(app)
 
