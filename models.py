@@ -5,7 +5,6 @@ from sqlalchemy.sql import text
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
-from dashboard_totals import DashboardTotal
 from flask import abort
 import os
 
