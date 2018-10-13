@@ -11,7 +11,7 @@ from app import app, oid
 
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
-from datetime import datetime
+from datetime import datetime, timedelta
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 
@@ -636,13 +636,13 @@ def backup(office, page):
         groups = []
 
         for gr in all_groups:
-            if gr.canvass_shifts and gr.canvass_shifts[0].shift_location in location_ids and gr.canvass_shifts[0].date > (datetime.today().date() - timedelta(days=7)):
+            if gr.canvass_shifts and gr.canvass_shifts[0].shift_location in location_ids and gr.canvass_shifts[0].date > (datetime.today() - timedelta(days=7)).date():
                 groups.append(gr)
 
         return render_template('backups.html', groups=groups)
 
     else: 
-        shifts = BackupShift.query.filter(BackupShift.shift_location.in_(location_ids), BackupShift.date > (datetime.today().date() - timedelta(days=7)).order_by(desc(BackupShift.id)).all()
+        shifts = BackupShift.query.filter(BackupShift.shift_location.in_(location_ids), BackupShift.date > (datetime.today() - timedelta(days=7)).date()).order_by(desc(BackupShift.id)).all()
 
         return render_template('backups.html', shifts=shifts)
 
