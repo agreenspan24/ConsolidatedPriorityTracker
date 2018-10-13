@@ -6,14 +6,12 @@ def backup():
 
     for group in groups:
         backup_group = BackupGroup(group)
-        print(backup_group.packet_names)
         db.session.add(backup_group)
         db.session.commit()
 
         for shift in group.canvass_shifts:
             backup_shift = BackupShift(shift)
             backup_shift.canvass_group = backup_group.id
-            print(shift.id, backup_group.id)
 
             db.session.add(backup_shift)
 
