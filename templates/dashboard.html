@@ -22,7 +22,7 @@
     {% for res in results %}
         <tr>
             <td class="item-info">
-                <a class="item-name" href="/consolidated/{{res.office[0:3]}}/review">
+                <a class="item-name" href="/consolidated/{{res.office[0:3].split(' ')|first}}/review">
                     {{res.office}}
                 </a>
             </td>

@@ -125,7 +125,7 @@ class Volunteer(db.Model):
     last_update = db.Column(db.Time)
     next_shift = db.Column(db.Date)
 
-    def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0, next_shift=None):
+    def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
         self.van_id = van_id
         self.first_name = first_name
@@ -136,7 +136,7 @@ class Volunteer(db.Model):
         self.is_intern = is_intern
         self.last_user = None
         self.last_update = None
-        self.next_shift = next_shift
+        self.next_shift = None
 
     def serialize(self):
         return {
@@ -347,7 +347,7 @@ class CanvassGroup(db.Model):
     def check_in(self, check_in_amount):
 
         self.last_check_in = datetime.now().time()
-        self.check_in_time = time(self.last_check_in.hour + 1, self.last_check_in.minute)
+        self.check_in_time = datetime.now() + timedelta(hours=1)
         self.check_ins += 1
         self.actual = int(check_in_amount)
 

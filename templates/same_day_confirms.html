@@ -121,7 +121,7 @@
                             {% if shift.o_status not in ['Same Day Confirmed', 'In', 'Completed', 'Declined', 'No Show', 'Resched'] %}
                                 <option value={{shift.o_status}}>{{shift.o_status}}</option>
                             {% endif %}
-                            <option value='Same Day Confirmed'>Same Day Confirmed</option>
+                            <option value='Same Day Confirmed' {{"selected" if shift.status == "Same Day Confirmed"}}>Same Day Confirmed</option>
                             <option value='In' {{"selected" if shift.status == "In"}}>In</option>
                             <option value='Completed' {{"selected" if shift.status == "Completed"}}>Completed</option>
                             <option value='Declined' {{"selected" if shift.status == "Declined"}}>Declined</option>
