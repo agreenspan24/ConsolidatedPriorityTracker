@@ -75,7 +75,7 @@
                         </td>
                         <td>
                             {% for shift in group.canvass_shifts %}
-                                <p>{{shift.volunteer.first_name + shift.volunteer.last_name}}</p>
+                                <p>{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</p>
                             {% endfor %}
                         </td>
                         <td>
