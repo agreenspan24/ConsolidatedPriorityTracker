@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 
-vanservice = VanService()
+#vanservice = VanService()
 
 oid.init_app(app)
 
@@ -645,6 +645,17 @@ def backup(office, page):
         shifts = BackupShift.query.filter(BackupShift.shift_location.in_(location_ids), BackupShift.date > (datetime.today() - timedelta(days=7)).date()).order_by(desc(BackupShift.id)).all()
 
         return render_template('backups.html', shifts=shifts)
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/confirm_next_shift')
+def confirm_next_shift(office, page):
+    vanid = request.form.get('vanid')
+    date = request.form.get('date')
+
+    if not vanid or not date:
+        return Response('No vanid found', 400)
+
+    vanservice.confirm_next_shift(vanid, date)
 
 @app.errorhandler(404)
 def page_not_found(e):

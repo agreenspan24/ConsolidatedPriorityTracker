@@ -242,3 +242,13 @@ function deleteNote(shift_id, text) {
 function deleteRow(row) {
     $('#' + row).remove();
 }
+
+function confirmNextShift(vanid) {
+    $.ajax({
+        type: 'POST',
+        url: window.location.pathname + '/confirm_next_shift',
+        data: {
+            vanid: vanid
+        }
+    })
+}
