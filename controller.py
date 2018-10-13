@@ -3,6 +3,7 @@ from datetime import datetime
 from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response
 
 from sqlalchemy import and_, asc, desc
+from sqlalchemy.orm import joinedload
 
 import re
 import urllib
@@ -100,7 +101,7 @@ def consolidated():
         region = g.user.region
         offices = Location.query.distinct(Location.locationname).filter_by(region=region).order_by(asc(Location.locationname)).all()
     else:"""
-    offices = Location.query.distinct(Location.locationname).order_by(asc(Location.locationname)).all()
+    offices = Location.query.order_by(asc(Location.locationname)).all()
     
     if request.method == 'POST':
         option = request.form.get('target')
@@ -134,7 +135,7 @@ def office(office, page):
 
     location_ids = list(map(lambda l: l.locationid, locations))
 
-    shifts = Shift.query.filter(Shift.shift_location.in_(location_ids), Shift.date==date).order_by(asc(Shift.time), asc(Shift.person)).all()
+    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.shift_location.in_(location_ids), Shift.date==date).order_by(asc(Shift.time), asc(Shift.person)).all()
 
     all_shifts = []
     extra_shifts = []

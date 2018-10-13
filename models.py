@@ -118,8 +118,8 @@ class Volunteer(db.Model):
     last_name = db.Column(db.String(120))
     phone_number = db.Column(db.String(120))
     cellphone = db.Column(db.String(120))
-    shifts = db.relationship('Shift', backref='volunteer')
-    backup_shifts = db.relationship('BackupShift', backref='volunteer')
+    shifts = db.relationship('Shift', backref='volunteer', lazy='joined')
+    backup_shifts = db.relationship('BackupShift', backref='volunteer', lazy='joined')
     notes = db.relationship('Note', backref='note')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
@@ -199,7 +199,7 @@ class Shift(db.Model):
     flake_pass = db.Column(db.Integer)
     person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
     shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
-    notes = db.relationship('Note', backref='shift')
+    notes = db.relationship('Note', backref='shift', lazy='joined')
     canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'))
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
@@ -307,7 +307,7 @@ class CanvassGroup(db.Model):
     last_check_in = db.Column(db.Time)
     check_in_time = db.Column(db.Time)
     check_ins = db.Column(db.Integer)
-    canvass_shifts = db.relationship('Shift', backref='group')
+    canvass_shifts = db.relationship('Shift', backref='group', lazy='joined')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
 
@@ -492,7 +492,7 @@ class BackupGroup(db.Model):
     goal = db.Column('goal', db.Integer)
     packet_names = db.Column('packet_names', db.String(255))
     is_returned = db.Column('is_returned', db.Boolean)
-    canvass_shifts = db.relationship('BackupShift', backref='group')
+    canvass_shifts = db.relationship('BackupShift', backref='group', lazy='joined')
 
     def __init__(self, group):
         self.actual = group.actual
