@@ -31,7 +31,7 @@
             <td>{{res.goal_all_day}}</td>
             <td>{{res.actual_all_day}}</td>
             <td>{{res.overdue_check_ins}}</td>
-            <td>{{((res.actual_all_day / (res.goal_all_day if res.goal_all_day else 1))|round(2))*100.0|string + '%'}}</td>
+            <td>{{((res.actual_all_day / (res.goal_all_day if res.goal_all_day else 1))|round(2))*(100|float)|string + '%'}}</td>
             <td>{{res.actual_all_day + (res.goal_out_now - res.actual_out_now)}}</td>
             <td>{{res.goal_all_day - (res.actual_all_day + (res.goal_out_now - res.actual_out_now))}}</td>
         </tr>  
