@@ -96,11 +96,11 @@ def logout():
 @app.route('/consolidated', methods=['POST','GET'])
 def consolidated():
     
-    if g.user.rank == None:
+    """if g.user.rank == None:
         region = g.user.region
         offices = Location.query.distinct(Location.locationname).filter_by(region=region).order_by(asc(Location.locationname)).all()
-    else:
-        offices = Location.query.distinct(Location.locationname).order_by(asc(Location.locationname)).all()
+    else:"""
+    offices = Location.query.distinct(Location.locationname).order_by(asc(Location.locationname)).all()
     
     if request.method == 'POST':
         option = request.form.get('target')
