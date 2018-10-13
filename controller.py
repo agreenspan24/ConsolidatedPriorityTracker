@@ -636,13 +636,13 @@ def backup(office, page):
         groups = []
 
         for gr in all_groups:
-            if gr.canvass_shifts and gr.canvass_shifts[0].shift_location in location_ids:
+            if gr.canvass_shifts and gr.canvass_shifts[0].shift_location in location_ids and gr.canvass_shifts[0].date > (datetime.today().date() - timedelta(days=7)):
                 groups.append(gr)
 
         return render_template('backups.html', groups=groups)
 
     else: 
-        shifts = BackupShift.query.filter(BackupShift.shift_location.in_(location_ids)).order_by(desc(BackupShift.id)).all()
+        shifts = BackupShift.query.filter(BackupShift.shift_location.in_(location_ids), BackupShift.date > (datetime.today().date() - timedelta(days=7)).order_by(desc(BackupShift.id)).all()
 
         return render_template('backups.html', shifts=shifts)
 
