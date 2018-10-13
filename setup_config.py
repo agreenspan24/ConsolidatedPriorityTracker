@@ -137,7 +137,7 @@ FROM office_totals
 GROUP BY region
 HAVING not region = 'Ou'
 ), state_totals AS (
-	SELECT 'State' region, 'State Total' office
+	SELECT 'Missouri' region, 'State Total' office
 , SUM(canvass_total_scheduled)::bigint canvass_total_scheduled
 , SUM(canvass_same_day_confirmed)::bigint canvass_same_day_confirmed
 , AVG(canvass_same_day_confirmed_perc) canvass_same_day_confirmed_perc
