@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth
 from flask import jsonify, Response
 import json
 import os
-from models import ShiftStatus, Shift, EventType, SyncShift
+from models import ShiftStatus, Shift, EventType
 from datetime import datetime, time, timedelta
 from dateutil.parser import parse
 from app import app, db
