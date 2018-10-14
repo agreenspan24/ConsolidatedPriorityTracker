@@ -111,7 +111,12 @@
                     <td>
                         <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:125px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
-                    <td ondblclick="confirmNextShift({{shift.volunteer.van_id}})">{{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}<span id="ok-{{shift.volunteer.van_id}}" class="glyphicons glyphicons-ok"></span></td>
+                    <td vanid="{{shift.volunteer.van_id if (shift.volunteer.van_id and shift.volunteer.next_shift and not shift.volunteer.next_shift_confirmed)}}" ondblclick="confirm_next_shift(event)" style="cursor:pointer">
+                        {{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}
+                        {% if shift.volunteer.next_shift_confirmed %}
+                            &nbsp;<span class='glyphicons glyphicons-ok text-green7'></span>
+                        {% endif %}
+                    </td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.location.actual_location_name}}</td>
                     <td>{{shift.eventtype}}</td>

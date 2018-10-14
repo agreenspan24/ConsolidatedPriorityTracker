@@ -22,9 +22,13 @@ def update_shifts():
             db.session.commit()
 
         if volunteer.next_shift == None or volunteer.next_shift <= today:
+            volunteer.next_shift == None
+            
             next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, SyncShift.startdate>date).order_by(SyncShift.startdate).first()
             if next_shift:
                 volunteer.next_shift = next_shift.startdate
+                if next_shift.status == 'Confirmed':
+                    volunteer.next_shift_confirmed = True
 
         if today_shift.locationid is not None:
             location = Location.query.filter_by(locationid=today_shift.locationid).first()

@@ -124,6 +124,7 @@ class Volunteer(db.Model):
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     next_shift = db.Column(db.Date)
+    next_shift_confirmed = db.Column(db.Boolean)
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -137,6 +138,7 @@ class Volunteer(db.Model):
         self.last_user = None
         self.last_update = None
         self.next_shift = None
+        self.next_shift_confirmed = False
 
     def serialize(self):
         return {

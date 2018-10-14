@@ -243,25 +243,31 @@ function deleteRow(row) {
     $('#' + row).remove();
 }
 
-function confirmNextShift(vanid) {
-    showAlert('info', 'Updating next shift for ' + vanid);
+function confirm_next_shift(e) {
+    vanid = e.target.attributes['vanid'].nodeValue;
 
-    $.ajax({
-        type: 'POST',
-        url: window.location.pathname + '/confirm_next_shift',
-        data: {
-            vanid: vanid
-        }
-    }).done(function() {
-        showAlert('success', 'Updated next shift for ' + vanid);
-        console.log(this);
-    }).fail(function() {
-        var message = 'Could not update next shift.';
+    if (!vanid) return;
 
-        if (res.responseText) {
-            message += ' Error message: ' + res.responseText
-        }
-        
-        showAlert('error', message);
-    })
+    if (confirm('Are you sure you want to confirm this person for their next shift?')) {
+        showAlert('info', 'Updating next shift for ' + vanid);
+
+        $.ajax({
+            type: 'POST',
+            url: window.location.pathname + '/confirm_next_shift',
+            data: {
+                vanid: vanid
+            }
+        }).done(function() {
+            showAlert('success', 'Updated next shift for ' + vanid);
+            e.target.innerHTML += '&nbsp;<span class="glyphicons glyphicons-ok text-green7"></span>';
+        }).fail(function(res) {
+            var message = 'Could not update next shift.';
+
+            if (res.responseText) {
+                message += ' Error message: ' + res.responseText
+            }
+            
+            showAlert('error', message);
+        });
+    }
 }
