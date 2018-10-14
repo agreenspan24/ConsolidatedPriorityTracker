@@ -7,7 +7,7 @@
     
     <form action="/consolidated" method="post">
         <div class="panel-content align-center">
-            {% if show_dashboard %}
+            {% if g.user.rank == 'DATA' or g.user.rank == 'FD' %}
                 <input type='submit' name='target' class="btn btn-blue btn-full" value='Dashboard'>
                 <hr>
             {% endif %}

@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 
-vanservice = VanService()
+#vanservice = VanService()
 
 oid.init_app(app)
 
@@ -116,10 +116,7 @@ def consolidated():
 
         return redirect('/consolidated/' + str(office)[0:3] + '/' + page)
 
-    user = User.query.filter_by(email=g.user.email).first()
-    dashboard_permission = user.rank == 'DATA' or user.rank == 'FD'
-
-    return render_template('index.html', offices=offices, show_dashboard=dashboard_permission)
+    return render_template('index.html', offices=offices)
 
 
 @oid.require_login
@@ -135,7 +132,7 @@ def office(office, page):
 
     location_ids = list(map(lambda l: l.locationid, locations))
 
-    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.shift_location.in_(location_ids), Shift.date==date).order_by(asc(Shift.time), asc(Shift.person)).all()
+    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.is_active==True, Shift.shift_location.in_(location_ids), Shift.date==date).order_by(asc(Shift.time), asc(Shift.person)).all()
 
     all_shifts = []
     extra_shifts = []
@@ -148,7 +145,7 @@ def office(office, page):
     for shift in extra_shifts:
         all_shifts.append(shift)
         
-    all_groups = CanvassGroup.query.all()
+    all_groups = CanvassGroup.query.filter_by(is_active=True).all()
     groups = []
 
     for gr in all_groups:
@@ -205,7 +202,7 @@ def add_pass(office, page):
     if page == 'kph':
         group = CanvassGroup.query.get(parent_id)
 
-        if not group:
+        if not group or not group.is_active:
             return Response('Group Not Found', status=400)
 
         if group.updated_by_other(page_load_time, g.user):
@@ -316,7 +313,7 @@ def add_pass(office, page):
     else: 
         shift = Shift.query.get(parent_id)
 
-        if not shift:
+        if not shift or not shift.is_active:
             return Response('Shift not found', status=400)
         
         if shift.updated_by_other(page_load_time, g.user):
@@ -534,14 +531,14 @@ def get_recently_updated(office, page):
     update_ids = []
 
     if page == 'kph':
-        all_groups = CanvassGroup.query.all()
+        all_groups = CanvassGroup.query.filter_by(is_active=True).all()
 
         for gr in all_groups:
             if (gr.canvass_shifts[0].shift_location in location_ids) and gr.updated_by_other(page_load_time, g.user):
                 update_ids.append(gr.id)
 
     else:
-        shifts = Shift.query.filter(Shift.shift_location.in_(location_ids)).all()
+        shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).all()
         
         for shift in shifts:
             if shift.updated_by_other(page_load_time, g.user):
@@ -557,17 +554,18 @@ def delete_element(office, page):
 
     if page == 'kph':
         group = CanvassGroup.query.get(parent_id)
+        group.is_active = False
         name = ','.join(list(map(lambda s: s.volunteer.first_name + ' ' + s.volunteer.last_name, group.canvass_shifts)))
-        db.session.delete(group)
     
     else: 
         shift = Shift.query.get(parent_id)
 
         if shift.canvass_group:
-            return Response('Please delete shift from canvass group first', 400)
-            
+            if shift.group.is_active:
+                return Response('Please delete shift from canvass group first', 400)
+        
+        shift.is_active = False
         name = shift.volunteer.first_name + ' ' + shift.volunteer.last_name
-        db.session.delete(shift)
 
     db.session.commit()
     return name
