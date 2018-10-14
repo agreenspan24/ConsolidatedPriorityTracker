@@ -91,39 +91,39 @@ class VanService:
 
         return list(events['items'])
 
-    def confirm_next_shift(vanid):
+
+    def confirm_next_shift(self, vanid):
         signups_json = self.client.get(self.api_url + 'signups?vanId=' + vanid).json()
 
-        signups = list(signups_json['items']).reverse() #puts in ascending date order
+        signups = list(signups_json['items']) #puts in ascending date order
+        print('signups[0]', signups[0])
+        if not signups:
+            return Response('Shifts not found', 400)
 
+        signups.reverse()
+    
         next_shift = next((x for x in signups if parse(x['startTimeOverride']).date() > datetime.today().date()), None)
-
-        if next_shift['status']['name'] != 'Confirmed':
-            response = update_status(next_shift, 'Confirmed')
+        print('next_shift', next_shift)
+        if next_shift and next_shift['status']['name'] != 'Confirmed':
+            response = self.update_status(next_shift, 'Confirmed')
+            print(response)
 
             if response.status_code < 400:
                 shift.shift_flipped = True
+                return True
             else: 
-                return Response('Error updating shifts', 400)
-            
+                return Response('Error updating shift', 400)
+
+        return False
 
 
-    def update_status(signup, status):
-        status = ShiftStatus.query.filter_by(name=shift.status).first()
+    def update_status(self, signup, status):
+        status = ShiftStatus.query.filter_by(name=status).first()
 
         signup['status'] = {
             'statusId': status.id,
         }
 
-        #print('this would be flipped', signup)
+        print('this would be flipped', signup)
 
         response = self.client.put(self.api_url + 'signups/' + str(signup['eventSignupId']), data=json.dumps(signup))
-
-        if response.status_code < 400:
-            return True
-        else: 
-            return Response('Error updating shifts', 400)
-
-
-
-

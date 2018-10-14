@@ -49,7 +49,7 @@ function updateElem(elem_id, elem_name, success_callback) {
         if (res.responseText) {
             message += ' Error message: ' + res.responseText
         }
-        console.log(res);
+
         showAlert('error', message);
         elem.prop('disabled', false);
     });
@@ -244,11 +244,24 @@ function deleteRow(row) {
 }
 
 function confirmNextShift(vanid) {
+    showAlert('info', 'Updating next shift for ' + vanid);
+
     $.ajax({
         type: 'POST',
         url: window.location.pathname + '/confirm_next_shift',
         data: {
             vanid: vanid
         }
+    }).done(function() {
+        showAlert('success', 'Updated next shift for ' + vanid);
+        console.log(this);
+    }).fail(function() {
+        var message = 'Could not update next shift.';
+
+        if (res.responseText) {
+            message += ' Error message: ' + res.responseText
+        }
+        
+        showAlert('error', message);
     })
 }
