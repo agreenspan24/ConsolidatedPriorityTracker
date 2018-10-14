@@ -6,7 +6,8 @@ rural_locations = {
    'R4F - West Plains McDonalds' : 'R4F - Rural',
    'R4F - Secondary Turf Sikeston' : 'R4F - Rural',
    'R4F - Perryville Staging Location' : 'R4F - Rural',
-   'R4: Secondary Turf Farmington' : 'R4F - Rural'
+   'R4: Secondary Turf Farmington' : 'R4F - Rural',
+   'R4F - Secondary Turf': 'R4F - Rural'
 }
 
 dashboard_query = """

@@ -26,8 +26,8 @@ def update_shifts():
             if next_shift:
                 volunteer.next_shift = next_shift.startdate
 
-        if today_shift.locationname is not None:
-            location = Location.query.filter_by(locationname=today_shift.locationname).first()
+        if today_shift.locationname != None:
+            location = Location.query.filter_by(actual_location_name=today_shift.locationname).first()
 
             if not location:
                 location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
