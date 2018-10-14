@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 
-vanservice = VanService()
+#vanservice = VanService()
 
 oid.init_app(app)
 
@@ -132,7 +132,11 @@ def office(office, page):
 
     location_ids = list(map(lambda l: l.locationid, locations))
 
-    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
+<<<<<<< HEAD
+    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.is_active==True, Shift.shift_location.in_(location_ids), Shift.date==date).order_by(asc(Shift.time), asc(Shift.person)).all()
+=======
+    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
+>>>>>>> 02bd99dbe81bcc3f4e19a0f70c696eb16b94d481
 
     all_shifts = []
     extra_shifts = []
