@@ -388,6 +388,9 @@ def add_pass(office, page):
 
         if 'claim' in keys:
             if shift.claim:
+                if shift.claim != g.user.id:
+                    return Response('Another user has claimed this shift', 400)
+                    
                 shift.claim = None
                 return_var = 'Claim'
             else:
