@@ -135,7 +135,7 @@ def office(office, page):
 
     location_ids = list(map(lambda l: l.locationid, locations))
 
-    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.shift_location.in_(location_ids), Shift.date==date).order_by(asc(Shift.time), asc(Shift.person)).all()
+    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
 
     all_shifts = []
     extra_shifts = []
