@@ -21,11 +21,12 @@ def update_shifts():
             db.session.add(volunteer)
             db.session.commit()
 
-        volunteer.next_shift == None
-        volunteer.next_shift == False
+        volunteer.next_shift = None
+        volunteer.next_shift_confirmed = False
         
-        next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, date < SyncShift.startdate).order_by(SyncShift.startdate).first()
+        next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, today < SyncShift.startdate).order_by(SyncShift.startdate).first()
         if next_shift:
+            print(next_shift.startdate)
             volunteer.next_shift = next_shift.startdate
         
             if next_shift.status == 'Confirmed':
