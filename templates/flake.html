@@ -53,7 +53,7 @@
                         <a id='passes-{{shift.id}}' name="passes" onclick="updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.flake_pass}}</a>
                     </td>
                     <td>
-                        <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status')" value='{{shift.status}}'>
+                        <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status', addNote)" value='{{shift.status}}'>
                             {% if shift.status not in ['No Show', 'Resched', 'Declined', 'Same Day Confirmed'] %}
                                 <option value={{shift.status}}>{{shift.status}}</option>
                             {% endif %}

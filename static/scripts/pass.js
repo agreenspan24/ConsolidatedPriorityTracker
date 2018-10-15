@@ -123,16 +123,14 @@ function setOut(parent_id, res, elem) {
 }
 
 function updateClaim(parent_id, res, elem) {
-    getRowElem(parent_id, 'claim').html(res)
+    getRowElem(parent_id, 'claim').html(res);
 }
  
 function setUpListener() {
-    accept_keys = [9, 13, 37, 39];
-
-    $('body').on('keyup', function(e) {
+    $('td input').on('keyup', function(e) {
         e.preventDefault();
 
-        if (accept_keys.indexOf(e.keyCode) > -1) {
+        if (e.keyCode == 13) {
             var name = e.target.attributes['name'].nodeValue;
             var id = event.target.id;
 
@@ -250,7 +248,7 @@ function deleteNote(shift_id, text) {
         }
         
         showAlert('error', message);
-    })
+    });
 }
 
 function deleteRow(row) {
