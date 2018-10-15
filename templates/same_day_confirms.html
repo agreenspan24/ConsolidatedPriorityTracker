@@ -81,7 +81,7 @@
             {% for shift in shifts %}
                 <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('text-red7' if shift.status in ['Declined', 'No Show', 'Resched'])}}">
                     <td>
-                        {{loop.index}}&nbsp;&nbsp;
+                        {{loop.index}}
                         <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
                         {% if shift.volunteer.van_id == None %}
                             <span class="glyphicons glyphicons-remove" onclick="deleteElement({{shift.id}})" style="cursor:pointer;margin-right:0"></span>
@@ -89,7 +89,7 @@
                     </td>
                     <td>
                         <a id="claim-{{shift.id}}" name="claim" onclick="updateElem('claim-{{shift.id}}', 'claim', updateClaim)" {{'disabled' if shift.claim != None and shift.claim != g.user.id}}>
-                            {{'Claim' if shift.claim != g.user.id else (shift.claim_user.firstname if not shift.claim_user.firstname in [None, ''] else shift.claim_user.email.split('@')[0])}}
+                            {{'Claim' if not shift.claim else shift.claim_user.claim_name() }}
                         </a>
                     </td>
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
@@ -111,7 +111,12 @@
                     <td>
                         <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:125px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
-                    <td>{{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}</td>
+                    <td vanid="{{shift.volunteer.van_id if (shift.volunteer.van_id and shift.volunteer.next_shift and not shift.volunteer.next_shift_confirmed)}}" ondblclick="confirm_next_shift(event)" style="cursor:pointer">
+                        {{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}
+                        {% if shift.volunteer.next_shift_confirmed %}
+                            &nbsp;<span class='glyphicons glyphicons-ok text-green7'></span>
+                        {% endif %}
+                    </td>
                     <td>{{shift.time.strftime('%I:%M %p')}}</td>
                     <td>{{shift.location.actual_location_name}}</td>
                     <td>{{shift.eventtype}}</td>

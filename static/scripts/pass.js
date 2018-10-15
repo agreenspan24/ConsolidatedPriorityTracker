@@ -49,7 +49,7 @@ function updateElem(elem_id, elem_name, success_callback) {
         if (res.responseText) {
             message += ' Error message: ' + res.responseText
         }
-        console.log(res);
+
         showAlert('error', message);
         elem.prop('disabled', false);
     });
@@ -79,7 +79,7 @@ function updateCheckIns(parent_id, res, elem) {
 
     updateGoalActual(parent_id, res, elem);
 
-    addNote(parent_id, res.note);
+    addNote(parent_id, res.note, elem);
 }
 
 function updatePasses(parent_id, res, elem) {
@@ -107,11 +107,11 @@ function updateNames(parent_id, res, elem) {
 }
 
 function setOut(parent_id, res, elem) {
-    getRowElem(parent_id, 'out').html(res.is_returned ? 'Set "Not Returned"' : 'Set "Returned"');
+    getRowElem(parent_id, 'out').html(res.is_returned ? 'Not Done' : 'Done');
     getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
-    getRowElem(parent_id, 'departure').html(res.departure);
+    getRowElem(parent_id, 'departure').val(res.departure);
 
     if (!res.check_in_time) {
         getRowElem(parent_id, 'actual').prop('disabled', 'disabled');
@@ -154,18 +154,28 @@ function setUpListener() {
                 updateElem(id, name, null);
             } else if (name == 'packet_names') {
                 updateElem(id, name, null);
-            } 
+            } else if (name == 'departure') {
+                updateElem(id, name, updateCheckIns);
+            }
         }
     });
 }
 
 $(document).ready(setUpListener);
 
-function show_recently_updated(ids) {
-    ids.forEach(function(id) {
-        $('#row-' + id).addClass('text-red7');
-        $('#row-' + id + ' .glyphicons.glyphicons-refresh').removeClass('hide');
-    })
+function show_recently_updated(elements) {
+    elements.forEach(function(element) {
+        $('#claim-' + element.id).html(element.claim);
+
+        if (element.updated) {
+            $('#row-' + element.id).addClass('text-red7');
+            $('#row-' + element.id + ' .glyphicons.glyphicons-refresh').removeClass('hide');
+            $('#claim-' + element.id).attr('disabled');
+        }
+        else {
+            $('#claim-' + element.id).removeAttr('disabled');
+        }
+    });
 }
 
 function get_recently_updated() {
@@ -188,7 +198,7 @@ function get_recently_updated() {
 }
 
 if (!window.location.pathname.endsWith('review')) {
-    setInterval(get_recently_updated, 30000);
+    setInterval(get_recently_updated, 20000);
 }
 
 function deleteElement(parent_id) {
@@ -245,4 +255,33 @@ function deleteNote(shift_id, text) {
 
 function deleteRow(row) {
     $('#' + row).remove();
+}
+
+function confirm_next_shift(e) {
+    vanid = e.target.attributes['vanid'].nodeValue;
+
+    if (!vanid) return;
+
+    if (confirm('Are you sure you want to confirm this person for their next shift?')) {
+        showAlert('info', 'Updating next shift for ' + vanid);
+
+        $.ajax({
+            type: 'POST',
+            url: window.location.pathname + '/confirm_next_shift',
+            data: {
+                vanid: vanid
+            }
+        }).done(function() {
+            showAlert('success', 'Updated next shift for ' + vanid);
+            e.target.innerHTML += '&nbsp;<span class="glyphicons glyphicons-ok text-green7"></span>';
+        }).fail(function(res) {
+            var message = 'Could not update next shift.';
+
+            if (res.responseText) {
+                message += ' Error message: ' + res.responseText
+            }
+            
+            showAlert('error', message);
+        });
+    }
 }
