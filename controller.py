@@ -167,7 +167,7 @@ def office(office, page):
         stats = ShiftStats(all_shifts, groups)
 
         review_shifts = []
-        sync_shifts = SyncShift.query.filter(SyncShift.locationid.in_(location_ids), SyncShift.startdate==date).all()
+        sync_shifts = SyncShift.query.filter(SyncShift.locationname.like(office + '%')), SyncShift.startdate==date).all()
 
         for shift in all_shifts:
             if shift.volunteer.van_id == None or shift.shift_flipped:
