@@ -110,7 +110,10 @@ class VanService:
     def confirm_next_shift(self, vanid):
 
         volunteer = Volunteer.query.filter_by(van_id=vanid).first()
-
+        
+        if not volunteer:
+            return Response('Volunteer not found', 400)
+            
         if volunteer.next_shift_confirmed:
             return True
 

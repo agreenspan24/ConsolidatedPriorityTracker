@@ -698,6 +698,9 @@ def confirm_next_shift(office, page):
     if not vanid:
         return Response('No vanid found', 400)
 
+    if not vanid.isdigit():
+        return Response('Invalid vanid', 400)
+
     success = vanservice.confirm_next_shift(vanid)
 
     if success:
