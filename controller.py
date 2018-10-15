@@ -13,6 +13,7 @@ from app import app, oid
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
 from datetime import datetime, timedelta
+from dateutil.parser import parse
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 
@@ -96,12 +97,8 @@ def logout():
 @oid.require_login
 @app.route('/consolidated', methods=['POST','GET'])
 def consolidated():
-    
-    """if g.user.rank == None:
-        region = g.user.region
-        offices = Location.query.distinct(Location.locationname).filter_by(region=region).order_by(asc(Location.locationname)).all()
-    else:"""
-    offices = Location.query.order_by(asc(Location.locationname)).all()
+
+    offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
     
     if request.method == 'POST':
         option = request.form.get('target')
@@ -167,7 +164,7 @@ def office(office, page):
         stats = ShiftStats(all_shifts, groups)
 
         review_shifts = []
-        sync_shifts = SyncShift.query.filter(SyncShift.locationname.like(office + '%')), SyncShift.startdate==date).all()
+        sync_shifts = SyncShift.query.filter(SyncShift.locationname.like(office + '%'), SyncShift.startdate==date).all()
 
         for shift in all_shifts:
             if shift.volunteer.van_id == None or shift.shift_flipped:
@@ -259,6 +256,27 @@ def add_pass(office, page):
                 'note': note
             })
 
+        if 'departure' in keys:
+            new_departure_time = request.form.get('departure')
+            
+            try:
+                new_departure_time = parse(new_departure_time)
+            except:
+                return Response('Invalid Time', 400)
+
+            group = group.change_departure(new_departure_time)
+
+            note = group.add_note('kph', 'Departure changed to ' + group.departure.strftime('%I:%M %p'))
+
+            return_var = jsonify({
+                'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
+                'last_check_in': group.last_check_in.strftime('%I:%M %p'),
+                'check_ins': group.check_ins,
+                'actual': group.actual,
+                'note': note
+            })
+
+
         if 'note' in keys:
             note_text = request.form.get('note')
 
@@ -307,8 +325,20 @@ def add_pass(office, page):
 
             group.packet_names = packet_names
 
-        group.last_update = datetime.now().time()
-        group.last_user = g.user.id
+        if 'claim' in keys:
+            if group.claim:
+                if group.claim != g.user.id:
+                    return Response('Another user has claimed this group', 400)
+
+                group.claim = None
+                return_var = 'Claim'
+            else:
+                group.claim = g.user.id
+                return_var = g.user.claim_name()
+                
+        else:
+            group.last_update = datetime.now().time()
+            group.last_user = g.user.id
 
     else: 
         shift = Shift.query.get(parent_id)
@@ -317,7 +347,7 @@ def add_pass(office, page):
             return Response('Shift not found', status=400)
         
         if shift.updated_by_other(page_load_time, g.user):
-            return Response('This Shift has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+            return Response('This Shift has been updated by a different user since you last loaded the page. Please refresh and try again.', 400)
         
         if 'status' in keys:
             status = request.form.get('status')
@@ -386,14 +416,18 @@ def add_pass(office, page):
 
         if 'claim' in keys:
             if shift.claim:
+                if shift.claim != g.user.id:
+                    return Response('Another user has claimed this shift', 400)
+
                 shift.claim = None
                 return_var = 'Claim'
             else:
                 shift.claim = g.user.id
-                return_var = g.user.firstname if not g.user.firstname in [None, ''] else g.user.email.split('@')[0]
+                return_var = g.user.claim_name()
         
-        shift.last_update = datetime.now().time()
-        shift.last_user = g.user.id
+        else:
+            shift.last_update = datetime.now().time()
+            shift.last_user = g.user.id
 
     db.session.commit()
 
@@ -528,23 +562,30 @@ def get_recently_updated(office, page):
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
     location_ids = list(map(lambda l: l.locationid, locations))
 
-    update_ids = []
+    updates = []
 
     if page == 'kph':
         all_groups = CanvassGroup.query.filter_by(is_active=True).all()
 
         for gr in all_groups:
-            if (gr.canvass_shifts[0].shift_location in location_ids) and gr.updated_by_other(page_load_time, g.user):
-                update_ids.append(gr.id)
+            if (gr.canvass_shifts[0].shift_location in location_ids):
+                updates.append({
+                    'id': gr.id,
+                    'updated': gr.updated_by_other(page_load_time, g.user),
+                    'claim': gr.claim_user.claim_name() if gr.claim else 'Claim'
+                })
 
     else:
         shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).all()
         
         for shift in shifts:
-            if shift.updated_by_other(page_load_time, g.user):
-                update_ids.append(shift.id)
+            updates.append({
+                'id': shift.id,
+                'updated': shift.updated_by_other(page_load_time, g.user),
+                'claim': shift.claim_user.claim_name() if shift.claim else 'Claim'
+            })
 
-    return jsonify(update_ids)
+    return jsonify(updates)
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/delete_element', methods=['DELETE'])
@@ -555,6 +596,8 @@ def delete_element(office, page):
     if page == 'kph':
         group = CanvassGroup.query.get(parent_id)
         group.is_active = False
+        group.last_user = g.user.id
+        group.last_update = datetime.now().time()
         name = ','.join(list(map(lambda s: s.volunteer.first_name + ' ' + s.volunteer.last_name, group.canvass_shifts)))
     
     else: 
@@ -565,6 +608,8 @@ def delete_element(office, page):
                 return Response('Please delete shift from canvass group first', 400)
         
         shift.is_active = False
+        shift.last_user = g.user.id
+        shift.last_update = datetime.now().time()
         name = shift.volunteer.first_name + ' ' + shift.volunteer.last_name
 
     db.session.commit()
@@ -644,6 +689,24 @@ def backup(office, page):
         shifts = BackupShift.query.filter(BackupShift.shift_location.in_(location_ids), BackupShift.date > (datetime.today() - timedelta(days=7)).date()).order_by(desc(BackupShift.id)).all()
 
         return render_template('backups.html', shifts=shifts)
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/confirm_next_shift', methods=['POST'])
+def confirm_next_shift(office, page):
+    vanid = request.form.get('vanid')
+
+    if not vanid:
+        return Response('No vanid found', 400)
+
+    if not vanid.isdigit():
+        return Response('Invalid vanid', 400)
+
+    success = vanservice.confirm_next_shift(vanid)
+
+    if success:
+        return Response('Success', 200)
+    else:
+        return Response('Failed to update next shift for ' + vanid, 400)
 
 @app.errorhandler(404)
 def page_not_found(e):

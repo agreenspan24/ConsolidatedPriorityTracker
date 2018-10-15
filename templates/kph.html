@@ -33,7 +33,7 @@
                     <input class="input-element" type="number" name="packets_given" id="packets_given" min="0" />
                 </td>
                 <td>
-                    <label class="input-label" for="packet_names">Packets</label>
+                    <label class="input-label" for="packet_names">Packet Names</label>
                     <input class="input-element" type="text" name="packet_names" id="packet_names" maxlength="255"/> 
                 </td>
 
@@ -55,14 +55,15 @@
     <thead class="thead">
         <tr>
             <th></th>
+            <th>Claim</th>
             <th>Name</th>
             <th>VanID</th>
             <th>Phone Number</th>
             <th>Cell</th>
-            <th># Packets Out</th>
-            <th>Packets</th>
+            <th># Packets</th>
+            <th>Packet Names</th>
             <th></th>
-            <th>Time of Departure</th>
+            <th>Depart Time</th>
             <th>Next Check In</th>
             <th>Last Check In</th>
             <th>Check Ins</th>
@@ -78,9 +79,14 @@
         {% for group in groups %}
             <tr id="row-{{group.id}}" class="{{'text-green7' if group.is_returned else ('text-red7' if group.check_in_time != None and group.check_in_time < g.time_now)}}">
                 <td>
-                    {{loop.index}}&nbsp;&nbsp;
-                    <span class="glyphicons glyphicons-remove" onclick="deleteElement({{group.id}})" style="cursor:pointer"></span>&nbsp;&nbsp;
+                    {{loop.index}}
+                    <span class="glyphicons glyphicons-remove" onclick="deleteElement({{group.id}})" style="cursor:pointer;margin:0"></span>
                     <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
+                </td>
+                <td>
+                    <a id="claim-{{group.id}}" name="claim" onclick="updateElem('claim-{{group.id}}', 'claim', updateClaim)" {{'disabled' if group.claim != None and group.claim != g.user.id}}>
+                        {{'Claim' if not group.claim else group.claim_user.claim_name() }}
+                    </a>
                 </td>
                 <td style="vertical-align: top">
                     <select class="input-element" name="shift_id[]" id="shift_id-{{group.id}}"
@@ -133,10 +139,12 @@
                 </td>
                 <td>
                     <a id='out-{{group.id}}' name='out' onclick="updateElem('out-{{group.id}}', 'out', setOut)">
-                        {{'Depart' if group.departure == None else 'Set "Not Returned"' if group.is_returned else 'Set "Returned"'}}
+                        {{'Depart' if group.departure == None else ('Not Done' if group.is_returned else 'Done')}}
                     </a>
                 </td>
-                <td id='departure-{{group.id}}'>{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}</td>
+                <td >
+                    <input id='departure-{{group.id}}' name='departure' type="time" style="max-width:75px" value="{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}" />
+                </td>
                 <td id='check_in_time-{{group.id}}'>{{group.check_in_time.strftime('%I:%M %p') if group.check_in_time != None else ''}}</td> 
                 <td id='last_check_in-{{group.id}}'>{{group.last_check_in.strftime('%I:%M %p') if group.last_check_in != None else ''}}</td>
                 <td id='check_ins-{{group.id}}'>{{group.check_ins}}</td>
