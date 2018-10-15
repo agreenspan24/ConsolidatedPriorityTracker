@@ -12,6 +12,7 @@ from app import app, oid
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
 from datetime import datetime, timedelta
+from dateutil.parser import parse
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 
@@ -261,6 +262,27 @@ def add_pass(office, page):
                 'note': note
             })
 
+        if 'departure' in keys:
+            new_departure_time = request.form.get('departure')
+            
+            try:
+                new_departure_time = parse(new_departure_time)
+            except:
+                return Response('Invalid Time', 400)
+
+            group = group.change_departure(new_departure_time)
+
+            note = group.add_note('kph', 'Departure changed to ' + group.departure.strftime('%I:%M %p'))
+
+            return_var = jsonify({
+                'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
+                'last_check_in': group.last_check_in.strftime('%I:%M %p'),
+                'check_ins': group.check_ins,
+                'actual': group.actual,
+                'note': note
+            })
+
+
         if 'note' in keys:
             note_text = request.form.get('note')
 
@@ -309,8 +331,20 @@ def add_pass(office, page):
 
             group.packet_names = packet_names
 
-        group.last_update = datetime.now().time()
-        group.last_user = g.user.id
+        if 'claim' in keys:
+            if group.claim:
+                if group.claim != g.user.id:
+                    return Response('Another user has claimed this group', 400)
+
+                group.claim = None
+                return_var = 'Claim'
+            else:
+                group.claim = g.user.id
+                return_var = g.user.claim_name()
+                
+        else:
+            group.last_update = datetime.now().time()
+            group.last_user = g.user.id
 
     else: 
         shift = Shift.query.get(parent_id)
@@ -390,15 +424,16 @@ def add_pass(office, page):
             if shift.claim:
                 if shift.claim != g.user.id:
                     return Response('Another user has claimed this shift', 400)
-                    
+
                 shift.claim = None
                 return_var = 'Claim'
             else:
                 shift.claim = g.user.id
-                return_var = g.user.firstname if not g.user.firstname in [None, ''] else g.user.email.split('@')[0]
+                return_var = g.user.claim_name()
         
-        shift.last_update = datetime.now().time()
-        shift.last_user = g.user.id
+        else:
+            shift.last_update = datetime.now().time()
+            shift.last_user = g.user.id
 
     db.session.commit()
 
@@ -533,23 +568,30 @@ def get_recently_updated(office, page):
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
     location_ids = list(map(lambda l: l.locationid, locations))
 
-    update_ids = []
+    updates = []
 
     if page == 'kph':
         all_groups = CanvassGroup.query.all()
 
         for gr in all_groups:
-            if (gr.canvass_shifts[0].shift_location in location_ids) and gr.updated_by_other(page_load_time, g.user):
-                update_ids.append(gr.id)
+            if (gr.canvass_shifts[0].shift_location in location_ids):
+                updates.append({
+                    'id': gr.id,
+                    'updated': gr.updated_by_other(page_load_time, g.user),
+                    'claim': gr.claim_user.claim_name() if gr.claim else 'Claim'
+                })
 
     else:
         shifts = Shift.query.filter(Shift.shift_location.in_(location_ids)).all()
         
         for shift in shifts:
-            if shift.updated_by_other(page_load_time, g.user):
-                update_ids.append(shift.id)
+            updates.append({
+                'id': shift.id,
+                'updated': shift.updated_by_other(page_load_time, g.user),
+                'claim': shift.claim_user.claim_name() if shift.claim else 'Claim'
+            })
 
-    return jsonify(update_ids)
+    return jsonify(updates)
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/delete_element', methods=['DELETE'])

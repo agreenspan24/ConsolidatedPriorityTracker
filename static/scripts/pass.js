@@ -79,7 +79,7 @@ function updateCheckIns(parent_id, res, elem) {
 
     updateGoalActual(parent_id, res, elem);
 
-    addNote(parent_id, res.note);
+    addNote(parent_id, res.note, elem);
 }
 
 function updatePasses(parent_id, res, elem) {
@@ -107,11 +107,11 @@ function updateNames(parent_id, res, elem) {
 }
 
 function setOut(parent_id, res, elem) {
-    getRowElem(parent_id, 'out').html(res.is_returned ? 'Set "Not Returned"' : 'Set "Returned"');
+    getRowElem(parent_id, 'out').html(res.is_returned ? 'Not Done' : 'Done');
     getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
-    getRowElem(parent_id, 'departure').html(res.departure);
+    getRowElem(parent_id, 'departure').val(res.departure);
 
     if (!res.check_in_time) {
         getRowElem(parent_id, 'actual').prop('disabled', 'disabled');
@@ -152,18 +152,28 @@ function setUpListener() {
                 updateElem(id, name, null);
             } else if (name == 'packet_names') {
                 updateElem(id, name, null);
-            } 
+            } else if (name == 'departure') {
+                updateElem(id, name, updateCheckIns);
+            }
         }
     });
 }
 
 $(document).ready(setUpListener);
 
-function show_recently_updated(ids) {
-    ids.forEach(function(id) {
-        $('#row-' + id).addClass('text-red7');
-        $('#row-' + id + ' .glyphicons.glyphicons-refresh').removeClass('hide');
-    })
+function show_recently_updated(elements) {
+    elements.forEach(function(element) {
+        $('#claim-' + element.id).html(element.claim);
+
+        if (element.updated) {
+            $('#row-' + element.id).addClass('text-red7');
+            $('#row-' + element.id + ' .glyphicons.glyphicons-refresh').removeClass('hide');
+            $('#claim-' + element.id).attr('disabled');
+        }
+        else {
+            $('#claim-' + element.id).removeAttr('disabled');
+        }
+    });
 }
 
 function get_recently_updated() {
@@ -186,7 +196,7 @@ function get_recently_updated() {
 }
 
 if (!window.location.pathname.endsWith('review')) {
-    setInterval(get_recently_updated, 30000);
+    setInterval(get_recently_updated, 20000);
 }
 
 function deleteElement(parent_id) {
