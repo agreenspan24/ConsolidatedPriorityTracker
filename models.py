@@ -208,18 +208,22 @@ class CanvassGroup(db.Model):
         self.is_active = True
 
     def update_shifts(self, shift_ids):
+        old_shifts = self.canvass_shifts
         self.canvass_shifts = []
 
         if len(shift_ids) < 1:
+            self.canvass_shifts = old_shifts
             return abort(400, 'Group must have at least one canvasser')
 
         for id in shift_ids:
             shift = Shift.query.get(id)
 
             if not shift or shift.is_active == False:
+                self.canvass_shifts = old_shifts
                 return abort(400, 'Shift not found')
 
             if shift.canvass_group != None and shift.group.is_active:
+                self.canvass_shifts = old_shifts
                 return abort(400, 'Canvasser can only be in one group')
                 
             self.canvass_shifts.append(shift)

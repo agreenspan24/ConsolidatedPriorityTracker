@@ -128,6 +128,10 @@ function updateClaim(parent_id, res, elem) {
  
 function setUpListener() {
     $('td input').on('keydown', function(e) {
+        if (e.target.className == 'input-element') {
+            return;
+        }
+        
         if (e.keyCode == 13 || e.keyCode == 9) {
             console.log(e.target);
             var name = e.target.attributes['name'].nodeValue;
