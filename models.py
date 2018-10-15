@@ -40,9 +40,9 @@ class Location(db.Model):
     #__tablename__ = 'location'
 
     locationid = db.Column(db.Integer, primary_key=True)
-    actual_location_name = db.Column(db.String(50))
-    locationname = db.Column(db.String(50))
-    region = db.Column(db.String(2))
+    actual_location_name = db.Column(db.String(50), index=True)
+    locationname = db.Column(db.String(50), index=True)
+    region = db.Column(db.String(2), index=True)
     shifts = db.relationship('Shift', backref='location')
     backup_shifts = db.relationship('BackupShift', backref='location')
 
@@ -68,7 +68,7 @@ class User(db.Model):
     fullname = db.Column('full_name', db.String(240))
     firstname = db.Column('first_name', db.String(120))
     lastname = db.Column('last_name', db.String(120))
-    email = db.Column('email', db.String(120), unique=True)
+    email = db.Column('email', db.String(120), index=True, unique=True)
     rank = db.Column('rank', db.String(120))
     region = db.Column('region', db.String(120))
     office = db.Column('office', db.String(120))
@@ -112,18 +112,16 @@ class EventType(db.Model):
 
 class Volunteer(db.Model):
     __table_args__ = {'schema':'consolidated'}
-    #__tablename__ = 'volunteer'
 
     id = db.Column(db.Integer, primary_key=True)
-    van_id = db.Column(db.Integer)
+    van_id = db.Column(db.Integer, index=True)
     knocks = db.Column(db.Integer)
     first_name = db.Column(db.String(120))
     last_name = db.Column(db.String(120))
     phone_number = db.Column(db.String(120))
     cellphone = db.Column(db.String(120))
-    shifts = db.relationship('Shift', backref='volunteer')
-    backup_shifts = db.relationship('BackupShift', backref='volunteer')
-    notes = db.relationship('Note', backref='note')
+    shifts = db.relationship('Shift', backref='volunteer', lazy='joined')
+    backup_shifts = db.relationship('BackupShift', backref='volunteer', lazy='joined')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     next_shift = db.Column(db.Date)
@@ -167,15 +165,13 @@ class Note(db.Model):
     type = db.Column(db.String(7))
     time = db.Column(db.Time)
     text = db.Column(db.String(255))
-    volunteer = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
-    note_shift = db.Column(db.Integer, db.ForeignKey('consolidated.shift.id'))
+    note_shift = db.Column(db.Integer, db.ForeignKey('consolidated.shift.id'), index=True)
 
-    def __init__(self, type, time, text, volunteer, note_shift):
+    def __init__(self, type, time, text, note_shift):
 
         self.type = type
         self.time = time
         self.text = text
-        self.volunteer = volunteer
         self.note_shift = note_shift
 
     def serialize(self):
@@ -192,24 +188,25 @@ class Shift(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     #event_shift_id = db.Column(db.Integer)
-    eventtype = db.Column(db.String(120))
-    time = db.Column(db.Time)
-    date = db.Column(db.Date)
+    eventtype = db.Column(db.String(120), index=True)
+    time = db.Column(db.Time, index=True)
+    date = db.Column(db.Date, index=True)
     status = db.Column(db.String(120))
-    o_status = db.Column(db.String(120))
-    role = db.Column(db.String(120))
+    o_status = db.Column(db.String(120), index=True)
+    role = db.Column(db.String(120), index=True)
     knocks = db.Column(db.Integer)
     flake = db.Column(db.Boolean)
     call_pass = db.Column(db.Integer)
     flake_pass = db.Column(db.Integer)
-    person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'))
-    shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'))
-    notes = db.relationship('Note', backref='shift')
-    canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'))
+    person = db.Column(db.Integer, db.ForeignKey('consolidated.volunteer.id'), index=True)
+    shift_location = db.Column(db.Integer, db.ForeignKey('consolidated.location.locationid'), index=True)
+    notes = db.relationship('Note', backref='shift', lazy='joined')
+    canvass_group = db.Column(db.Integer, db.ForeignKey('consolidated.canvass_group.id'), index=True)
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     shift_flipped = db.Column(db.Boolean)
-    claim = db.Column(db.Integer, db.ForeignKey('consolidated.users.id'))
+    claim = db.Column(db.Integer, db.ForeignKey('consolidated.users.id'), index=True)
+    is_active = db.Column(db.Boolean)
 
     def __init__(self, eventtype, time, date, status, role, person, shift_location):
 
@@ -231,6 +228,7 @@ class Shift(db.Model):
         self.last_user = None
         self.last_update = None
         self.shift_flipped = False
+        self.is_active = True
 
     def flip(self, page, status):
         if status == 'No Show':
@@ -255,7 +253,7 @@ class Shift(db.Model):
             recent_note.time = datetime.now().time()
             recent_note.text = recent_note.text + '; ' + text
         else:
-            note = Note(page, self.last_contact, text, self.person, self.id)
+            note = Note(page, self.last_contact, text, self.id)
             db.session.add(note)
 
         return self.last_contact + ": " + text
@@ -312,11 +310,12 @@ class CanvassGroup(db.Model):
     last_check_in = db.Column(db.Time)
     check_in_time = db.Column(db.Time)
     check_ins = db.Column(db.Integer)
-    canvass_shifts = db.relationship('Shift', backref='group')
+    canvass_shifts = db.relationship('Shift', backref='group', lazy='joined')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     claim = db.Column(db.Integer, db.ForeignKey('consolidated.users.id'))
     claim_user = db.relationship(User, lazy='joined')
+    is_active = db.Column(db.Boolean)
 
     def __init__(self):
         self.actual = 0
@@ -332,6 +331,7 @@ class CanvassGroup(db.Model):
         self.last_update = None
         self.claim = None
 
+        self.is_active = True
 
     def update_shifts(self, shift_ids):
         self.canvass_shifts = []
@@ -342,10 +342,10 @@ class CanvassGroup(db.Model):
         for id in shift_ids:
             shift = Shift.query.get(id)
 
-            if not shift:
+            if not shift or shift.is_active == False:
                 return abort(400, 'Shift not found')
 
-            if shift.canvass_group != None:
+            if shift.canvass_group != None and shift.group.is_active:
                 return abort(400, 'Canvasser can only be in one group')
                 
             self.canvass_shifts.append(shift)
@@ -509,7 +509,7 @@ class BackupGroup(db.Model):
     goal = db.Column('goal', db.Integer)
     packet_names = db.Column('packet_names', db.String(255))
     is_returned = db.Column('is_returned', db.Boolean)
-    canvass_shifts = db.relationship('BackupShift', backref='group')
+    canvass_shifts = db.relationship('BackupShift', backref='group', lazy='joined')
 
     def __init__(self, group):
         self.actual = group.actual

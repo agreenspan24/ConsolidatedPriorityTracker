@@ -127,10 +127,12 @@ function updateClaim(parent_id, res, elem) {
 }
  
 function setUpListener() {
+    accept_keys = [9, 13, 37, 39];
+
     $('body').on('keyup', function(e) {
         e.preventDefault();
 
-        if (e.keyCode == 13) {
+        if (accept_keys.indexOf(e.keyCode) > -1) {
             var name = e.target.attributes['name'].nodeValue;
             var id = event.target.id;
 
@@ -200,25 +202,27 @@ if (!window.location.pathname.endsWith('review')) {
 }
 
 function deleteElement(parent_id) {
-    $.ajax({
-        type: 'DELETE', 
-        url: window.location.pathname + '/delete_element',
-        data: {
-            parent_id: parent_id
-        }
-    }).done(function (name) {
-        showAlert('success', 'Deleted ' + name + ' from the database.');
-
-        $('#row-' + parent_id).remove();
-    }).fail(function (res) {
-        var message = 'Could not delete.';
-
-        if (res.responseText) {
-            message += ' Error message: ' + res.responseText
-        }
-        
-        showAlert('error', message);
-    })
+    if (confirm('Are you sure you want to delete this row?')) {
+        $.ajax({
+            type: 'DELETE', 
+            url: window.location.pathname + '/delete_element',
+            data: {
+                parent_id: parent_id
+            }
+        }).done(function (name) {
+            showAlert('success', 'Deleted ' + name + ' from the database.');
+    
+            $('#row-' + parent_id).remove();
+        }).fail(function (res) {
+            var message = 'Could not delete.';
+    
+            if (res.responseText) {
+                message += ' Error message: ' + res.responseText
+            }
+            
+            showAlert('error', message);
+        });
+    }
 }
 
 function deleteNote(shift_id, text) {

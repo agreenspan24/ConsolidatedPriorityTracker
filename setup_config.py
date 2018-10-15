@@ -6,7 +6,8 @@ rural_locations = {
    'R4F - West Plains McDonalds' : 'R4F - Rural',
    'R4F - Secondary Turf Sikeston' : 'R4F - Rural',
    'R4F - Perryville Staging Location' : 'R4F - Rural',
-   'R4: Secondary Turf Farmington' : 'R4F - Rural'
+   'R4: Secondary Turf Farmington' : 'R4F - Rural',
+   'R4F - Secondary Turf': 'R4F - Rural'
 }
 
 dashboard_query = """
@@ -96,6 +97,7 @@ LEFT JOIN confirm_attempt_totals cat
 	ON l.locationid = cat.shift_location
 LEFT JOIN canvass_totals ct
 	ON l.locationid = ct.shift_location
+WHERE NOT region IN ('In', 'Ou')
 ), region_totals AS (SELECT region, region || ' Total' office
 , SUM(canvass_total_scheduled)::bigint canvass_total_scheduled
 , SUM(canvass_same_day_confirmed)::bigint canvass_same_day_confirmed

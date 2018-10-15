@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth
 from flask import jsonify, Response
 import json
 import os
-from models import ShiftStatus, Shift, EventType, SyncShift, Volunteer
+from models import ShiftStatus, Shift, EventType, Volunteer
 from datetime import datetime, time, timedelta
 from dateutil.parser import parse
 from app import app, db
@@ -11,7 +11,7 @@ from app import app, db
 class VanService:
 
     def __init__(self):
-
+        
         self.client = requests.Session()
         self.client.auth = (os.environ['api_user'], os.environ['api_key'] + '|1')
         self.client.headers.update({
