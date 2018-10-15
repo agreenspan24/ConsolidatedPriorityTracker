@@ -600,6 +600,8 @@ def delete_element(office, page):
     if page == 'kph':
         group = CanvassGroup.query.get(parent_id)
         group.is_active = False
+        group.last_user = g.user.id
+        group.last_update = datetime.now().time()
         name = ','.join(list(map(lambda s: s.volunteer.first_name + ' ' + s.volunteer.last_name, group.canvass_shifts)))
     
     else: 
@@ -610,6 +612,8 @@ def delete_element(office, page):
                 return Response('Please delete shift from canvass group first', 400)
         
         shift.is_active = False
+        shift.last_user = g.user.id
+        shift.last_update = datetime.now().time()
         name = shift.volunteer.first_name + ' ' + shift.volunteer.last_name
 
     db.session.commit()
