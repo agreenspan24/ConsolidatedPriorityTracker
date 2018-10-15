@@ -92,6 +92,9 @@ class User(db.Model):
             'office': self.office
         }
 
+    def claim_name(self):
+        return self.firstname if not self.firstname in [None, ''] else self.email.split('@')[0]
+
 class ShiftStatus(db.Model):
     __table_args__ = {'schema':'consolidated'}
     __tablename__ = 'shiftstatus'
@@ -122,6 +125,7 @@ class Volunteer(db.Model):
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     next_shift = db.Column(db.Date)
+    next_shift_confirmed = db.Column(db.Boolean)
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -135,6 +139,7 @@ class Volunteer(db.Model):
         self.last_user = None
         self.last_update = None
         self.next_shift = None
+        self.next_shift_confirmed = False
 
     def serialize(self):
         return {
@@ -308,6 +313,8 @@ class CanvassGroup(db.Model):
     canvass_shifts = db.relationship('Shift', backref='group', lazy='joined')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
+    claim = db.Column(db.Integer, db.ForeignKey('consolidated.users.id'))
+    claim_user = db.relationship(User, lazy='joined')
     is_active = db.Column(db.Boolean)
 
     def __init__(self):
@@ -322,6 +329,8 @@ class CanvassGroup(db.Model):
         self.check_ins = 0
         self.last_user = None
         self.last_update = None
+        self.claim = None
+
         self.is_active = True
 
     def update_shifts(self, shift_ids):
@@ -352,6 +361,15 @@ class CanvassGroup(db.Model):
 
         return self
 
+    def change_departure(self, departure_time_string):
+        self.departure = departure_time_string.time()
+
+        if self.check_ins == 0:
+            self.last_check_in = self.departure
+            self.check_in_time = departure_time_string + timedelta(minutes=45)
+
+        return self
+            
     def setOut(self):
 
         if self.departure == None:
