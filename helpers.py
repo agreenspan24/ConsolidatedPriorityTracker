@@ -24,7 +24,7 @@ def update_shifts():
         volunteer.next_shift == None
         volunteer.next_shift == False
         
-        next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, SyncShift.startdate>date).order_by(SyncShift.startdate).first()
+        next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, date < SyncShift.startdate).order_by(SyncShift.startdate).first()
         if next_shift:
             volunteer.next_shift = next_shift.startdate
         
