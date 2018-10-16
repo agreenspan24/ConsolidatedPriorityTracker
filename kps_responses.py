@@ -50,9 +50,7 @@ def add_kps_responses():
 
     response = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_, includeValuesInResponse=True, valueInputOption=value_input_option, insertDataOption=insert_data_option, body=data).execute()
     
-    print(response)
-    print(response['updates']['updatedData'])
-    print(response['updates']['updatedRows'])
+    print(response['updates'])
 
 def main():
     add_kps_responses()

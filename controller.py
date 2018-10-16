@@ -390,7 +390,7 @@ def add_pass(office, page):
             
             if vanid:
                 volunteer = Volunteer.query.filter_by(van_id=vanid).first()
-                print('volunteer', volunteer)
+
                 if volunteer:
                     shift.volunteer = volunteer
                     shift.person = volunteer.id
