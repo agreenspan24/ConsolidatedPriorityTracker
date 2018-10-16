@@ -89,7 +89,7 @@ class VanService:
 
                     if signup:
                         if signup['status']['statusId'] != shift.status:
-                            response = update_status(signup, shift.status)
+                            response = self.update_status(signup, shift.status)
 
                             if response:
                                 shift.shift_flipped = True
