@@ -128,7 +128,7 @@ function updateClaim(parent_id, res, elem) {
     } else {
         html = res.name;
     }
-    console.log(res, html, getRowElem(parent_id, 'claim'));
+
     getRowElem(parent_id, 'claim').html(html);
 }
  
@@ -139,7 +139,6 @@ function setUpListener() {
         }
 
         if (e.keyCode == 13 || e.keyCode == 9) {
-            console.log(e.target);
             var name = e.target.attributes['name'].nodeValue;
             var id = event.target.id;
 
@@ -163,6 +162,8 @@ function setUpListener() {
                 updateElem(id, name, null);
             } else if (name == 'departure') {
                 updateElem(id, name, updateCheckIns);
+            } else if (name == 'vanid') {
+                updateElem(id, name, null);
             }
         }
     });

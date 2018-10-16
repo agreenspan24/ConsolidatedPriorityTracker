@@ -9,9 +9,16 @@
 
     {% endblock %}
     <header class="panel-tabs functional">
-        <div class="tab {{'active' if active_tab == 'sdc'}}">
+        <div class="tab {{'active' if active_tab == 'sdc'}} dropdown-notifications">
             <a href="{{'/consolidated/' + office + '/sdc' if active_tab != 'sdc'}}">
-                <h6>Same Day Confirms</h6>
+                <h6>
+                    Same Day Confirms
+                </h6>
+                {% if header_stats.unflipped_shifts > 0 %}
+                    <span class="notification" title="Unflipped Shifts" style="height: 25px;font-size: 15px;line-height: 25px;width: 25px;right: 15px;">
+                        <span class="notification-num">{{header_stats.unflipped_shifts}}</span>
+                    </span>
+                {% endif %}
             </a>
         </div>
         <div class="tab {{'active' if active_tab == 'kph'}} dropdown-notifications">

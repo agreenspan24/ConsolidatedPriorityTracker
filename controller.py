@@ -381,6 +381,31 @@ def add_pass(office, page):
 
             last = escape(last)
             shift.volunteer.last_name = last 
+
+        if 'vanid' in keys:
+            vanid = request.form.get('vanid')
+
+            if vanid and not vanid.isdigit():
+                return Response('Invalid VanID', 400)
+            
+            if vanid:
+                volunteer = Volunteer.query.filter_by(van_id=vanid).first()
+                print('volunteer', volunteer)
+                if volunteer:
+                    shift.volunteer = volunteer
+                    shift.person = volunteer.id
+                else:
+                    shift.volunteer.van_id = vanid
+                    
+                    next_shift = SyncShift.query.filter(SyncShift.vanid==vanid, datetime.now().date() < SyncShift.startdate).order_by(SyncShift.startdate).first()
+                    if next_shift:
+                        shift.volunteer.next_shift = next_shift.startdate
+                    
+                        if next_shift.status == 'Confirmed':
+                            shift.volunteer.next_shift_confirmed = True
+                    else:
+                        shift.volunteer.next_shift = None
+                        shift.volunteer.next_shift_confirmed = False
         
         if 'phone' in keys:
             phone = request.form.get('phone')
