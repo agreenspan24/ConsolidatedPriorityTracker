@@ -331,10 +331,16 @@ def add_pass(office, page):
                     return Response('Another user has claimed this group', 400)
 
                 group.claim = None
-                return_var = 'Claim'
+                return_var = jsonify({
+                    'name': 'Claim',
+                    'color': None
+                })
             else:
                 group.claim = g.user.id
-                return_var = g.user.claim_name()
+                return_var = jsonify({
+                    'name': g.user.claim_name(),
+                    'color': g.user.color
+                })
                 
         else:
             group.last_update = datetime.now().time()
@@ -420,10 +426,16 @@ def add_pass(office, page):
                     return Response('Another user has claimed this shift', 400)
 
                 shift.claim = None
-                return_var = 'Claim'
+                return_var = jsonify({
+                    'name': 'Claim',
+                    'color': None
+                })
             else:
                 shift.claim = g.user.id
-                return_var = g.user.claim_name()
+                return_var = jsonify({
+                    'name': g.user.claim_name(),
+                    'color': g.user.color
+                })
         
         else:
             shift.last_update = datetime.now().time()
@@ -572,7 +584,8 @@ def get_recently_updated(office, page):
                 updates.append({
                     'id': gr.id,
                     'updated': gr.updated_by_other(page_load_time, g.user),
-                    'claim': gr.claim_user.claim_name() if gr.claim else 'Claim'
+                    'name': gr.claim_user.claim_name() if gr.claim else 'Claim',
+                    'color': gr.claim_user.color if gr.claim else None
                 })
 
     else:
@@ -582,7 +595,8 @@ def get_recently_updated(office, page):
             updates.append({
                 'id': shift.id,
                 'updated': shift.updated_by_other(page_load_time, g.user),
-                'claim': shift.claim_user.claim_name() if shift.claim else 'Claim'
+                'name': shift.claim_user.claim_name() if shift.claim else 'Claim',
+                'color': shift.claim_user.color if shift.claim else None
             })
 
     return jsonify(updates)
@@ -654,6 +668,14 @@ def user():
             fullname = escape(fullname)
             user.fullname = fullname
 
+        if 'color' in keys:
+            color = request.form.get('color')
+
+            if not color.isalnum():
+                return Response('Color must be numbers and letters only', 400)
+            
+            user.color = color
+
         office = request.form.get('office')
 
         office = escape(office)
@@ -662,6 +684,12 @@ def user():
         db.session.commit()
 
     return render_template('user.html', offices=offices)
+
+
+@oid.require_login
+@app.route('/help')
+def help():
+    return render_template('help.html')
 
 
 @oid.require_login

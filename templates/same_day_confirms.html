@@ -89,7 +89,11 @@
                     </td>
                     <td>
                         <a id="claim-{{shift.id}}" name="claim" onclick="updateElem('claim-{{shift.id}}', 'claim', updateClaim)" {{'disabled' if shift.claim != None and shift.claim != g.user.id}}>
-                            {{'Claim' if not shift.claim else shift.claim_user.claim_name() }}
+                            {% if not shift.claim %}
+                                Claim
+                            {% else %}
+                                <i class="user-icon" style="background-color:#{{shift.claim_user.color if shift.claim_user.color else '000000'}}">{{shift.claim_user.claim_name()}}</i>
+                            {% endif %}
                         </a>
                     </td>
                     <td id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</td>
