@@ -42,8 +42,8 @@
             <li class="input-unit">
                 <label class="input-label">Color</label>
                 <div class="input-control">
-                    <input class="input-element" type="color" name="color" maxlength="6" value="{{g.user.color if g.user.color else ''}}" />
-                    <span class="input-message">Enter a 6 character color HEX here. You can look them up <a target="blank" href="https://htmlcolorcodes.com/color-picker/">here.</a></span>
+                    <input class="input-element" type="color" name="color" maxlength="7" value="#{{g.user.color if g.user.color else ''}}" />
+                    <span class="input-message">Enter a 6 character color HEX preceded by # if no color picker shows. You can look them up <a target="blank" href="https://htmlcolorcodes.com/color-picker/">here.</a></span>
                 </div>
             </li>
         </ul>

@@ -696,6 +696,9 @@ def user():
         if 'color' in keys:
             color = request.form.get('color')
 
+            if color[0] == '#':
+                color = color[1:]
+
             if not color.isalnum():
                 return Response('Color must be numbers and letters only', 400)
             
