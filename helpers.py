@@ -32,12 +32,15 @@ def update_shifts():
             if next_shift.status == 'Confirmed':
                 volunteer.next_shift_confirmed = True
 
+        location = None
         if today_shift.locationname != None:
             location = Location.query.filter_by(actual_location_name=today_shift.locationname).first()
 
             if not location:
                 location = Location(today_shift.locationid, today_shift.locationname, rural_locations.get(today_shift.locationname, today_shift.locationname), today_shift.locationname[0:2])
                 db.session.add(location)
+        else:
+            location = Location.query.get(1)
 
         update_shift = Shift.query.filter_by(date=today_shift.startdate, time=today_shift.starttime, eventtype=today_shift.eventtype, role=today_shift.role, shift_location=location.locationid, person=volunteer.id).first()
         if not update_shift:
