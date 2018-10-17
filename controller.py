@@ -176,7 +176,7 @@ def office(office, page):
                 continue
             
             if sync.status != shift.status and shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
-                if shift.status in ['Completed', 'Resched'] or not sync.status in ['Left Msg', 'Invited']:
+                if shift.status in ['Completed', 'Resched'] or not sync.status == 'Invited':
                     review_shifts.append(shift)
 
         return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=review_shifts)

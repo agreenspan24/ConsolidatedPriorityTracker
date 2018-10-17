@@ -437,14 +437,14 @@ class ShiftStats:
                     self.intern_completed += 1
                 if s.status == "Declined":
                     self.intern_declined += 1
-            else:
+            elif s.eventtype == "Volunteer DVC" and s.role == "Canvassing":
                 if s.status == "Same Day Confirmed":
                     self.vol_confirmed += 1
                 if s.status in ["Completed", "In"]:
                     self.vol_completed += 1
                 if s.status == "Declined":
                     self.vol_declined += 1
-                if s.status in ["Scheduled", 'Confirmed', 'Same Day Confirmed']:
+                if s.status in ["Scheduled", 'Confirmed', 'Same Day Confirmed', 'Sched-Web']:
                     self.vol_unflipped += 1
                 if s.status == "No Show":
                     self.vol_flaked += 1
