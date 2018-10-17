@@ -123,7 +123,13 @@ function setOut(parent_id, res, elem) {
 }
 
 function updateClaim(parent_id, res, elem) {
-    getRowElem(parent_id, 'claim').html(res);
+    if (res.name !== 'Claim') {
+        html = '<i class="user-icon" style="background-color:#' + (res.color || '000000') + '">' + res.name + '</i>';
+    } else {
+        html = res.name;
+    }
+
+    getRowElem(parent_id, 'claim').html(html);
 }
  
 function setUpListener() {
@@ -131,9 +137,8 @@ function setUpListener() {
         if (e.target.className == 'input-element') {
             return;
         }
-        
+
         if (e.keyCode == 13 || e.keyCode == 9) {
-            console.log(e.target);
             var name = e.target.attributes['name'].nodeValue;
             var id = event.target.id;
 
@@ -157,6 +162,8 @@ function setUpListener() {
                 updateElem(id, name, null);
             } else if (name == 'departure') {
                 updateElem(id, name, updateCheckIns);
+            } else if (name == 'vanid') {
+                updateElem(id, name, null);
             }
         }
     });
@@ -166,15 +173,15 @@ $(document).ready(setUpListener);
 
 function show_recently_updated(elements) {
     elements.forEach(function(element) {
-        $('#claim-' + element.id).html(element.claim);
+        updateClaim(element.id, element);
 
         if (element.updated) {
-            $('#row-' + element.id).addClass('text-red7');
+            getRowElem(element.id, 'row').addClass('text-red7');
             $('#row-' + element.id + ' .glyphicons.glyphicons-refresh').removeClass('hide');
-            $('#claim-' + element.id).attr('disabled');
+            getRowElem(element.id, 'claim').attr('disabled');
         }
         else {
-            $('#claim-' + element.id).removeAttr('disabled');
+            getRowElem(element.id, 'claim').removeAttr('disabled');
         }
     });
 }
