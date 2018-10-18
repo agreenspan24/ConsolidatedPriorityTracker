@@ -32,10 +32,11 @@ def add_kps_responses():
 
     for gr in groups:
         for shift in gr.canvass_shifts:
-            if shift.volunteer.van_id in vol_dict.keys():
-                vol_dict[shift.volunteer.van_id] += gr.actual
-            else:
-                vol_dict[shift.volunteer.van_id] = gr.actual
+            if shift.volunteer.van_id != None:
+                if shift.volunteer.van_id in vol_dict.keys():
+                    vol_dict[shift.volunteer.van_id] += gr.actual
+                else:
+                    vol_dict[shift.volunteer.van_id] = gr.actual
 
     for vanid, actual in vol_dict.items():
         responses.append([timestamp, vanid, date.strftime('%m/%d/%Y'), actual])
