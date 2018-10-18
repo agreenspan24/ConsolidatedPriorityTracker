@@ -97,8 +97,11 @@ def logout():
 @oid.require_login
 @app.route('/consolidated', methods=['POST','GET'])
 def consolidated():
-
-    offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
+    if g.user.rank in [None, 'Intern']:
+        offices =  Location.query.filter_by(region=g.user.region).group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
+    
+    else:
+        offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
     
     if request.method == 'POST':
         option = request.form.get('target')
@@ -125,7 +128,10 @@ def office(office, page):
     office = escape(office)
     page = escape(page)
 
-    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
+    if g.user.rank in [None, 'Intern']:
+        locations = Location.query.filter(Location.locationname.like(office + '%'), Location.region == g.user.region).all()
+    else:
+        locations = Location.query.filter(Location.locationname.like(office + '%')).all()
 
     if not locations:
         return redirect('/consolidated')
@@ -735,7 +741,7 @@ def help():
 def backup(office, page):
     office = escape(office)
     page = escape(page)
-    
+
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
 
     if not locations:
