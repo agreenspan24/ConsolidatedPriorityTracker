@@ -110,6 +110,7 @@ def consolidated():
         page = request.form.get('page')
 
         office = escape(office)
+        page = escape(page)
 
         return redirect('/consolidated/' + str(office)[0:3] + '/' + page)
 
@@ -122,6 +123,8 @@ def office(office, page):
     date = datetime.today().strftime('%Y-%m-%d')
 
     office = escape(office)
+    page = escape(page)
+
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
 
     if not locations:
@@ -191,7 +194,7 @@ def add_pass(office, page):
     parent_id = request.form.get('parent_id')
     page_load_time = datetime.strptime(urllib.parse.unquote(request.form.get('page_load_time')), '%I:%M %p').time()
 
-    if not parent_id:
+    if not parent_id or not parent_id.isdigit():
         return abort(400)
 
     return_var = None
@@ -383,8 +386,11 @@ def add_pass(office, page):
             shift.volunteer.last_name = last 
 
         if 'vanid' in keys:
-            vanid = request.form.get('vanid')
+            if shift.volunteer.updated_by_other(page_load_time, g.user):
+                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
+            vanid = request.form.get('vanid')
+                
             if vanid and not vanid.isdigit():
                 return Response('Invalid VanID', 400)
             
@@ -596,6 +602,8 @@ def get_recently_updated(office, page):
     page_load_time = datetime.strptime(urllib.parse.unquote(request.args.get('page_load_time')), '%I:%M %p').time()
 
     office = escape(office)
+    page = escape(page)
+
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
     location_ids = list(map(lambda l: l.locationid, locations))
 
@@ -661,6 +669,8 @@ def delete_note(office, page):
     text = request.form.get('text')
     print(shift_id, text)
 
+    page = escape(page)
+
     note = Note.query.filter_by(type=page, text=text, note_shift=shift_id).first()
     db.session.delete(note)
     db.session.commit()
@@ -724,6 +734,8 @@ def help():
 @app.route('/consolidated/<office>/<page>/backup')
 def backup(office, page):
     office = escape(office)
+    page = escape(page)
+    
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
 
     if not locations:
