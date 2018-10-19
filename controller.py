@@ -77,9 +77,11 @@ def login_auth():
 
             return redirect('/')    
 
+
 @oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
+
     if g.user.office and g.user.office != "None":
         return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
     
@@ -88,11 +90,13 @@ def index():
 
     return redirect('/consolidated')    
 
+
 @app.route('/logout', methods=['GET'])
 def logout():
     g.user = None
     session.pop('openid', None)
     return redirect('/login')
+
 
 @oid.require_login
 @app.route('/consolidated', methods=['POST','GET'])
@@ -127,7 +131,7 @@ def office(office, page):
 
     office = escape(office)
     page = escape(page)
-
+    
     if g.user.rank in [None, 'Intern']:
         locations = Location.query.filter(Location.locationname.like(office + '%'), Location.region == g.user.region).all()
     else:
@@ -686,7 +690,11 @@ def delete_note(office, page):
 @oid.require_login
 @app.route('/user', methods=['GET', 'POST'])
 def user():
-    offices = Location.query.order_by(asc(Location.locationname)).all()
+    if g.user.rank in [None, 'Intern']:
+        offices =  Location.query.filter_by(region=g.user.region).group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
+    
+    else:
+        offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
 
     if request.method == "POST":
         user = User.query.get(g.user.id)
