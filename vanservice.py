@@ -49,6 +49,10 @@ class VanService:
     def sync_shifts(self, shift_ids):
         event_type_dict = {}
 
+        for id in shift_ids:
+            if not id.isdigit():
+                return Response('Invalid shift id', 400)
+                
         shifts = Shift.query.filter(Shift.id.in_(shift_ids)).all()
 
         for shift in shifts:
