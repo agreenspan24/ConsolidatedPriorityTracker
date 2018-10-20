@@ -41,7 +41,7 @@
                     </td>
                     <td>{{('({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:])) if shift.volunteer.phone_number }}</td>
                     <td>
-                        <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:125px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td vanid="{{shift.volunteer.van_id if (shift.volunteer.van_id and shift.volunteer.next_shift and not shift.volunteer.next_shift_confirmed)}}" ondblclick="confirm_next_shift(event)" style="cursor:pointer">
                         {{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}

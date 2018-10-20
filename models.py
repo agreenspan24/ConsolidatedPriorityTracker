@@ -8,7 +8,8 @@ from sqlalchemy_views import CreateView, DropView
 from flask import abort
 import os
 
-schema = os.environ['schema'] if os.environ['schema'] != None else 'consolidated'
+schema = os.environ['schema']
+#schema = 'consolidated'
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'sync'}
