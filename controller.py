@@ -39,6 +39,9 @@ def logout_before():
 
         if g.user == None or not g.user.is_allowed:
             redir = True
+
+        if os.environ['schema'] == 'test' and g.user.rank != 'DATA':
+            redir = True
     else:
         redir = True
     if redir and not request.path.startswith('/login'):
