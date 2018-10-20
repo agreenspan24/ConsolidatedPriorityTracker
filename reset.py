@@ -7,7 +7,8 @@ from backup import backup
 import os
 
 def main():
-    backup()
+    if os.environ['schema'] == 'consolidated':
+        backup()
 
     engine.execute('DROP VIEW IF EXISTS ' + os.environ['schema'] + '.dashboard_totals')
     Note.__table__.drop(engine)
