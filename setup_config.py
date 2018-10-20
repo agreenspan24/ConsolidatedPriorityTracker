@@ -17,7 +17,7 @@ WITH confirm_attempt_totals AS (
 	SELECT l.locationname
 	, SUM(CASE WHEN role = 'Canvassing' THEN 1 ELSE 0 END) canvass_total_scheduled
 	, SUM(CASE WHEN role = 'Canvassing' AND s.status = 'Same Day Confirmed' THEN 1 ELSE 0 END) canvass_same_day_confirmed
-	, SUM(CASE WHEN role = 'Canvassing' AND s.status = 'Completed' THEN 1 ELSE 0 END) canvass_completed
+	, SUM(CASE WHEN role = 'Canvassing' AND (s.status = 'Completed' OR s.status = 'In') THEN 1 ELSE 0 END) canvass_completed
 	, SUM(CASE WHEN role = 'Canvassing' AND s.status = 'Declined' THEN 1 ELSE 0 END) canvass_declined
 	, SUM(CASE WHEN role = 'Canvassing' AND s.flake THEN 1 ELSE 0 END) canvass_flaked
 	, SUM(CASE WHEN role = 'Phonebanking' THEN 1 ELSE 0 END) phone_total_scheduled
@@ -30,7 +30,7 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN s.flake AND s.status = 'Rescheduled' THEN 1 ELSE 0 END) flake_rescheduled
 	FROM {0}.shift s
 	JOIN {0}.location l
-		ON l.id = s.shift_location
+		ON l.locationid = s.shift_location
 	WHERE s.is_active = true
 	GROUP BY 1
 	
@@ -59,11 +59,15 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN NOT is_returned AND departure IS NOT NULL AND check_in_time IS NOT NULL AND check_in_time < (current_time - interval '5 hours') THEN 1 ELSE 0 END) overdue_check_in
 	FROM canvass_group_totals
 	JOIN {0}.location l
-		ON l.id = shift_location
+		ON l.locationid = shift_location
 	GROUP BY 1
 	
 ), locations AS (
-	SELECT locationname, 
+
+	SELECT locationname
+	FROM {0}.location
+	GROUP BY locationname
+
 ), office_totals AS (SELECT l.region, l.locationname AS office
 , COALESCE(cat.canvass_total_scheduled, 0) canvass_total_scheduled
 , COALESCE(cat.canvass_same_day_confirmed, 0) canvass_same_day_confirmed
@@ -103,9 +107,9 @@ WITH confirm_attempt_totals AS (
 , COALESCE(ct.overdue_check_in, 0) overdue_check_ins
 FROM {0}.location l 
 LEFT JOIN confirm_attempt_totals cat
-	ON l.locationid = cat.shift_location
+	ON l.locationname = cat.locationname
 LEFT JOIN canvass_totals ct
-	ON l.locationid = ct.shift_location
+	ON l.locationname = ct.locationname
 WHERE NOT region IN ('In', 'Ou', 'Th')
 ), region_totals AS (SELECT region, region || ' Total' office
 , SUM(canvass_total_scheduled)::bigint canvass_total_scheduled
