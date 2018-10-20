@@ -29,6 +29,7 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN s.flake AND NOT s.status = 'No Show' THEN 1 ELSE 0 END) flake_attempts
 	, SUM(CASE WHEN s.flake AND s.status = 'Rescheduled' THEN 1 ELSE 0 END) flake_rescheduled
 	FROM consolidated.shift s
+	WHERE s.is_active = true
 	GROUP BY 1
 	
 ), canvass_group_totals AS (
@@ -38,6 +39,8 @@ WITH confirm_attempt_totals AS (
 	FROM consolidated.canvass_group cg
 	JOIN consolidated.shift s
 	ON cg.id = s.canvass_group
+	WHERE cg.is_active = true
+	AND s.is_active = true
 	GROUP BY 1, 2
 	
 ), canvass_totals AS (
