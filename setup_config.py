@@ -11,7 +11,7 @@ rural_locations = {
 }
 
 dashboard_query = """
-CREATE VIEW {}.dashboard_totals AS 
+CREATE VIEW {0}.dashboard_totals AS 
 WITH confirm_attempt_totals AS (
 	
 	SELECT shift_location
@@ -28,7 +28,7 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN s.flake THEN 1 ELSE 0 END) flake_total
 	, SUM(CASE WHEN s.flake AND NOT s.status = 'No Show' THEN 1 ELSE 0 END) flake_attempts
 	, SUM(CASE WHEN s.flake AND s.status = 'Rescheduled' THEN 1 ELSE 0 END) flake_rescheduled
-	FROM {}.shift s
+	FROM {0}.shift s
 	WHERE s.is_active = true
 	GROUP BY 1
 	
@@ -36,8 +36,8 @@ WITH confirm_attempt_totals AS (
 	
 	SELECT s.shift_location, cg.id, cg.actual, cg.goal, cg.packets_given, cg.check_in_time, cg.is_returned, cg.departure
 	, COUNT(*)::bigint group_canvassers
-	FROM {}.canvass_group cg
-	JOIN {}.shift s
+	FROM {0}.canvass_group cg
+	JOIN {0}.shift s
 	ON cg.id = s.canvass_group
 	WHERE cg.is_active = true
 	AND s.is_active = true
@@ -95,7 +95,7 @@ WITH confirm_attempt_totals AS (
 , COALESCE(ct.packets_out_now, 0) packets_out_now
 , COALESCE(ct.actual_out_now * 1.0 / (CASE WHEN ct.canvassers_out_now < 1 THEN 1 ELSE ct.canvassers_out_now END), 0) kph
 , COALESCE(ct.overdue_check_in, 0) overdue_check_ins
-FROM {}.location l 
+FROM {0}.location l 
 LEFT JOIN confirm_attempt_totals cat
 	ON l.locationid = cat.shift_location
 LEFT JOIN canvass_totals ct
