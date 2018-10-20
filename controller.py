@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from dateutil.parser import parse
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
+import os
 
 vanservice = VanService()
 
@@ -38,6 +39,9 @@ def logout_before():
         g.user = User.query.filter(User.openid==session['openid']).first()
 
         if g.user == None or not g.user.is_allowed:
+            redir = True
+
+        if os.environ['schema'] == 'test' and g.user.rank != 'DATA':
             redir = True
     else:
         redir = True
@@ -77,9 +81,11 @@ def login_auth():
 
             return redirect('/')    
 
+
 @oid.require_login        
 @app.route('/', methods=['GET'])    
 def index():
+
     if g.user.office and g.user.office != "None":
         return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
     
@@ -88,17 +94,22 @@ def index():
 
     return redirect('/consolidated')    
 
+
 @app.route('/logout', methods=['GET'])
 def logout():
     g.user = None
     session.pop('openid', None)
     return redirect('/login')
 
+
 @oid.require_login
 @app.route('/consolidated', methods=['POST','GET'])
 def consolidated():
-
-    offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
+    if g.user.rank in [None, 'Intern']:
+        offices =  Location.query.filter_by(region=g.user.region).group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
+    
+    else:
+        offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
     
     if request.method == 'POST':
         option = request.form.get('target')
@@ -110,6 +121,7 @@ def consolidated():
         page = request.form.get('page')
 
         office = escape(office)
+        page = escape(page)
 
         return redirect('/consolidated/' + str(office)[0:3] + '/' + page)
 
@@ -122,7 +134,12 @@ def office(office, page):
     date = datetime.today().strftime('%Y-%m-%d')
 
     office = escape(office)
-    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
+    page = escape(page)
+    
+    if g.user.rank in [None, 'Intern']:
+        locations = Location.query.filter(Location.locationname.like(office + '%'), Location.region == g.user.region).all()
+    else:
+        locations = Location.query.filter(Location.locationname.like(office + '%')).all()
 
     if not locations:
         return redirect('/consolidated')
@@ -176,7 +193,7 @@ def office(office, page):
                 continue
             
             if sync.status != shift.status and shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
-                if shift.status in ['Completed', 'Resched'] or not sync.status in ['Invited']:
+                if shift.status in ['Completed', 'Resched'] or not sync.status == 'Invited':
                     review_shifts.append(shift)
 
         return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=review_shifts)
@@ -191,7 +208,7 @@ def add_pass(office, page):
     parent_id = request.form.get('parent_id')
     page_load_time = datetime.strptime(urllib.parse.unquote(request.form.get('page_load_time')), '%I:%M %p').time()
 
-    if not parent_id:
+    if not parent_id or not parent_id.isdigit():
         return abort(400)
 
     return_var = None
@@ -331,10 +348,16 @@ def add_pass(office, page):
                     return Response('Another user has claimed this group', 400)
 
                 group.claim = None
-                return_var = 'Claim'
+                return_var = jsonify({
+                    'name': 'Claim',
+                    'color': None
+                })
             else:
                 group.claim = g.user.id
-                return_var = g.user.claim_name()
+                return_var = jsonify({
+                    'name': g.user.claim_name(),
+                    'color': g.user.color
+                })
                 
         else:
             group.last_update = datetime.now().time()
@@ -375,6 +398,34 @@ def add_pass(office, page):
 
             last = escape(last)
             shift.volunteer.last_name = last 
+
+        if 'vanid' in keys:
+            if shift.volunteer.updated_by_other(page_load_time, g.user):
+                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+
+            vanid = request.form.get('vanid')
+                
+            if vanid and not vanid.isdigit():
+                return Response('Invalid VanID', 400)
+            
+            if vanid:
+                volunteer = Volunteer.query.filter_by(van_id=vanid).first()
+
+                if volunteer:
+                    shift.volunteer = volunteer
+                    shift.person = volunteer.id
+                else:
+                    shift.volunteer.van_id = vanid
+                    
+                    next_shift = SyncShift.query.filter(SyncShift.vanid==vanid, datetime.now().date() < SyncShift.startdate).order_by(SyncShift.startdate).first()
+                    if next_shift:
+                        shift.volunteer.next_shift = next_shift.startdate
+                    
+                        if next_shift.status == 'Confirmed':
+                            shift.volunteer.next_shift_confirmed = True
+                    else:
+                        shift.volunteer.next_shift = None
+                        shift.volunteer.next_shift_confirmed = False
         
         if 'phone' in keys:
             phone = request.form.get('phone')
@@ -420,10 +471,16 @@ def add_pass(office, page):
                     return Response('Another user has claimed this shift', 400)
 
                 shift.claim = None
-                return_var = 'Claim'
+                return_var = jsonify({
+                    'name': 'Claim',
+                    'color': None
+                })
             else:
                 shift.claim = g.user.id
-                return_var = g.user.claim_name()
+                return_var = jsonify({
+                    'name': g.user.claim_name(),
+                    'color': g.user.color
+                })
         
         else:
             shift.last_update = datetime.now().time()
@@ -559,6 +616,8 @@ def get_recently_updated(office, page):
     page_load_time = datetime.strptime(urllib.parse.unquote(request.args.get('page_load_time')), '%I:%M %p').time()
 
     office = escape(office)
+    page = escape(page)
+
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
     location_ids = list(map(lambda l: l.locationid, locations))
 
@@ -572,7 +631,8 @@ def get_recently_updated(office, page):
                 updates.append({
                     'id': gr.id,
                     'updated': gr.updated_by_other(page_load_time, g.user),
-                    'claim': gr.claim_user.claim_name() if gr.claim else 'Claim'
+                    'name': gr.claim_user.claim_name() if gr.claim else 'Claim',
+                    'color': gr.claim_user.color if gr.claim else None
                 })
 
     else:
@@ -582,7 +642,8 @@ def get_recently_updated(office, page):
             updates.append({
                 'id': shift.id,
                 'updated': shift.updated_by_other(page_load_time, g.user),
-                'claim': shift.claim_user.claim_name() if shift.claim else 'Claim'
+                'name': shift.claim_user.claim_name() if shift.claim else 'Claim',
+                'color': shift.claim_user.color if shift.claim else None
             })
 
     return jsonify(updates)
@@ -622,6 +683,8 @@ def delete_note(office, page):
     text = request.form.get('text')
     print(shift_id, text)
 
+    page = escape(page)
+
     note = Note.query.filter_by(type=page, text=text, note_shift=shift_id).first()
     db.session.delete(note)
     db.session.commit()
@@ -631,7 +694,11 @@ def delete_note(office, page):
 @oid.require_login
 @app.route('/user', methods=['GET', 'POST'])
 def user():
-    offices = Location.query.order_by(asc(Location.locationname)).all()
+    if g.user.rank in [None, 'Intern']:
+        offices =  Location.query.filter_by(region=g.user.region).group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
+    
+    else:
+        offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
 
     if request.method == "POST":
         user = User.query.get(g.user.id)
@@ -654,6 +721,17 @@ def user():
             fullname = escape(fullname)
             user.fullname = fullname
 
+        if 'color' in keys:
+            color = request.form.get('color')
+
+            if color[0] == '#':
+                color = color[1:]
+
+            if not color.isalnum():
+                return Response('Color must be numbers and letters only', 400)
+            
+            user.color = color
+
         office = request.form.get('office')
 
         office = escape(office)
@@ -665,9 +743,17 @@ def user():
 
 
 @oid.require_login
+@app.route('/help')
+def help():
+    return render_template('help.html')
+
+
+@oid.require_login
 @app.route('/consolidated/<office>/<page>/backup')
 def backup(office, page):
     office = escape(office)
+    page = escape(page)
+
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
 
     if not locations:

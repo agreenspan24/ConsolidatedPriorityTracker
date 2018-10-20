@@ -78,7 +78,7 @@ dashboard_query = """
                     WHEN s.flake AND s.status::text = 'Rescheduled'::text THEN 1
                     ELSE 0
                 END) AS flake_rescheduled
-           FROM consolidated.shift s
+           FROM {0}.shift s
           WHERE s.is_active = true
           GROUP BY s.shift_location
         ), canvass_group_totals AS (
@@ -91,8 +91,8 @@ dashboard_query = """
             cg.is_returned,
             cg.departure,
             count(*) AS group_canvassers
-           FROM consolidated.canvass_group cg
-             JOIN consolidated.shift s ON cg.id = s.canvass_group
+           FROM {0}.canvass_group cg
+             JOIN {0}.shift s ON cg.id = s.canvass_group
           WHERE cg.is_active = true
           GROUP BY s.shift_location, cg.id
         ), canvass_totals AS (
@@ -219,7 +219,7 @@ dashboard_query = """
                     ELSE ct.canvassers_out_now
                 END, 0::numeric) AS kph,
             COALESCE(ct.overdue_check_in, 0::bigint) AS overdue_check_ins
-           FROM consolidated.location l
+           FROM {0}.location l
              LEFT JOIN confirm_attempt_totals cat ON l.locationid = cat.shift_location
              LEFT JOIN canvass_totals ct ON l.locationid = ct.shift_location
           WHERE NOT (l.region::text = ANY (ARRAY['In'::character varying::text, 'Ou'::character varying::text, 'Th'::character varying::text]))

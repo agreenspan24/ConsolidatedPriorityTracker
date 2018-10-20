@@ -8,7 +8,7 @@ from sqlalchemy_views import CreateView, DropView
 from flask import abort
 import os
 
-schema = 'consolidated'
+schema = os.environ['schema'] if os.environ['schema'] != None else 'consolidated'
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'sync'}
@@ -66,6 +66,7 @@ class User(db.Model):
     office = db.Column('office', db.String(120))
     openid = db.Column('openid', db.String(50))
     is_allowed = db.Column('is_allowed', db.Boolean)
+    color = db.Column('color', db.String(6))
 
     def __init__(self, email, openid):
         self.email = email
@@ -80,11 +81,12 @@ class User(db.Model):
             'email': self.email,
             'rank': self.rank,
             'region': self.region,
-            'office': self.office
+            'office': self.office,
+            'color': self.color
         }
 
     def claim_name(self):
-        return self.firstname if not self.firstname in [None, ''] else self.email.split('@')[0]
+        return (self.firstname[0]+ self.lastname[0]).upper() if (not self.firstname in [None, ''] and not self.lastname in [None, '']) else self.email[:2]
 
 class ShiftStatus(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -435,7 +437,7 @@ class ShiftStats:
                     self.intern_completed += 1
                 if s.status == "Declined":
                     self.intern_declined += 1
-            elif s.eventtype == "Volunteer DVC" and s.role == 'Canvassing':
+            elif s.eventtype == "Volunteer DVC" and s.role == "Canvassing":
                 if s.status == "Same Day Confirmed":
                     self.vol_confirmed += 1
                 if s.status in ["Completed", "In"]:
@@ -464,6 +466,7 @@ class HeaderStats:
     def __init__(self, shifts, groups):
         time_now = datetime.now().time()
 
+        self.unflipped_shifts = sum(1 for x in shifts if x.time < time_now and x.status == x.o_status and x.call_pass < 1)
         self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now)
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.flake_pass < 1)
 

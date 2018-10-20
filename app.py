@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_oidc import OpenIDConnect
 import os
 from sqlalchemy import create_engine
+from config import *
 
 app = Flask(__name__)
 app.config['DEBUG'] = False

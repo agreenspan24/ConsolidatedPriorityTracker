@@ -1,7 +1,10 @@
 from models import CanvassGroup, Shift, BackupGroup, BackupShift
+from kps_responses import add_kps_responses
 from app import db
 
 def backup():
+    add_kps_responses()
+
     groups = CanvassGroup.query.all()
 
     for group in groups:

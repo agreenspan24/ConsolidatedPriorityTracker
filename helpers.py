@@ -7,6 +7,7 @@ def update_shifts():
     today = datetime.now().date()
     date = today.strftime('%Y-%m-%d')
     syncshifts = SyncShift.query.filter_by(startdate=date).all()
+    the_void = Location.query.get(1)
     
     for today_shift in syncshifts:
         print('vanid', today_shift.vanid)
@@ -32,6 +33,7 @@ def update_shifts():
             if next_shift.status == 'Confirmed':
                 volunteer.next_shift_confirmed = True
 
+        location = the_void
         if today_shift.locationname != None:
             location = Location.query.filter_by(actual_location_name=today_shift.locationname).first()
 
