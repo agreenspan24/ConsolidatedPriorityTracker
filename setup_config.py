@@ -14,7 +14,7 @@ dashboard_query = """
 CREATE VIEW {0}.dashboard_totals AS 
 WITH confirm_attempt_totals AS (
 	
-	SELECT shift_location
+	SELECT l.locationname
 	, SUM(CASE WHEN role = 'Canvassing' THEN 1 ELSE 0 END) canvass_total_scheduled
 	, SUM(CASE WHEN role = 'Canvassing' AND s.status = 'Same Day Confirmed' THEN 1 ELSE 0 END) canvass_same_day_confirmed
 	, SUM(CASE WHEN role = 'Canvassing' AND s.status = 'Completed' THEN 1 ELSE 0 END) canvass_completed
@@ -29,6 +29,8 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN s.flake AND NOT s.status = 'No Show' THEN 1 ELSE 0 END) flake_attempts
 	, SUM(CASE WHEN s.flake AND s.status = 'Rescheduled' THEN 1 ELSE 0 END) flake_rescheduled
 	FROM {0}.shift s
+	JOIN {0}.location l
+		ON l.id = s.shift_location
 	WHERE s.is_active = true
 	GROUP BY 1
 	
@@ -45,7 +47,7 @@ WITH confirm_attempt_totals AS (
 	
 ), canvass_totals AS (
 	
-	SELECT shift_location
+	SELECT l.locationname
 	, SUM(group_canvassers) canvassers_all_day
 	, SUM(actual) actual_all_day
 	, SUM(goal) goal_all_day
@@ -56,8 +58,12 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN NOT is_returned THEN packets_given ELSE 0 END) packets_out_now
 	, SUM(CASE WHEN NOT is_returned AND departure IS NOT NULL AND check_in_time IS NOT NULL AND check_in_time < (current_time - interval '5 hours') THEN 1 ELSE 0 END) overdue_check_in
 	FROM canvass_group_totals
+	JOIN {0}.location l
+		ON l.id = shift_location
 	GROUP BY 1
 	
+), locations AS (
+	SELECT locationname, 
 ), office_totals AS (SELECT l.region, l.locationname AS office
 , COALESCE(cat.canvass_total_scheduled, 0) canvass_total_scheduled
 , COALESCE(cat.canvass_same_day_confirmed, 0) canvass_same_day_confirmed
