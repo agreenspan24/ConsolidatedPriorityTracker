@@ -176,7 +176,7 @@ function show_recently_updated(elements) {
         updateClaim(element.id, element);
 
         if (element.updated) {
-            getRowElem(element.id, 'row').addClass('text-red7');
+            getRowElem(element.id, 'row').addClass('bg-red2');
             $('#row-' + element.id + ' .glyphicons.glyphicons-refresh').removeClass('hide');
             getRowElem(element.id, 'claim').attr('disabled');
         }

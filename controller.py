@@ -3,7 +3,6 @@ from datetime import datetime
 from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response
 
 from sqlalchemy import and_, asc, desc
-from sqlalchemy.orm import joinedload
 
 import re
 import urllib
@@ -17,6 +16,8 @@ from dateutil.parser import parse
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
+
+#os.environ['schema'] = 'consolidated'
 
 vanservice = VanService()
 
@@ -146,7 +147,7 @@ def office(office, page):
 
     location_ids = list(map(lambda l: l.locationid, locations))
 
-    shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
+    shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
 
     all_shifts = []
     extra_shifts = []
@@ -159,12 +160,8 @@ def office(office, page):
     for shift in extra_shifts:
         all_shifts.append(shift)
         
-    all_groups = CanvassGroup.query.filter_by(is_active=True).all()
-    groups = []
-
-    for gr in all_groups:
-        if gr.canvass_shifts[0].shift_location in location_ids and gr.canvass_shifts[0].id in list(map(lambda s: s.id, all_shifts)):
-            groups.append(gr)
+    shift_ids = list(map(lambda s: s.id, all_shifts))
+    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).all()
 
     header_stats = HeaderStats(all_shifts, groups)
 
@@ -624,16 +621,15 @@ def get_recently_updated(office, page):
     updates = []
 
     if page == 'kph':
-        all_groups = CanvassGroup.query.filter_by(is_active=True).all()
+        all_groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(location_ids)).all()
 
         for gr in all_groups:
-            if (gr.canvass_shifts[0].shift_location in location_ids):
-                updates.append({
-                    'id': gr.id,
-                    'updated': gr.updated_by_other(page_load_time, g.user),
-                    'name': gr.claim_user.claim_name() if gr.claim else 'Claim',
-                    'color': gr.claim_user.color if gr.claim else None
-                })
+            updates.append({
+                'id': gr.id,
+                'updated': gr.updated_by_other(page_load_time, g.user),
+                'name': gr.claim_user.claim_name() if gr.claim else 'Claim',
+                'color': gr.claim_user.color if gr.claim else None
+            })
 
     else:
         shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).all()
