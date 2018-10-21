@@ -315,7 +315,7 @@ def add_pass(office, page):
                 return Response('Could not find volunteer', status=400)
 
             if volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+                return Response('This volunteer has been updated by another user since you last loaded the page. Please refresh and try again.', 400)
 
             volunteer.cellphone = phone_sanitized
             volunteer.last_user = g.user.id
@@ -400,7 +400,7 @@ def add_pass(office, page):
 
         if 'vanid' in keys:
             if shift.volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+                return Response('This volunteer has been updated by another user since you last loaded the page. Please refresh and try again.', 400)
 
             vanid = request.form.get('vanid')
                 
