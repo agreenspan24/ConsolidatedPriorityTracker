@@ -159,7 +159,7 @@ def office(office, page):
     for shift in extra_shifts:
         all_shifts.append(shift)
         
-    all_groups = CanvassGroup.query.filter_by(is_active=True).all()
+    all_groups = CanvassGroup.query.filter_by(is_active=True).order_by(asc(check_in_time)).all()
     groups = []
 
     for gr in all_groups:
@@ -624,7 +624,7 @@ def get_recently_updated(office, page):
     updates = []
 
     if page == 'kph':
-        all_groups = CanvassGroup.query.filter_by(is_active=True).all()
+        all_groups = CanvassGroup.query.filter_by(is_active=True).orderby(all()
 
         for gr in all_groups:
             if (gr.canvass_shifts[0].shift_location in location_ids):
