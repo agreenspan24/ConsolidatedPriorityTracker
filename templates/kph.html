@@ -77,7 +77,7 @@
     <tbody class="tbody">
         {% if groups %}
         {% for group in groups %}
-            <tr id="row-{{group.id}}" class="{{'text-green7' if group.is_returned else ('text-red7' if group.check_in_time != None and group.check_in_time < g.time_now)}}">
+            <tr id="row-{{group.id}}" class="{{'bg-green2' if group.is_returned else ('bg-red2' if group.check_in_time != None and group.check_in_time < g.time_now)}}">
                 <td>
                     {{loop.index}}
                     <span class="glyphicons glyphicons-remove" onclick="deleteElement({{group.id}})" style="cursor:pointer;margin:0"></span>
@@ -131,7 +131,7 @@
                 <td id="cellphone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
                         <p>
-                            <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" style="width:125px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                            <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                         </p>
                     {% endfor %}
                 </td>

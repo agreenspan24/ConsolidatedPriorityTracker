@@ -79,7 +79,7 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                <tr id="row-{{shift.id}}" class="{{'text-green7' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('text-red7' if shift.status in ['Declined', 'No Show', 'Resched'])}}">
+                <tr id="row-{{shift.id}}" class="{{'bg-green2' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('bg-red2' if shift.status in ['Declined', 'No Show', 'Resched'])}}">
                     <td>
                         {{loop.index}}
                         <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
@@ -113,13 +113,13 @@
                     </td>
                     <td>
                         {% if shift.volunteer.van_id == None %}
-                            <input id='phone-{{shift.id}}' name="phone" maxlength="120" type="text" style="width:125px"  value="{{shift.volunteer.phone_number if not shift.volunteer.phone_number == None}}"/>
+                            <input id='phone-{{shift.id}}' name="phone" maxlength="120" type="text" style="width:100px"  value="{{shift.volunteer.phone_number if not shift.volunteer.phone_number == None}}"/>
                         {% else %}
                             {{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) if shift.volunteer.phone_number != None}}
                         {% endif %}
                     </td>
                     <td>
-                        <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:125px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                        <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td vanid="{{shift.volunteer.van_id if (shift.volunteer.van_id and shift.volunteer.next_shift and not shift.volunteer.next_shift_confirmed)}}" ondblclick="confirm_next_shift(event)" style="cursor:pointer">
                         {{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}
