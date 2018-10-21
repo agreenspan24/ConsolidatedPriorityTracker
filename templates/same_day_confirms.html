@@ -160,32 +160,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endif %}
-                    <!-- TODO:
-
-                        Make moving users to KPH deliberate (create another table with "walkins to kph", backend combines them)
-                        Make phonenumbers editable (like, modal on the number maybe? just some way to change it)
-                        Same day confirm pass #s (has been added to model)
-                        Select Menu for Status: Current Status, Completed, Declined, Flaked, In, Same Day Confirmed
-                        ADD PASS RESULTS (text box attached to post "called" button that logs time, automatic saved via some JS magic?) Work flow (type in note, click called) it saves and adds a new row)
-
-                        >>> from datetime import datetime
-                        >>> time = datetime.now().time()
-                        >>> note = Note('kps', time, "this is a test 1", 102684833, 9)
-                        >>> db.session.add(note)
-                        >>> db.session.commit()
-                        >>> shift = Shift.query.filter_by(id=9).first()
-                        >>> print(shift)
-                        <Shift 9>
-                        >>> print(shift.time)
-                        18:00:00
-                        >>> print(shift.notes)
-                        [<Note 1>]
-                        >>> for note in shift.notes:
-                        ...     print(note.text)
-                        ...
-                        this is a test 1
-                    
-                    -->
                 </tr>
             {% endfor %}
         </tbody>
