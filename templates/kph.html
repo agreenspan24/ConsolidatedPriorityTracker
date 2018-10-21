@@ -52,6 +52,7 @@
 {% endblock %}
 
 {% block table %}
+{% if groups %}
     <thead class="thead">
         <tr>
             <th></th>
@@ -75,7 +76,6 @@
         </tr>
     </thead>
     <tbody class="tbody">
-        {% if groups %}
         {% for group in groups %}
             <tr id="row-{{group.id}}" class="{{'bg-green2' if group.is_returned else ('bg-red2' if group.check_in_time != None and group.check_in_time < g.time_now)}}">
                 <td>
@@ -174,8 +174,8 @@
                 {% endif %}
             </tr>
         {% endfor %}
-        {% endif %}
     </tbody>
+{% endif %}
 {% endblock %}
 
 {% block footer %}
