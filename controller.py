@@ -161,7 +161,7 @@ def office(office, page):
         all_shifts.append(shift)
         
     shift_ids = list(map(lambda s: s.id, all_shifts))
-    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).all()
+    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).order_by(asc(CanvassGroup.check_in_time)).all()
 
     header_stats = HeaderStats(all_shifts, groups)
 
