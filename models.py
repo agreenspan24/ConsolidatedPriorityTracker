@@ -467,7 +467,7 @@ class HeaderStats:
     def __init__(self, shifts, groups):
         time_now = datetime.now().time()
 
-        self.unflipped_shifts = sum(1 for x in shifts if x.time < time_now and x.status == x.o_status and x.call_pass < 1)
+        self.unflipped_shifts = sum(1 for x in shifts if x.o_status != 'In' and x.time < time_now and x.status == x.o_status and x.call_pass < 1)
         self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now)
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.flake_pass < 1)
 

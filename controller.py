@@ -151,12 +151,19 @@ def office(office, page):
 
     all_shifts = []
     extra_shifts = []
+    in_shifts = []
 
     for shift in shifts:
         if shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
             extra_shifts.append(shift)
+        elif shift.status == 'In':
+            in_shifts.append(shift)
         else: 
             all_shifts.append(shift)
+
+    for shift in in_shifts:
+        all_shifts.append(shift)
+        
     for shift in extra_shifts:
         all_shifts.append(shift)
         
