@@ -37,11 +37,9 @@ def logout_before():
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
 
-        if g.user == None or not g.user.is_allowed:
+        if g.user == None or not g.user.is_allowed or (schema == 'test' and g.user.rank != 'DATA'):
             redir = True
-
-        if schema == 'test' and g.user.rank != 'DATA':
-            redir = True
+            
     else:
         redir = True
     if redir and not request.path.startswith('/login'):
