@@ -228,6 +228,13 @@ class CanvassGroup(db.Model):
             if shift.canvass_group != None and shift.group.is_active:
                 self.canvass_shifts = old_shifts
                 return abort(400, 'Canvasser can only be in one group')
+
+            if not shift.status in ['In', 'Same Day Confirmed']:
+                self.canvass_shifts = old_shifts
+                return abort(400, 'Canvassers must have status "In" or "Same Day Confirmed"')
+
+            if shift.status == 'Same Day Confirmed':
+                shift.flip('kph', 'In')
                 
             self.canvass_shifts.append(shift)
 
