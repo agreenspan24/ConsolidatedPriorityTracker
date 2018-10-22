@@ -435,6 +435,8 @@ class ShiftStats:
         self.actual = 0
         self.goal = 0
         self.percent_to_goal = 0.00
+        self.packets_out = 0
+        self.canvassers_out = 0
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
@@ -453,11 +455,16 @@ class ShiftStats:
                     self.vol_unflipped += 1
                 if s.status == "No Show":
                     self.vol_flaked += 1
+            if s.status == 'In' and s.role == 'Canvassing':
+                self.canvassers_out += 1
+
 
         knocks = 0
         for g in groups:
             if g.is_returned:
                 knocks += g.actual
+            else:
+                self.packets_out += g.packets_given
             self.actual += g.actual
             self.goal += g.goal
 
@@ -469,11 +476,14 @@ class ShiftStats:
 
 class HeaderStats:
     def __init__(self, shifts, groups):
-        time_now = datetime.now().time()
+        time_now = datetime.now()
+        overdue = (time_now + timedelta(minutes=20)).time()
+        flipped_status = ['In', 'Resched', 'No Show', 'Completed', 'Declined']
 
-        self.unflipped_shifts = sum(1 for x in shifts if x.time < time_now and x.status == x.o_status and x.call_pass < 1)
-        self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now)
+        self.unflipped_shifts = sum(1 for x in shifts if x.time < overdue and x.status not in flipped_status)
+        self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now.time())
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.flake_pass < 1)
+
 
 
 class BackupGroup(db.Model):

@@ -150,18 +150,22 @@ def office(office, page):
 
     all_shifts = []
     extra_shifts = []
+    in_shifts = []
     shift_ids = []
     
     for shift in shifts:
         shift_ids.append(shift.id)
         if shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
             extra_shifts.append(shift)
+        elif shift.status == 'In':
+            in_shifts.append(shift)
         else: 
             all_shifts.append(shift)
 
+    all_shifts.extend(in_shifts)
     all_shifts.extend(extra_shifts)
         
-    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).all()
+    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).order_by(asc(check_in_time)).all()
 
     header_stats = HeaderStats(all_shifts, groups)
 
