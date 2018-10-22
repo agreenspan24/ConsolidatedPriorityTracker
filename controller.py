@@ -163,7 +163,7 @@ def office(office, page):
 
     for shift in in_shifts:
         all_shifts.append(shift)
-        
+
     for shift in extra_shifts:
         all_shifts.append(shift)
         
