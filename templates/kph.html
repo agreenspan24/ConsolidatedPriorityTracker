@@ -101,7 +101,7 @@
                                 {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
                             </option>
                         {% endfor %}
-                        {% for shift in shifts if shift.canvass_group == None and shift.status == "In" and shift.canvass_group != group.id %}
+                        {% for shift in shifts if shift.canvass_group == None and shift.status in ["In", "Same Day Confirmed"] and shift.canvass_group != group.id %}
                             <option value={{shift.id}}>
                                 {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
                             </option>
