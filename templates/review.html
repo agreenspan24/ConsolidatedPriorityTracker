@@ -3,7 +3,7 @@
 {% block above_table %}
   
   {% if stats %}
-  <ul class="stat-board stat-board-six">
+  <ul class="stat-board stat-board-five">
     <li class="stat-item">
       <div class="stat-info">
         <div class="stat-data">{{stats.vol_confirmed}}</div>
@@ -44,6 +44,18 @@
       <div class="stat-info">
         <div class="stat-data">{{stats.intern_declined}}</div>
         <div class="stat-title">Intern Shifts Declined</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.canvassers_out}}</div>
+        <div class="stat-title">Canvassers Out</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.packets_out}}</div>
+        <div class="stat-title">Packets Out</div>
       </div>
     </li>
     <li class="stat-item">
