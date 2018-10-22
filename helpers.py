@@ -21,6 +21,9 @@ def update_shifts():
             volunteer = Volunteer(today_shift.vanid, firstname, lastname, today_shift.phone, today_shift.mobilephone)
             db.session.add(volunteer)
             db.session.commit()
+            
+        volunteer.last_user = None
+        volunteer.last_update = None
 
         volunteer.next_shift = None
         volunteer.next_shift_confirmed = False

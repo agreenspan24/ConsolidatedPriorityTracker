@@ -1,4 +1,4 @@
-from app import app, db, engine
+from app import app, db, engine, schema
 from sqlalchemy import create_engine, Table, MetaData, Column, orm
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import text
@@ -7,9 +7,6 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 from flask import abort
 import os
-
-schema = os.environ['schema']
-#schema = 'consolidated'
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'sync'}
@@ -228,6 +225,13 @@ class CanvassGroup(db.Model):
             if shift.canvass_group != None and shift.group.is_active:
                 self.canvass_shifts = old_shifts
                 return abort(400, 'Canvasser can only be in one group')
+
+            if not shift.status in ['In', 'Same Day Confirmed']:
+                self.canvass_shifts = old_shifts
+                return abort(400, 'Canvassers must have status "In" or "Same Day Confirmed"')
+
+            if shift.status == 'Same Day Confirmed':
+                shift.flip('kph', 'In')
                 
             self.canvass_shifts.append(shift)
 
@@ -465,11 +469,14 @@ class ShiftStats:
 
 class HeaderStats:
     def __init__(self, shifts, groups):
-        time_now = datetime.now().time()
+        time_now = datetime.now()
+        overdue = (time_now + timedelta(minutes=20)).time()
+        terminal_status = ['Resched', 'No Show', 'Completed', 'Declined']
 
-        self.unflipped_shifts = sum(1 for x in shifts if x.time < time_now and x.status == x.o_status and x.call_pass < 1)
-        self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now)
+        self.unflipped_shifts = sum(1 for x in shifts if x.status != 'In' and x.time < overdue and x.status not in terminal_status)
+        self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now.time())
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.flake_pass < 1)
+
 
 
 class BackupGroup(db.Model):
