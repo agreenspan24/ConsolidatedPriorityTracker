@@ -7,7 +7,7 @@ from sqlalchemy import and_, asc, desc
 import re
 import urllib
 
-from app import app, oid
+from app import app, oid, schema
 
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
@@ -16,8 +16,6 @@ from dateutil.parser import parse
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
-
-#os.environ['schema'] = 'consolidated'
 
 vanservice = VanService()
 
@@ -39,11 +37,9 @@ def logout_before():
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
 
-        if g.user == None or not g.user.is_allowed:
+        if g.user == None or not g.user.is_allowed or (schema == 'test' and g.user.rank != 'DATA'):
             redir = True
-
-        if os.environ['schema'] == 'test' and g.user.rank != 'DATA':
-            redir = True
+            
     else:
         redir = True
     if redir and not request.path.startswith('/login'):
@@ -105,13 +101,7 @@ def logout():
 
 @oid.require_login
 @app.route('/consolidated', methods=['POST','GET'])
-def consolidated():
-    if g.user.rank in [None, 'Intern']:
-        offices =  Location.query.filter_by(region=g.user.region).group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
-    
-    else:
-        offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
-    
+def consolidated(): 
     if request.method == 'POST':
         option = request.form.get('target')
 
@@ -125,6 +115,13 @@ def consolidated():
         page = escape(page)
 
         return redirect('/consolidated/' + str(office)[0:3] + '/' + page)
+
+    if g.user.rank in [None, 'Intern']:
+        offices =  Location.query.filter_by(region=g.user.region).group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
+    
+    else:
+        offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
+   
 
     return render_template('index.html', offices=offices)
 
@@ -151,17 +148,22 @@ def office(office, page):
 
     all_shifts = []
     extra_shifts = []
-
+    in_shifts = []
+    shift_ids = []
+    
     for shift in shifts:
+        shift_ids.append(shift.id)
         if shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
             extra_shifts.append(shift)
+        elif shift.status == 'In':
+            in_shifts.append(shift)
         else: 
             all_shifts.append(shift)
-    for shift in extra_shifts:
-        all_shifts.append(shift)
+
+    all_shifts.extend(in_shifts)
+    all_shifts.extend(extra_shifts)
         
-    shift_ids = list(map(lambda s: s.id, all_shifts))
-    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).all()
+    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).order_by(asc(CanvassGroup.check_in_time)).all()
 
     header_stats = HeaderStats(all_shifts, groups)
 
@@ -313,7 +315,7 @@ def add_pass(office, page):
                 return Response('Could not find volunteer', status=400)
 
             if volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+                return Response('This volunteer has been updated by another user since you last loaded the page. Please refresh and try again.', 400)
 
             volunteer.cellphone = phone_sanitized
             volunteer.last_user = g.user.id
@@ -398,7 +400,7 @@ def add_pass(office, page):
 
         if 'vanid' in keys:
             if shift.volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+                return Response('This volunteer has been updated by another user since you last loaded the page. Please refresh and try again.', 400)
 
             vanid = request.form.get('vanid')
                 
@@ -616,12 +618,16 @@ def get_recently_updated(office, page):
     page = escape(page)
 
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
+
+    if not locations:
+        return Response('Locations not found', 400)
+
     location_ids = list(map(lambda l: l.locationid, locations))
 
     updates = []
 
     if page == 'kph':
-        all_groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(location_ids)).all()
+        all_groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.shift_location.in_(location_ids)).all()
 
         for gr in all_groups:
             updates.append({
@@ -758,7 +764,7 @@ def backup(office, page):
     location_ids = list(map(lambda l: l.locationid, locations))
 
     if page == 'kph':
-        all_groups = BackupGroup.query.order_by(desc(BackupGroup.id)).all()
+        all_groups = BackupGroup.query.join(BackupGroup.canvass_shifts).filter(BackupShift.shift_location.in_(location_ids), BackupShift.date > (datetime.today() - timedelta(days=7)).date()).order_by(desc(BackupGroup.id)).all()
         groups = []
 
         for gr in all_groups:
