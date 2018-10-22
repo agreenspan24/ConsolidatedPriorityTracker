@@ -7,7 +7,7 @@ from sqlalchemy import and_, asc, desc
 import re
 import urllib
 
-from app import app, oid
+from app import app, oid, schema
 
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
@@ -16,8 +16,6 @@ from dateutil.parser import parse
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
-
-#os.environ['schema'] = 'consolidated'
 
 vanservice = VanService()
 
@@ -42,7 +40,7 @@ def logout_before():
         if g.user == None or not g.user.is_allowed:
             redir = True
 
-        if os.environ['schema'] == 'test' and g.user.rank != 'DATA':
+        if schema == 'test' and g.user.rank != 'DATA':
             redir = True
     else:
         redir = True

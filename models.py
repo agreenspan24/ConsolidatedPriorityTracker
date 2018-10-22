@@ -1,4 +1,4 @@
-from app import app, db, engine
+from app import app, db, engine, schema
 from sqlalchemy import create_engine, Table, MetaData, Column, orm
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import text
@@ -7,9 +7,6 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
 from flask import abort
 import os
-
-schema = os.environ['schema']
-#schema = 'consolidated'
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'sync'}
