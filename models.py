@@ -435,6 +435,8 @@ class ShiftStats:
         self.actual = 0
         self.goal = 0
         self.percent_to_goal = 0.00
+        self.packets_out = 0
+        self.canvassers_out = 0
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
@@ -453,11 +455,16 @@ class ShiftStats:
                     self.vol_unflipped += 1
                 if s.status == "No Show":
                     self.vol_flaked += 1
+            if s.status == 'In' and s.role == 'Canvassing':
+                self.canvassers_out += 1
+
 
         knocks = 0
         for g in groups:
             if g.is_returned:
                 knocks += g.actual
+            else:
+                self.packets_out += g.packets_given
             self.actual += g.actual
             self.goal += g.goal
 
