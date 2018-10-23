@@ -3,15 +3,15 @@
     function showAlert(type, text) {
         hideAlert();
 
-        $('.alert').removeClass('hide success info warn error').addClass(type);
+        $('#alert').removeClass('hide success info warn error').addClass(type);
         $('#alert-text').html(text);
     }
 
     function hideAlert() {
-        $('.alert').addClass('hide');
+        $('#alert').addClass('hide');
     }
 </script>
-<div class="alert hide">
+<div class="alert hide" id="alert">
     <span id="alert-text"></span>
     <a class="dismiss" onclick="hideAlert()">
         <span class="glyphicons glyphicons-remove" aria-hidden="true"></span>

@@ -27,6 +27,21 @@ class SyncShift(db.Model):
     phone = db.Column('phone', db.String(10))
     mobilephone = db.Column('mobilephone', db.String(10))
 
+    def serialize(self): 
+        return {
+            'vanid': self.vanid,
+            'eventtype': self.eventtype,
+            'startdate': self.startdate.strftime('%m/%d'),
+            'starttime': self.starttime.strftime('%I:%M %p'),
+            'locationname': self.locationname,
+            'role': self.role,
+            'status': self.status,
+            'firstname': self.firstname,
+            'lastname': self.lastname,
+            'phone': self.phone,
+            'mobilephone': self.mobilephone
+        }
+
 class Location(db.Model):
     __table_args__ = {'schema':schema}
     #__tablename__ = 'location'
@@ -166,7 +181,7 @@ class Note(db.Model):
     def serialize(self):
         return {
             'type': self.type,
-            'time': self.time,
+            'time': self.time.strftime('%I:%M %p'),
             'text': self.text
         }
 
@@ -239,10 +254,12 @@ class CanvassGroup(db.Model):
 
     def check_in(self, check_in_amount):
 
-        self.last_check_in = datetime.now().time()
-        self.check_in_time = datetime.now() + timedelta(hours=1)
-        self.check_ins += 1
         self.actual = int(check_in_amount)
+
+        if not self.is_returned:
+            self.last_check_in = datetime.now().time()
+            self.check_in_time = datetime.now() + timedelta(hours=1)
+            self.check_ins += 1
 
         return self
 
@@ -297,12 +314,10 @@ class CanvassGroup(db.Model):
             'packets_given': self.packets_given,
             'packet_names': self.packet_names,
             'is_returned': self.is_returned,
-            'departure': self.departure,
-            'last_contact': self.last_contact,
-            'check_in_time': self.check_in_time,
+            'departure': (self.departure.strftime('%I:%M %p') if self.departure else None),
+            'last_check_in': (self.last_check_in.strftime('%I:%M %p') if self.last_check_in else None),
+            'check_in_time': (self.check_in_time.strftime('%I:%M %p') if self.check_in_time else None),
             'check_ins': self.check_ins,
-            'last_user': self.last_user,
-            'last_update': self.last_update,
             'canvass_shifts': list(map(lambda x: x.serialize(), self.canvass_shifts))
         }
 
@@ -344,7 +359,6 @@ class Shift(db.Model):
         self.o_status = status
         self.role = role
         self.flake = False
-        self.last_contact = None
         self.person = person
         self.shift_location = shift_location
         self.call_pass = 0
@@ -404,18 +418,15 @@ class Shift(db.Model):
         return {
             'id': self.id,
             'eventtype': self.eventtype,
-            'time': self.time,
-            'date': self.date,
+            'time': self.time.strftime('%I:%M %p'),
+            'date': self.date.strftime('%Y-%m-%d'),
             'status': self.status,
             'role': self.role,
             'flake': self.flake,
-            'last_contact': self.last_contact,
             'person': self.person,
             'volunteer': self.volunteer.serialize(),
-            'shift_location': self.shift_location.serialize(),
+            'location': self.location.serialize(),
             'call_pass': self.call_pass,
-            'last_user': self.last_user,
-            'last_update': self.last_update,
             'notes': list(map(lambda x: x.serialize(), self.notes)),
             'volunteer': self.volunteer.serialize(),
             'location': self.location.serialize()
@@ -477,13 +488,12 @@ class ShiftStats:
 class HeaderStats:
     def __init__(self, shifts, groups):
         time_now = datetime.now()
-        overdue = (time_now + timedelta(minutes=20)).time()
+        overdue = (time_now - timedelta(minutes=20)).time()
         flipped_status = ['In', 'Resched', 'No Show', 'Completed', 'Declined']
 
-        self.unflipped_shifts = sum(1 for x in shifts if x.time < overdue and x.status not in flipped_status)
+        self.unflipped_shifts = sum(1 for x in shifts if x.time < overdue and not x.status in flipped_status)
         self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now.time())
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.flake_pass < 1)
-
 
 
 class BackupGroup(db.Model):
