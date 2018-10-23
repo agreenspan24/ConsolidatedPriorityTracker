@@ -79,7 +79,7 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts %}
-                <tr id="row-{{shift.id}}" class="{{'bg-green2' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('bg-red2' if shift.status in ['Declined', 'No Show', 'Resched'])}}">
+                <tr id="row-{{shift.id}}" class="{{'bg-green2' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('bg-red2' if shift.status in ['Declined', 'No Show'])}}">
                     <td>
                         {{loop.index}}
                         <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
