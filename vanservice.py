@@ -6,7 +6,7 @@ import os
 from models import ShiftStatus, Shift, EventType, Volunteer, SyncShift
 from datetime import datetime, time, timedelta
 from dateutil.parser import parse
-from app import app, db
+from app import app, db, schema
 
 class VanService:
 
