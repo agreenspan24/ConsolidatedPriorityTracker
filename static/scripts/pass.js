@@ -266,19 +266,20 @@ function deleteRow(row) {
 
 function confirm_shifts_date(e) {
     vanid = e.target.attributes['vanid'].nodeValue;
+    time = e.target.attributes['time'].nodeValue;
     date = e.target.innerText;
 
-    if (!vanid || !date) return;
+    if (!vanid || !date || !time) return;
 
-    if (confirm('Are you sure you want to confirm this person for their next shift?')) {
+    if (confirm('Are you sure you want to confirm this person for this shift?')) {
         showAlert('info', 'Updating next shift for ' + vanid);
 
         $.ajax({
             type: 'POST',
-            url: window.location.pathname + '/confirm_shifts_date',
+            url: window.location.pathname + '/confirm_shift',
             data: {
-                vanid: vanid,
-                date: date
+                vanid,
+                date: date + ' ' + time
             }
         }).done(function() {
             showAlert('success', 'Updated next shift for ' + vanid);
@@ -297,7 +298,7 @@ function confirm_shifts_date(e) {
 }
 
 function get_future_shifts(vanid, name) {
-    var rowTemplate = "<tr><td>{0}</td><td>{1}</td><td vanid='{5}' ondblclick='confirm_shifts_date(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td><td>{3}</td><td>{4}</td></tr>";
+    var rowTemplate = "<tr><td>{0}</td><td>{1}</td><td vanid='{5}' time='{3}' ondblclick='confirm_shifts_date(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td><td>{3}</td><td>{4}</td></tr>";
 
     open_modal('future_shifts_modal');
     hideModalAlert();
@@ -325,7 +326,7 @@ function get_future_shifts(vanid, name) {
                 .replace('{0}', s.eventtype)
                 .replace('{1}', s.locationname)
                 .replace('{2}', s.startdate)
-                .replace('{3}', s.starttime)
+                .replace('{3}', s.starttime).replace('{3}', s.starttime)
                 .replace('{4}', s.status)
                 .replace('{5}', s.vanid)
                 .replace('{6}', (s.status == 'Confirmed' ? '' : 'hide'));

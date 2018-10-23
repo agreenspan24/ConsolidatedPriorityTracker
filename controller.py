@@ -781,8 +781,8 @@ def backup(office, page):
 
 
 @oid.require_login
-@app.route('/consolidated/<office>/<page>/confirm_shifts_date', methods=['POST'])
-def confirm_shifts_date(office, page):
+@app.route('/consolidated/<office>/<page>/confirm_shift', methods=['POST'])
+def confirm_shift(office, page):
     vanid = request.form.get('vanid')
 
     if not vanid:
@@ -791,19 +791,19 @@ def confirm_shifts_date(office, page):
     if not vanid.isdigit():
         return Response('Invalid vanid', 400)
 
-    date_str = request.form.get('date')[:5]
+    date_str = urllib.parse.unquote(request.form.get('date'))
     
-    date = datetime.strptime(date_str, '%m/%d').replace(year=2018)
+    date = datetime.strptime(date_str, '%m/%d %I:%M %p').replace(year=2018)
 
     if date > (datetime.today() + timedelta(days=4)):
         return Response('Shift too far out', 400)
 
-    success = vanservice.confirm_shifts_date(vanid, date.date())
+    success = vanservice.confirm_shift(vanid, date)
 
     if success == True:
         return Response('Success', 200)
     else:
-        return Response('Failed to update next shift for ' + vanid, 400)
+        return Response('Failed to update shift for ' + vanid, 400)
 
 
 @oid.require_login

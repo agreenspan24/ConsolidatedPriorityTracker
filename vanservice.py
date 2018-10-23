@@ -11,7 +11,7 @@ from app import app, db, schema
 class VanService:
 
     def __init__(self):
-
+        
         self.client = requests.Session()
         self.client.auth = (os.environ['api_user'], os.environ['api_key'] + '|1')
         self.client.headers.update({
@@ -114,14 +114,14 @@ class VanService:
         return success
 
 
-    def confirm_shifts_date(self, vanid, date):
+    def confirm_shift(self, vanid, date):
 
         volunteer = Volunteer.query.filter_by(van_id=vanid).first()
         
         if not volunteer:
             return Response('Volunteer not found', 400)
 
-        sync_shifts = SyncShift.query.filter_by(vanid=vanid, startdate=date).all()
+        sync_shifts = SyncShift.query.filter_by(vanid=vanid, startdate=date.date(), starttime=date.time()).all()
 
         signups_json = self.client.get(self.api_url + 'signups?vanId=' + vanid).json()
 
@@ -131,17 +131,17 @@ class VanService:
             return Response('Shifts not found', 400)
 
         success = False
-        for i, signup in enumerate(signups):
+        for signup in signups:
             start = parse(signup['startTimeOverride'])
-
-            if start.date() == date:
-                sync = next((x for x in sync_shifts if x.starttime == start.time() and x.eventname == signup['event']['name']), None)
+            
+            if start.replace(tzinfo=None) == date:
+                sync = next((x for x in sync_shifts if x.eventname == signup['event']['name']), None)
 
                 if signup['status']['name'] != 'Confirmed':
                     response = self.update_status(signup, 'Confirmed')
                     
                     if response == True:
-                        if i == 0:
+                        if volunteer.next_shift == date.date():
                             volunteer.next_shift_confirmed = True
 
                         if sync: 
@@ -150,7 +150,7 @@ class VanService:
                     success = response
 
                 else:
-                    if i == 0:
+                    if volunteer.next_shift == date.date():
                         volunteer.next_shift_confirmed = True
 
                     if sync: 
