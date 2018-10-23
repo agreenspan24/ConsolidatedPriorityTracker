@@ -108,7 +108,9 @@
                             <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" style="width:75px" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}"/>
                             <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}"/>
                         {% else %}
-                            {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
+                            <a onclick="get_future_shifts({{shift.volunteer.van_id}}, '{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}')">
+                                {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
+                            </a>
                         {% endif %}
                     </td>
                     <td>
@@ -121,7 +123,7 @@
                     <td>
                         <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
-                    <td vanid="{{shift.volunteer.van_id if (shift.volunteer.van_id and shift.volunteer.next_shift and not shift.volunteer.next_shift_confirmed)}}" ondblclick="confirm_next_shift(event)" style="cursor:pointer">
+                    <td vanid="{{shift.volunteer.van_id if (shift.volunteer.van_id and shift.volunteer.next_shift and not shift.volunteer.next_shift_confirmed)}}" ondblclick="confirm_shifts_date(event)" style="cursor:pointer">
                         {{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}
                         {% if shift.volunteer.next_shift_confirmed %}
                             &nbsp;<span class='glyphicons glyphicons-ok text-green7'></span>

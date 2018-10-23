@@ -72,13 +72,13 @@ function updateGoalActual(parent_id, res, elem) {
 }
 
 function updateCheckIns(parent_id, res, elem) {
-    getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
-    getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
-    getRowElem(parent_id, 'check_ins').html(res.check_ins);
-    getRowElem(parent_id, 'actual').val(res.actual);
-
+    if (!res.is_returned) {
+        getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
+        getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
+        getRowElem(parent_id, 'check_ins').html(res.check_ins);
+    }
+    
     updateGoalActual(parent_id, res, elem);
-
     addNote(parent_id, res.note, elem);
 }
 
@@ -114,11 +114,10 @@ function setOut(parent_id, res, elem) {
     getRowElem(parent_id, 'departure').val(res.departure);
 
     if (!res.check_in_time) {
-        getRowElem(parent_id, 'actual').prop('disabled', 'disabled');
-        getRowElem(parent_id, 'actual').attr('disabled');
+        getRowElem(parent_id, 'departure').prop('disabled', 'disabled');
     } else {
-        getRowElem(parent_id, 'actual').removeAttr('disabled');
         getRowElem(parent_id, 'actual').prop('disabled', false);
+        getRowElem(parent_id, 'departure').prop('disabled', false);
     }
 }
 
@@ -265,19 +264,21 @@ function deleteRow(row) {
     $('#' + row).remove();
 }
 
-function confirm_next_shift(e) {
+function confirm_shifts_date(e) {
     vanid = e.target.attributes['vanid'].nodeValue;
+    date = e.target.innerText;
 
-    if (!vanid) return;
+    if (!vanid || !date) return;
 
     if (confirm('Are you sure you want to confirm this person for their next shift?')) {
         showAlert('info', 'Updating next shift for ' + vanid);
 
         $.ajax({
             type: 'POST',
-            url: window.location.pathname + '/confirm_next_shift',
+            url: window.location.pathname + '/confirm_shifts_date',
             data: {
-                vanid: vanid
+                vanid: vanid,
+                date: date
             }
         }).done(function() {
             showAlert('success', 'Updated next shift for ' + vanid);
@@ -290,6 +291,48 @@ function confirm_next_shift(e) {
             }
             
             showAlert('error', message);
+            showModalAlert('error', message);
         });
     }
+}
+
+function get_future_shifts(vanid, name) {
+    var rowTemplate = "<tr><td>{0}</td><td>{1}</td><td vanid='{5}' ondblclick='confirm_shifts_date(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td><td>{3}</td><td>{4}</td></tr>";
+
+    open_modal('future_shifts_modal');
+    hideModalAlert();
+
+    $('#future_shifts_name').html(name);
+    $('#future_shifts_body').html('');
+
+    $.ajax({
+        type: 'GET', 
+        url: window.location.pathname + '/future_shifts',
+        data: {
+            vanid
+        }
+    }).done(function(shifts) {
+        var rows = '';
+
+        if (shifts.length == 0) {
+            showModalAlert('error', 'Oops! ' + name + ' has no future shifts! Schedule them right away!');
+        } else if (shifts.length < 7) {
+            showModalAlert('warn', 'Oh no! ' + name + " doesn't has enough shifts scheduled! Beg them for more");
+        }
+
+        shifts.forEach(function(s) {
+            rows += rowTemplate
+                .replace('{0}', s.eventtype)
+                .replace('{1}', s.locationname)
+                .replace('{2}', s.startdate)
+                .replace('{3}', s.starttime)
+                .replace('{4}', s.status)
+                .replace('{5}', s.vanid)
+                .replace('{6}', (s.status == 'Confirmed' ? '' : 'hide'));
+        });
+
+        $('#future_shifts_body').html(rows);
+    }).fail(function() {
+        $('#future_shifts_body').html('<p>There was an error getting shifts</p>');
+    });
 }

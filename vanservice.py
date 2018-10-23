@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth
 from flask import jsonify, Response
 import json
 import os
-from models import ShiftStatus, Shift, EventType, Volunteer
+from models import ShiftStatus, Shift, EventType, Volunteer, SyncShift
 from datetime import datetime, time, timedelta
 from dateutil.parser import parse
 from app import app, db
@@ -11,7 +11,7 @@ from app import app, db
 class VanService:
 
     def __init__(self):
-        
+
         self.client = requests.Session()
         self.client.auth = (os.environ['api_user'], os.environ['api_key'] + '|1')
         self.client.headers.update({
@@ -28,15 +28,18 @@ class VanService:
             'statusId': status.id,
         }
 
-        '''print('this would be flipped', signup)
-        return not not signup'''
+        if schema == 'test':
+            print('this would be flipped', signup)
+            return not not signup
 
-        response = self.client.put(self.api_url + 'signups/' + str(signup['eventSignupId']), data=json.dumps(signup))
+        else:
+            response = self.client.put(self.api_url + 'signups/' + str(signup['eventSignupId']), data=json.dumps(signup))
 
-        if response.status_code < 400:
-            return True
-        else: 
-            return Response('Error updating shifts', 400)
+            if response.status_code < 400:
+                return True
+            else: 
+                return Response('Error updating shifts', 400)
+
 
     def get_events(self, eventtype):
         eventType = EventType.query.filter_by(name=eventtype).first()
@@ -111,15 +114,14 @@ class VanService:
         return success
 
 
-    def confirm_next_shift(self, vanid):
+    def confirm_shifts_date(self, vanid, date):
 
         volunteer = Volunteer.query.filter_by(van_id=vanid).first()
         
         if not volunteer:
             return Response('Volunteer not found', 400)
-            
-        if volunteer.next_shift_confirmed:
-            return True
+
+        sync_shifts = SyncShift.query.filter_by(vanid=vanid, startdate=date).all()
 
         signups_json = self.client.get(self.api_url + 'signups?vanId=' + vanid).json()
 
@@ -128,25 +130,35 @@ class VanService:
         if not signups:
             return Response('Shifts not found', 400)
 
-        signups.reverse() #puts in ascending date order
-    
-        next_shift = next((x for x in signups if parse(x['startTimeOverride']).date() > datetime.today().date()), None)
-    
-        if next_shift:
-            if next_shift['status']['name'] != 'Confirmed':
-                response = self.update_status(next_shift, 'Confirmed')
-                
-                if response == True:
+        success = False
+        for i, signup in enumerate(signups):
+            start = parse(signup['startTimeOverride'])
 
-                    volunteer.next_shift_confirmed = True
-                    db.session.commit()
+            if start.date() == date:
+                sync = next((x for x in sync_shifts if x.starttime == start.time() and x.eventname == signup['event']['name']), None)
 
-                return response
-            else:
-                volunteer.next_shift_confirmed = True
-                db.session.commit()
+                if signup['status']['name'] != 'Confirmed':
+                    response = self.update_status(signup, 'Confirmed')
+                    
+                    if response == True:
+                        if i == 0:
+                            volunteer.next_shift_confirmed = True
 
-                return True
+                        if sync: 
+                            sync.status = 'Confirmed'    
 
-        return False
+                    success = response
+
+                else:
+                    if i == 0:
+                        volunteer.next_shift_confirmed = True
+
+                    if sync: 
+                        sync.status = 'Confirmed'
+
+                    success = True
+
+        db.session.commit()
+
+        return success
 
