@@ -56,6 +56,7 @@
                     <th>Name</th>
                     <th>Phone</th>
                     <th>Cell</th>
+                    <th>Packets</th>
                     <th>Actual</th>
                     <th>Goal</th>
                     <th>% to Goal</th>
@@ -87,6 +88,9 @@
                             {% for shift in group.canvass_shifts %}
                                 <p>{{'({}) {}-{}'.format(shift.volunteer.cellphone[0:3], shift.volunteer.cellphone[3:6], shift.volunteer.cellphone[6:]) if shift.volunteer.cellphone else '' }}</p>
                             {% endfor %}
+                        </td>
+                        <td>
+                            {{group.packet_names}}
                         </td>
                         <td>
                             {{group.actual}}
