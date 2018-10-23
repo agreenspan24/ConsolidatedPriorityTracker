@@ -64,9 +64,9 @@ WITH confirm_attempt_totals AS (
 	
 ), locations AS (
 
-	SELECT locationname
+	SELECT locationname, region
 	FROM {0}.location
-	GROUP BY locationname
+	GROUP BY 1, 2
 
 ), office_totals AS (SELECT l.region, l.locationname AS office
 , COALESCE(cat.canvass_total_scheduled, 0) canvass_total_scheduled
@@ -105,7 +105,7 @@ WITH confirm_attempt_totals AS (
 , COALESCE(ct.packets_out_now, 0) packets_out_now
 , COALESCE(ct.actual_out_now * 1.0 / (CASE WHEN ct.canvassers_out_now < 1 THEN 1 ELSE ct.canvassers_out_now END), 0) kph
 , COALESCE(ct.overdue_check_in, 0) overdue_check_ins
-FROM {0}.location l 
+FROM locations l 
 LEFT JOIN confirm_attempt_totals cat
 	ON l.locationname = cat.locationname
 LEFT JOIN canvass_totals ct
@@ -150,7 +150,6 @@ WHERE NOT region IN ('In', 'Ou', 'Th')
 , SUM(overdue_check_ins)::bigint overdue_check_ins
 FROM office_totals
 GROUP BY region
-HAVING not region = 'Ou'
 ), state_totals AS (
 	SELECT 'Missouri' region, 'State Total' office
 , SUM(canvass_total_scheduled)::bigint canvass_total_scheduled

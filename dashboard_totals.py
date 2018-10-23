@@ -1,4 +1,4 @@
-from app import engine, db, app
+from app import engine, db, app, schema
 from sqlalchemy import Table, MetaData, Column
 import os
 
@@ -42,5 +42,5 @@ class DashboardTotal(db.Model):
         Column('packets_out_now', db.BigInteger),
         Column('kph', db.Numeric),
         Column('overdue_check_ins', db.BigInteger),
-        autoload=True, autoload_with=engine, schema=os.environ['schema'])
+        autoload=True, autoload_with=engine, schema=schema)
 

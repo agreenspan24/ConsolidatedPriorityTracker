@@ -5,6 +5,11 @@ from flask_oidc import OpenIDConnect
 import os
 from sqlalchemy import create_engine
 
+try:
+    schema = os.environ['schema']
+except:
+    schema = 'consolidated'
+
 app = Flask(__name__)
 app.config['DEBUG'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['HEROKU_POSTGRESQL_AMBER_URL'] 
