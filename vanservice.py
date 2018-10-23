@@ -28,15 +28,18 @@ class VanService:
             'statusId': status.id,
         }
 
-        print('this would be flipped', signup)
-        return not not signup
+        if schema == 'test':
+            print('this would be flipped', signup)
+            return not not signup
 
-        '''response = self.client.put(self.api_url + 'signups/' + str(signup['eventSignupId']), data=json.dumps(signup))
+        else:
+            response = self.client.put(self.api_url + 'signups/' + str(signup['eventSignupId']), data=json.dumps(signup))
 
-        if response.status_code < 400:
-            return True
-        else: 
-            return Response('Error updating shifts', 400)'''
+            if response.status_code < 400:
+                return True
+            else: 
+                return Response('Error updating shifts', 400)
+
 
     def get_events(self, eventtype):
         eventType = EventType.query.filter_by(name=eventtype).first()
@@ -127,16 +130,12 @@ class VanService:
         if not signups:
             return Response('Shifts not found', 400)
 
-        '''signups.reverse() #puts in ascending date order
-    
-        next_shift = next((x for x in signups if parse(x['startTimeOverride']).date() > datetime.today().date()), None)'''
-
         success = False
         for i, signup in enumerate(signups):
             start = parse(signup['startTimeOverride'])
 
             if start.date() == date:
-                sync = next((x for x in sync_shifts if x.starttime == start.time()), None)
+                sync = next((x for x in sync_shifts if x.starttime == start.time() and x.eventname == signup['event']['name']), None)
 
                 if signup['status']['name'] != 'Confirmed':
                     response = self.update_status(signup, 'Confirmed')

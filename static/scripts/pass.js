@@ -303,6 +303,7 @@ function get_future_shifts(vanid, name) {
     hideModalAlert();
 
     $('#future_shifts_name').html(name);
+    $('#future_shifts_body').html('');
 
     $.ajax({
         type: 'GET', 
