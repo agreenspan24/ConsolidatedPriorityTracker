@@ -147,13 +147,13 @@
                     </a>
                 </td>
                 <td >
-                    <input id='departure-{{group.id}}' name='departure' type="time" style="max-width:75px" value="{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}" />
+                    <input id='departure-{{group.id}}' name='departure' type="time" style="max-width:75px" value="{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}" {{'disabled' if group.departure == None or group.is_returned}} />
                 </td>
                 <td id='check_in_time-{{group.id}}'>{{group.check_in_time.strftime('%I:%M %p') if group.check_in_time != None else ''}}</td> 
                 <td id='last_check_in-{{group.id}}'>{{group.last_check_in.strftime('%I:%M %p') if group.last_check_in != None else ''}}</td>
                 <td id='check_ins-{{group.id}}'>{{group.check_ins}}</td>
                 <td>
-                    <input id="actual-{{group.id}}" name="actual" min="0" type="number" value="{{group.actual if not group.actual == None}}" style="max-width: 50px" />
+                    <input id="actual-{{group.id}}" name="actual" min="0" type="number" value="{{group.actual if not group.actual == None}}" style="max-width: 50px" {{'disabled' if group.departure == None}} />
                 </td>
                 <td>
                     <input id="goal-{{group.id}}" name="goal" min="0"  type="number" value="{{group.goal if not group.goal == None}}" style="max-width: 50px"  />

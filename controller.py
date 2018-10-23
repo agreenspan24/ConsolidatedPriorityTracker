@@ -269,7 +269,8 @@ def add_pass(office, page):
                 'last_check_in': group.last_check_in.strftime('%I:%M %p'),
                 'check_ins': group.check_ins,
                 'actual': group.actual,
-                'note': note
+                'note': note, 
+                'is_returned': group.is_returned
             })
 
         if 'departure' in keys:
@@ -778,9 +779,10 @@ def backup(office, page):
 
         return render_template('backups.html', shifts=shifts)
 
+
 @oid.require_login
-@app.route('/consolidated/<office>/<page>/confirm_next_shift', methods=['POST'])
-def confirm_next_shift(office, page):
+@app.route('/consolidated/<office>/<page>/confirm_shift', methods=['POST'])
+def confirm_shift(office, page):
     vanid = request.form.get('vanid')
 
     if not vanid:
@@ -789,12 +791,36 @@ def confirm_next_shift(office, page):
     if not vanid.isdigit():
         return Response('Invalid vanid', 400)
 
-    success = vanservice.confirm_next_shift(vanid)
+    date_str = urllib.parse.unquote(request.form.get('date'))
+    
+    date = datetime.strptime(date_str, '%m/%d %I:%M %p').replace(year=2018)
 
-    if success:
+    if date > (datetime.today() + timedelta(days=4)):
+        return Response('Shift too far out', 400)
+
+    success = vanservice.confirm_shift(vanid, date)
+
+    if success == True:
         return Response('Success', 200)
     else:
-        return Response('Failed to update next shift for ' + vanid, 400)
+        return Response('Failed to update shift for ' + vanid, 400)
+
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/future_shifts', methods=['GET'])
+def get_future_shifts(office, page):
+    vanid = request.args.get('vanid')
+
+    if not vanid:
+        return Response('No vanid found', 400)
+
+    if not vanid.isdigit():
+        return Response('Invalid vanid', 400)
+
+    future_shifts = SyncShift.query.filter(SyncShift.vanid == vanid, SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
+
+    return jsonify(list(map(lambda x: x.serialize(), future_shifts)))
+
 
 @app.errorhandler(404)
 def page_not_found(e):
