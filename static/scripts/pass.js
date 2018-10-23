@@ -264,7 +264,7 @@ function deleteRow(row) {
     $('#' + row).remove();
 }
 
-function confirm_shifts_date(e) {
+function confirm_shift(e) {
     vanid = e.target.attributes['vanid'].nodeValue;
     time = e.target.attributes['time'].nodeValue;
     date = e.target.innerText;
@@ -298,7 +298,13 @@ function confirm_shifts_date(e) {
 }
 
 function get_future_shifts(vanid, name) {
-    var rowTemplate = "<tr><td>{0}</td><td>{1}</td><td vanid='{5}' time='{3}' ondblclick='confirm_shifts_date(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td><td>{3}</td><td>{4}</td></tr>";
+    var rowTemplate = "<tr>" +
+        "<td>{0}</td>" +
+        "<td>{1}</td>" + 
+        "<td vanid='{5}' time='{3}' ondblclick='confirm_shift(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td>" + 
+        "<td>{3}</td>" + 
+        "<td>{4}</td>" + 
+    "</tr>";
 
     open_modal('future_shifts_modal');
     hideModalAlert();

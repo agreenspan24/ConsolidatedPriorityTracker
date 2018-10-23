@@ -123,7 +123,7 @@
                     <td>
                         <input id='cellphone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
-                    <td >
+                    <td>
                         {{shift.volunteer.next_shift.strftime('%m/%d') if shift.volunteer.next_shift }}
                         {% if shift.volunteer.next_shift_confirmed %}
                             &nbsp;<span class='glyphicons glyphicons-ok text-green7'></span>
