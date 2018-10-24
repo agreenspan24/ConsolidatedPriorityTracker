@@ -45,11 +45,13 @@ def logout_before():
     if redir and not request.path.startswith('/login'):
         return redirect('/login')
 
+
 @app.route('/login', methods=['GET','POST'])
 def login_page():
     if request.method == 'POST':
         return redirect('/login_auth')
     return render_template('login.html', next='/login_auth')
+
 
 @app.route('/login_auth', methods=['GET','POST'])
 @oid.require_login
@@ -121,7 +123,6 @@ def consolidated():
     
     else:
         offices = Location.query.group_by(Location.locationname).order_by(asc(Location.locationname)).with_entities(Location.locationname).all()
-   
 
     return render_template('index.html', offices=offices)
 
@@ -265,8 +266,8 @@ def add_pass(office, page):
             note = group.add_note('kph', check_in_amount + " doors")
 
             return_var = jsonify({
-                'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
-                'last_check_in': group.last_check_in.strftime('%I:%M %p'),
+                'check_in_time': (group.check_in_time.strftime('%I:%M %p') if group.check_in_time else None), 
+                'last_check_in': (group.last_check_in.strftime('%I:%M %p') if group.last_check_in else None),
                 'check_ins': group.check_ins,
                 'actual': group.actual,
                 'note': note, 
