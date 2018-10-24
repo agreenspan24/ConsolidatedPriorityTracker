@@ -141,7 +141,7 @@ class VanService:
                     response = self.update_status(signup, 'Confirmed')
                     
                     if response == True:
-                        if volunteer.next_shift == date.date():
+                        if volunteer.next_shift == date.date() and volunteer.next_shift_time == date.time():
                             volunteer.next_shift_confirmed = True
 
                         if sync: 
@@ -150,7 +150,7 @@ class VanService:
                     success = response
 
                 else:
-                    if volunteer.next_shift == date.date():
+                    if volunteer.next_shift == date.date() and volunteer.next_shift_time == date.time():
                         volunteer.next_shift_confirmed = True
 
                     if sync: 
