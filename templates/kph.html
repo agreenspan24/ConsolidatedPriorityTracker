@@ -21,7 +21,7 @@
                     <label class="input-label" for="shift_id">Volunteers</label>
                     <select class="input-element" name="shift_id[]" id="shift_id" multiple>
                         <option></option>
-                        {% for shift in shifts if (shift.status in ['In', 'Same Day Confirmed'] and (shift.canvass_group == None or not shift.group.is_active)) %}
+                        {% for shift in shifts if (shift.status in ['In', 'Same Day Confirmed'] and (shift.canvass_group == None or not shift.group.is_active) and shift.role == 'Canvassing') %}
                             <option value={{shift.id}}>
                                 {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name + ' - ' + shift.time.strftime('%I:%M %p')}}
                             </option>

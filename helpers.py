@@ -32,6 +32,7 @@ def update_shifts():
         if next_shift:
             print(next_shift.startdate)
             volunteer.next_shift = next_shift.startdate
+            volunteer.next_shift_time = next_shift.starttime
         
             if next_shift.status == 'Confirmed':
                 volunteer.next_shift_confirmed = True
