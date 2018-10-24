@@ -222,127 +222,6 @@ def add_pass(office, page):
         if group.updated_by_other(page_load_time, g.user):
             return Response('This Canvass Group has been updated by a different user since you last loaded the page. Please refresh and try again.', 400)
         
-        if 'shift_id[]' in keys:
-            shift_ids = request.form.getlist('shift_id[]')
-
-            for id in shift_ids:
-                if not id.isdigit():
-                    return Response('Invalid shift id', status=400)
-
-            shifts = group.update_shifts(shift_ids)
-            for shift in shifts:
-                if return_var == None:
-                    return_var = []
-
-                return_var.append({
-                    'shift_id': shift.id,
-                    'van_id': shift.volunteer.van_id,
-                    'name': shift.volunteer.first_name + ' ' + shift.volunteer.last_name,
-                    'phone': shift.volunteer.phone_number,
-                    'cellphone': shift.volunteer.cellphone
-                })
-
-            return_var = jsonify(return_var)
-
-        if 'out' in keys:
-            group = group.setOut()
-
-            return_var  = jsonify({
-                'is_returned': group.is_returned,
-                'departure': group.departure.strftime('%I:%M %p'), 
-                'check_in_time': group.check_in_time.strftime('%I:%M %p') if group.check_in_time else '',
-                'last_check_in': group.last_check_in.strftime('%I:%M %p'),
-                'check_ins': group.check_ins
-            })
-
-        if 'actual' in keys:
-            check_in_amount = request.form.get('actual')
-
-            if check_in_amount and not check_in_amount.isdigit():
-                return Response('Check In Amount must be a number"', status=400)
-
-            group = group.check_in(check_in_amount)
-
-            note = group.add_note('kph', check_in_amount + " doors")
-
-            return_var = jsonify({
-                'check_in_time': (group.check_in_time.strftime('%I:%M %p') if group.check_in_time else None), 
-                'last_check_in': (group.last_check_in.strftime('%I:%M %p') if group.last_check_in else None),
-                'check_ins': group.check_ins,
-                'actual': group.actual,
-                'note': note, 
-                'is_returned': group.is_returned
-            })
-
-        if 'departure' in keys:
-            new_departure_time = request.form.get('departure')
-            
-            try:
-                new_departure_time = parse(new_departure_time)
-            except:
-                return Response('Invalid Time', 400)
-
-            group = group.change_departure(new_departure_time)
-
-            note = group.add_note('kph', 'Departure changed to ' + group.departure.strftime('%I:%M %p'))
-
-            return_var = jsonify({
-                'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
-                'last_check_in': group.last_check_in.strftime('%I:%M %p'),
-                'check_ins': group.check_ins,
-                'actual': group.actual,
-                'note': note
-            })
-
-
-        if 'note' in keys:
-            note_text = request.form.get('note')
-
-            note_text = escape(note_text)
-
-            return_var = group.add_note(page, note_text)
-            
-        if 'cellphone' in keys and 'vol_id' in keys:
-            cellphone = request.form.get('cellphone')
-
-            phone_sanitized = re.sub('[- ().+]', '', cellphone)
-
-            if phone_sanitized and not phone_sanitized.isdigit():
-                return Response('Invalid Phone', status=400)
-
-            vol_id = request.form.get('vol_id')
-            volunteer = Volunteer.query.get(vol_id)
-
-            if not volunteer:
-                return Response('Could not find volunteer', status=400)
-
-            if volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by another user since you last loaded the page. Please refresh and try again.', 400)
-
-            volunteer.cellphone = phone_sanitized
-            volunteer.last_user = g.user.id
-            volunteer.last_update = datetime.now().time()
-        
-        if 'goal' in keys: 
-            goal = request.form.get('goal')
-
-            if goal and not goal.isdigit():
-                return Response('"Goal" must be a number"', status=400)
-            group.goal = int(goal)
-
-        if 'packets_given' in keys:
-            packets_given = request.form.get('packets_given')
-            if packets_given and not packets_given.isdigit():
-                return Response('"packets_given" must be a number"', status=400)
-
-            group.packets_given = int(packets_given)
-
-        if 'packet_names' in keys:
-            packet_names = request.form.get('packet_names')
-            packet_names = escape(packet_names)
-
-            group.packet_names = packet_names
-
         if 'claim' in keys:
             if group.claim:
                 if group.claim != g.user.id:
@@ -361,6 +240,128 @@ def add_pass(office, page):
                 })
                 
         else:
+            if 'shift_id[]' in keys:
+                shift_ids = request.form.getlist('shift_id[]')
+
+                for id in shift_ids:
+                    if not id.isdigit():
+                        return Response('Invalid shift id', status=400)
+
+                shifts = group.update_shifts(shift_ids)
+                for shift in shifts:
+                    if return_var == None:
+                        return_var = []
+
+                    return_var.append({
+                        'shift_id': shift.id,
+                        'van_id': shift.volunteer.van_id,
+                        'name': shift.volunteer.first_name + ' ' + shift.volunteer.last_name,
+                        'phone': shift.volunteer.phone_number,
+                        'cellphone': shift.volunteer.cellphone
+                    })
+
+                return_var = jsonify(return_var)
+
+            elif 'out' in keys:
+                group = group.setOut()
+
+                return_var  = jsonify({
+                    'is_returned': group.is_returned,
+                    'departure': group.departure.strftime('%I:%M %p'), 
+                    'check_in_time': group.check_in_time.strftime('%I:%M %p') if group.check_in_time else '',
+                    'last_check_in': group.last_check_in.strftime('%I:%M %p'),
+                    'check_ins': group.check_ins
+                })
+
+            elif 'actual' in keys:
+                check_in_amount = request.form.get('actual')
+
+                if check_in_amount and not check_in_amount.isdigit():
+                    return Response('Check In Amount must be a number"', status=400)
+
+                group = group.check_in(check_in_amount)
+
+                note = group.add_note('kph', check_in_amount + " doors")
+
+                return_var = jsonify({
+                    'check_in_time': (group.check_in_time.strftime('%I:%M %p') if group.check_in_time else None), 
+                    'last_check_in': (group.last_check_in.strftime('%I:%M %p') if group.last_check_in else None),
+                    'check_ins': group.check_ins,
+                    'actual': group.actual,
+                    'note': note, 
+                    'is_returned': group.is_returned
+                })
+
+            elif 'departure' in keys:
+                new_departure_time = request.form.get('departure')
+                
+                try:
+                    new_departure_time = parse(new_departure_time)
+                except:
+                    return Response('Invalid Time', 400)
+
+                group = group.change_departure(new_departure_time)
+
+                note = group.add_note('kph', 'Departure changed to ' + group.departure.strftime('%I:%M %p'))
+
+                return_var = jsonify({
+                    'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
+                    'last_check_in': group.last_check_in.strftime('%I:%M %p'),
+                    'check_ins': group.check_ins,
+                    'actual': group.actual,
+                    'note': note
+                })
+
+
+            elif 'note' in keys:
+                note_text = request.form.get('note')
+
+                note_text = escape(note_text)
+
+                return_var = group.add_note(page, note_text)
+                
+            elif 'cellphone' in keys and 'vol_id' in keys:
+                cellphone = request.form.get('cellphone')
+
+                phone_sanitized = re.sub('[- ().+]', '', cellphone)
+
+                if phone_sanitized and not phone_sanitized.isdigit():
+                    return Response('Invalid Phone', status=400)
+
+                vol_id = request.form.get('vol_id')
+                volunteer = Volunteer.query.get(vol_id)
+
+                if not volunteer:
+                    return Response('Could not find volunteer', status=400)
+
+                if volunteer.updated_by_other(page_load_time, g.user):
+                    return Response('This volunteer has been updated by another user since you last loaded the page. Please refresh and try again.', 400)
+
+                volunteer.cellphone = phone_sanitized
+                volunteer.last_user = g.user.id
+                volunteer.last_update = datetime.now().time()
+            
+            elif 'goal' in keys: 
+                goal = request.form.get('goal')
+
+                if goal and not goal.isdigit():
+                    return Response('"Goal" must be a number"', status=400)
+                group.goal = int(goal)
+
+            elif 'packets_given' in keys:
+                packets_given = request.form.get('packets_given')
+                if packets_given and not packets_given.isdigit():
+                    return Response('"packets_given" must be a number"', status=400)
+
+                group.packets_given = int(packets_given)
+
+            elif 'packet_names' in keys:
+                packet_names = request.form.get('packet_names')
+                packet_names = escape(packet_names)
+
+                group.packet_names = packet_names
+
+            
             group.last_update = datetime.now().time()
             group.last_user = g.user.id
 
@@ -373,99 +374,6 @@ def add_pass(office, page):
         if shift.updated_by_other(page_load_time, g.user):
             return Response('This Shift has been updated by a different user since you last loaded the page. Please refresh and try again.', 400)
         
-        if 'status' in keys:
-            status = request.form.get('status')
-            status = escape(status)
-
-            if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
-                return Response('Invalid status', status=400)
-
-            return_var = shift.flip(page, status)    
-
-        if 'first_name' in keys:
-            first = request.form.get('first_name')
-
-            if shift.volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
-
-            first = escape(first)
-            shift.volunteer.first_name = first 
-
-        if 'last_name' in keys:
-            last = request.form.get('last_name')
-
-            if shift.volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
-
-            last = escape(last)
-            shift.volunteer.last_name = last 
-
-        if 'vanid' in keys:
-            if shift.volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by another user since you last loaded the page. Please refresh and try again.', 400)
-
-            vanid = request.form.get('vanid')
-                
-            if vanid and not vanid.isdigit():
-                return Response('Invalid VanID', 400)
-            
-            if vanid:
-                volunteer = Volunteer.query.filter_by(van_id=vanid).first()
-
-                if volunteer:
-                    shift.volunteer = volunteer
-                    shift.person = volunteer.id
-                else:
-                    shift.volunteer.van_id = vanid
-                    
-                    next_shift = SyncShift.query.filter(SyncShift.vanid==vanid, datetime.now().date() < SyncShift.startdate).order_by(SyncShift.startdate).first()
-                    if next_shift:
-                        shift.volunteer.next_shift = next_shift.startdate
-                    
-                        if next_shift.status == 'Confirmed':
-                            shift.volunteer.next_shift_confirmed = True
-                    else:
-                        shift.volunteer.next_shift = None
-                        shift.volunteer.next_shift_confirmed = False
-        
-        if 'phone' in keys:
-            phone = request.form.get('phone')
-
-            if shift.volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
-
-            phone_sanitized = re.sub('[- ().+]', '', phone)
-
-            if phone_sanitized and not phone_sanitized.isdigit():
-                return Response('Invalid Phone', status=400)
-            
-            shift.volunteer.phone_number = phone_sanitized 
-
-        if 'cellphone' in keys:
-            cellphone = request.form.get('cellphone')
-            
-            if shift.volunteer.updated_by_other(page_load_time, g.user):
-                return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
-
-            phone_sanitized = re.sub('[- ().+]', '', cellphone)
-
-            if phone_sanitized and not phone_sanitized.isdigit():
-                return Response('Invalid Phone', status=400)
-
-            shift.volunteer.cellphone = phone_sanitized
-            shift.volunteer.last_user = g.user.id
-            shift.volunteer.last_update = datetime.now().time()
-
-        if 'note' in keys:
-            note_text = request.form.get('note')
-
-            note_text = escape(note_text)
-
-            return_var = shift.add_note(page, note_text)
-
-        if 'passes' in keys:
-            return_var = str(shift.add_pass(page))
-
         if 'claim' in keys:
             if shift.claim:
                 if shift.claim != g.user.id:
@@ -482,17 +390,109 @@ def add_pass(office, page):
                     'name': g.user.claim_name(),
                     'color': g.user.color
                 })
-        
+
         else:
+            if 'status' in keys:
+                status = request.form.get('status')
+                status = escape(status)
+
+                if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
+                    return Response('Invalid status', status=400)
+
+                return_var = shift.flip(page, status)    
+
+            elif 'first_name' in keys:
+                first = request.form.get('first_name')
+
+                if shift.volunteer.updated_by_other(page_load_time, g.user):
+                    return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+
+                first = escape(first)
+                shift.volunteer.first_name = first 
+
+            elif 'last_name' in keys:
+                last = request.form.get('last_name')
+
+                if shift.volunteer.updated_by_other(page_load_time, g.user):
+                    return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+
+                last = escape(last)
+                shift.volunteer.last_name = last 
+
+            elif 'vanid' in keys:
+                if shift.volunteer.updated_by_other(page_load_time, g.user):
+                    return Response('This volunteer has been updated by another user since you last loaded the page. Please refresh and try again.', 400)
+
+                vanid = request.form.get('vanid')
+                    
+                if vanid and not vanid.isdigit():
+                    return Response('Invalid VanID', 400)
+                
+                if vanid:
+                    volunteer = Volunteer.query.filter_by(van_id=vanid).first()
+
+                    if volunteer:
+                        shift.volunteer = volunteer
+                        shift.person = volunteer.id
+                    else:
+                        shift.volunteer.van_id = vanid
+                        
+                        next_shift = SyncShift.query.filter(SyncShift.vanid==vanid, datetime.now().date() < SyncShift.startdate).order_by(SyncShift.startdate).first()
+                        if next_shift:
+                            shift.volunteer.next_shift = next_shift.startdate
+                        
+                            if next_shift.status == 'Confirmed':
+                                shift.volunteer.next_shift_confirmed = True
+                        else:
+                            shift.volunteer.next_shift = None
+                            shift.volunteer.next_shift_confirmed = False
+            
+            elif 'phone' in keys:
+                phone = request.form.get('phone')
+
+                if shift.volunteer.updated_by_other(page_load_time, g.user):
+                    return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+
+                phone_sanitized = re.sub('[- ().+]', '', phone)
+
+                if phone_sanitized and not phone_sanitized.isdigit():
+                    return Response('Invalid Phone', status=400)
+                
+                shift.volunteer.phone_number = phone_sanitized 
+
+            elif 'cellphone' in keys:
+                cellphone = request.form.get('cellphone')
+                
+                if shift.volunteer.updated_by_other(page_load_time, g.user):
+                    return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
+
+                phone_sanitized = re.sub('[- ().+]', '', cellphone)
+
+                if phone_sanitized and not phone_sanitized.isdigit():
+                    return Response('Invalid Phone', status=400)
+
+                shift.volunteer.cellphone = phone_sanitized
+                shift.volunteer.last_user = g.user.id
+                shift.volunteer.last_update = datetime.now().time()
+
+            elif 'note' in keys:
+                note_text = request.form.get('note')
+
+                note_text = escape(note_text)
+
+                return_var = shift.add_note(page, note_text)
+
+            elif 'passes' in keys:
+                return_var = str(shift.add_pass(page))
+            
+            
             shift.last_update = datetime.now().time()
             shift.last_user = g.user.id
 
     db.session.commit()
 
-    if return_var:
-        return return_var
-    else:
-        return ''
+    return return_var if return_var else ''
+
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/add_group', methods=['POST'])
