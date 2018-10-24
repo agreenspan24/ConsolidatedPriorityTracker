@@ -321,10 +321,12 @@ function get_future_shifts(vanid, name) {
     }).done(function(shifts) {
         var rows = '';
 
+        var exp_shifts = ((Date.parse('2018-11-06') - Date.now()) / (60 * 60 * 24 * 1000)) / 2;
+
         if (shifts.length == 0) {
             showModalAlert('error', 'Oops! ' + name + ' has no future shifts! Schedule them right away!');
-        } else if (shifts.length < 7) {
-            showModalAlert('warn', 'Oh no! ' + name + " doesn't has enough shifts scheduled! Beg them for more");
+        } else if (shifts.length < exp_shifts) {
+            showModalAlert('warn', 'Oh no! ' + name + " doesn't has enough shifts scheduled! They should have about " + Math.round(exp_shifts - shifts.length) + ' more shifts.');
         }
 
         shifts.forEach(function(s) {
