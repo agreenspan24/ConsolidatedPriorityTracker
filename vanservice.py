@@ -121,7 +121,7 @@ class VanService:
         if not volunteer:
             return Response('Volunteer not found', 400)
 
-        sync_shifts = SyncShift.query.filter_by(vanid=vanid, startdate=date.date(), starttime=date.time(), status!='Confirmed').all()
+        sync_shifts = SyncShift.query.filter(SyncShift.vanid==vanid, SyncShift.startdate==date.date(), SyncShift.starttime==date.time(), SyncShift.status!='Confirmed').all()
 
         if not sync_shifts:
             return True
