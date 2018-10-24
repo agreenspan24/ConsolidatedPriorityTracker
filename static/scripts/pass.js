@@ -283,6 +283,8 @@ function confirm_shift(e) {
             }
         }).done(function() {
             showAlert('success', 'Updated next shift for ' + vanid);
+            showModalAlert('success', 'Updated next shift for ' + vanid);
+            
             e.target.innerHTML += '&nbsp;<span class="glyphicons glyphicons-ok text-green7"></span>';
         }).fail(function(res) {
             var message = 'Could not update next shift.';
