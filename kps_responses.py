@@ -26,7 +26,7 @@ def add_kps_responses():
     timestamp = datetime.now().strftime('%m/%d/%Y %H:%M:%S')
 
     vol_dict = {}
-    groups = CanvassGroup.query.filter_by(is_active=True, is_returned=True).all()
+    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, CanvassGroup.is_returned==True, Shift.date < datetime.now().date()).all()
 
     date = groups[0].canvass_shifts[0].date
 
