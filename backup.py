@@ -4,7 +4,10 @@ from datetime import datetime
 from app import db
 
 def backup():
-    #add_kps_responses()
+    try:
+        add_kps_responses()
+    except:
+        print('kps_failed')
 
     groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(Shift.date < datetime.now().date()).all()
 
