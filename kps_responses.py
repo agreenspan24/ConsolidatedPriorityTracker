@@ -4,7 +4,7 @@ from datetime import datetime
 from oauth2client import file, client, tools
 from googleapiclient.discovery import build
 from httplib2 import Http
-from models import CanvassGroup
+from models import CanvassGroup, Shift
 import json
 
 def add_kps_responses():
