@@ -26,12 +26,14 @@ def update_shifts():
         volunteer.last_update = None
 
         volunteer.next_shift = None
+        volunteer.next_shift_time = None
         volunteer.next_shift_confirmed = False
         
         next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, today < SyncShift.startdate).order_by(SyncShift.startdate).first()
         if next_shift:
-            print(next_shift.startdate)
+            print(next_shift.startdate, next_shift.starttime)
             volunteer.next_shift = next_shift.startdate
+            volunteer.next_shift_time = next_shift.starttime
         
             if next_shift.status == 'Confirmed':
                 volunteer.next_shift_confirmed = True

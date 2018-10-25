@@ -121,7 +121,10 @@ class VanService:
         if not volunteer:
             return Response('Volunteer not found', 400)
 
-        sync_shifts = SyncShift.query.filter_by(vanid=vanid, startdate=date.date(), starttime=date.time()).all()
+        sync_shifts = SyncShift.query.filter(SyncShift.vanid==vanid, SyncShift.startdate==date.date(), SyncShift.starttime==date.time(), SyncShift.status!='Confirmed').all()
+
+        if not sync_shifts:
+            return True
 
         signups_json = self.client.get(self.api_url + 'signups?vanId=' + vanid).json()
 
@@ -141,7 +144,7 @@ class VanService:
                     response = self.update_status(signup, 'Confirmed')
                     
                     if response == True:
-                        if volunteer.next_shift == date.date():
+                        if volunteer.next_shift == date.date() and volunteer.next_shift_time == date.time():
                             volunteer.next_shift_confirmed = True
 
                         if sync: 
@@ -150,7 +153,7 @@ class VanService:
                     success = response
 
                 else:
-                    if volunteer.next_shift == date.date():
+                    if volunteer.next_shift == date.date() and volunteer.next_shift_time == date.time():
                         volunteer.next_shift_confirmed = True
 
                     if sync: 
