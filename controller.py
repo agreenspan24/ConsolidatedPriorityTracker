@@ -823,6 +823,21 @@ def get_future_shifts(office, page):
     return jsonify(list(map(lambda x: x.serialize(), future_shifts)))
 
 
+@oid.require_login
+@app.route('/users')
+def display_users():
+    if g.user.rank == 'DATA':
+        all_users = User.query.order_by(User.region.asc(), User.rank.asc()).all()
+        locations = Location.query.order_by(Location.locationname.asc()).all()
+    elif g.user.rank == 'FD':
+        all_users = User.query.filter(region=g.user.region).all()
+        locations = Location.query.filter_by(region=g.user.region).order_by(Location.locationname.asc()).all()
+    else:
+        return redirect('/consolidated')
+    
+    return render_template('users.html', all_users=all_users, locations=locations, user=g.user)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return redirect('/consolidated')
