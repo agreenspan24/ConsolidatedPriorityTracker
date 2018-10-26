@@ -373,11 +373,11 @@ class Shift(db.Model):
         self.shift_flipped = False
         self.is_active = True
 
-    def flip(self, page, status):
+    def flip(self, page, status, user):
         if status == 'No Show':
             self.flake = True
 
-        note = self.add_note(page, self.status + ' to ' + status)
+        note = self.add_note(page, self.status + ' to ' + status, user)
         
         self.status = status
 

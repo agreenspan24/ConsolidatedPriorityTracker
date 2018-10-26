@@ -399,7 +399,7 @@ def add_pass(office, page):
                 if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
                     return Response('Invalid status', status=400)
 
-                return_var = shift.flip(page, status)    
+                return_var = shift.flip(page, status, g.user.id)    
 
             elif 'first_name' in keys:
                 first = request.form.get('first_name')
