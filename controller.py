@@ -281,7 +281,7 @@ def add_pass(office, page):
 
                 group = group.check_in(check_in_amount)
 
-                note = group.add_note('kph', check_in_amount + " doors")
+                note = group.add_note('kph', check_in_amount + " doors", g.user.id)
 
                 return_var = jsonify({
                     'check_in_time': (group.check_in_time.strftime('%I:%M %p') if group.check_in_time else None), 
@@ -302,7 +302,7 @@ def add_pass(office, page):
 
                 group = group.change_departure(new_departure_time)
 
-                note = group.add_note('kph', 'Departure changed to ' + group.departure.strftime('%I:%M %p'))
+                note = group.add_note('kph', 'Departure changed to ' + group.departure.strftime('%I:%M %p'), g.user.id)
 
                 return_var = jsonify({
                     'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
@@ -318,7 +318,7 @@ def add_pass(office, page):
 
                 note_text = escape(note_text)
 
-                return_var = group.add_note(page, note_text)
+                return_var = group.add_note(page, note_text, g.user.id)
                 
             elif 'cellphone' in keys and 'vol_id' in keys:
                 cellphone = request.form.get('cellphone')
@@ -480,7 +480,7 @@ def add_pass(office, page):
 
                 note_text = escape(note_text)
 
-                return_var = shift.add_note(page, note_text)
+                return_var = shift.add_note(page, note_text, g.user.id)
 
             elif 'passes' in keys:
                 return_var = str(shift.add_pass(page))

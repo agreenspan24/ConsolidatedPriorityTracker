@@ -172,19 +172,22 @@ class Note(db.Model):
     time = db.Column(db.Time)
     text = db.Column(db.String(255))
     note_shift = db.Column(db.Integer, db.ForeignKey(schema + '.shift.id'))
+    user = db.Column(db.Integer, db.ForeignKey(schema + '.user.id'))
 
-    def __init__(self, type, time, text, note_shift):
+    def __init__(self, type, time, text, note_shift, user):
 
         self.type = type
         self.time = time
         self.text = text
         self.note_shift = note_shift
+        self.user = user
 
     def serialize(self):
         return {
             'type': self.type,
             'time': self.time.strftime('%I:%M %p'),
             'text': self.text
+            'user': self.user
         }
 
         
@@ -298,10 +301,10 @@ class CanvassGroup(db.Model):
 
         return self
 
-    def add_note(self, page, text):
+    def add_note(self, page, text, user):
         return_var = ''
         for shift in self.canvass_shifts:
-            return_var = shift.add_note(page, text)
+            return_var = shift.add_note(page, text, user)
 
         return return_var
 
@@ -383,7 +386,7 @@ class Shift(db.Model):
         return note
 
 
-    def add_note(self, page, text):
+    def add_note(self, page, text, user):
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
 
         five_min_ago = datetime.now() - timedelta(minutes=5)
@@ -393,7 +396,7 @@ class Shift(db.Model):
             recent_note.time = datetime.now().time()
             recent_note.text = recent_note.text + '; ' + text
         else:
-            note = Note(page, self.last_contact, text, self.id)
+            note = Note(page, self.last_contact, text, self.id, user)
             db.session.add(note)
 
         return self.last_contact + ": " + text
