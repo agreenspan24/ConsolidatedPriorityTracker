@@ -25,7 +25,7 @@ oid.init_app(app)
 def logout_before():
     print(session)
     
-    if request.path.startswith('/static') or request.path.startswith('/favicon'):
+    if request.path.startswith('/static') or request.path.startswith('/favicon') or request.path.startswith('/loaderio-cb6afdec0447c3b6ec9bce41757c581c'):
         return
     if request.path.startswith('/oidc_callback'):
         return
