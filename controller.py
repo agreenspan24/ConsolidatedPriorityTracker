@@ -833,7 +833,7 @@ def get_future_shifts(office, page):
 
     return jsonify(list(map(lambda x: x.serialize(), future_shifts)))
 
-@app.route('/loaderio-cb6afdec0447c3b6ec9bce41757c581c')
+@app.route('/loaderio-cb6afdec0447c3b6ec9bce41757c581c/')
 def loader_io():
     return app.send_static_file('loaderio-cb6afdec0447c3b6ec9bce41757c581c.txt')
 
