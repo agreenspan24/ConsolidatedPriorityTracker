@@ -50,7 +50,7 @@ for row in sldcsv:
         office = row[0]
         locations = Location.query.filter(Location.locationname.like(office + '%')).all()
         location_ids = list(map(lambda l: l.locationid, locations))
-        shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
+        shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
 
 
         with open('failsafe/backups/{date}{office}sdc.csv'.format(date=date, office=office), 'w') as sdc:
@@ -68,7 +68,7 @@ for row in sldcsv:
                 s.role,
                 s.status])
 
-        all_groups = CanvassGroup.query.filter_by(is_active=True).all()
+        all_groups = CanvassGroup.query.options(joinedload(CanvassGroup.canvass_shifts)).filter_by(is_active=True).all()
         groups = []
 
         for gr in all_groups:

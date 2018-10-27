@@ -5,6 +5,7 @@ from oauth2client import file, client, tools
 from googleapiclient.discovery import build
 from httplib2 import Http
 from models import CanvassGroup, Shift
+from sqlalchemy.orm import contains_eager
 import json
 
 def add_kps_responses():
@@ -26,7 +27,7 @@ def add_kps_responses():
     timestamp = datetime.now().strftime('%m/%d/%Y %H:%M:%S')
 
     vol_dict = {}
-    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, CanvassGroup.is_returned==True, Shift.date < datetime.now().date()).all()
+    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).options(contains_eager(CanvassGroup.canvass_shifts)).filter(CanvassGroup.is_active==True, CanvassGroup.is_returned==True, Shift.date < datetime.now().date()).all()
 
     date = groups[0].canvass_shifts[0].date
 

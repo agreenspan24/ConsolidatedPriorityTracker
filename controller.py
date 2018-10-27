@@ -3,6 +3,7 @@ from datetime import datetime
 from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response
 
 from sqlalchemy import and_, asc, desc
+from sqlalchemy.orm import contains_eager, joinedload
 
 import re
 import urllib
@@ -164,7 +165,7 @@ def office(office, page):
     all_shifts.extend(in_shifts)
     all_shifts.extend(extra_shifts)
         
-    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).order_by(asc(CanvassGroup.check_in_time)).all()
+    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).options(contains_eager(CanvassGroup.canvass_shifts)).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).order_by(asc(CanvassGroup.check_in_time)).all()
 
     header_stats = HeaderStats(all_shifts, groups)
 
@@ -218,7 +219,10 @@ def add_pass(office, page):
     return_var = None
 
     if page == 'kph':
-        group = CanvassGroup.query.get(parent_id)
+        if 'claim' in keys:
+            group = CanvassGroup.query.options(joinedload(CanvassGroup.claim_user)).get(parent_id)
+        else:
+            group = CanvassGroup.query.options(joinedload(CanvassGroup.canvass_shifts)).get(parent_id)
 
         if not group or not group.is_active:
             return Response('Group Not Found', status=400)
@@ -251,7 +255,7 @@ def add_pass(office, page):
                     if not id.isdigit():
                         return Response('Invalid shift id', status=400)
 
-                shifts = group.update_shifts(shift_ids, g.user.id)
+                shifts = group.update_shifts(shift_ids, g.user)
                 for shift in shifts:
                     if return_var == None:
                         return_var = []
@@ -285,7 +289,7 @@ def add_pass(office, page):
 
                 group = group.check_in(check_in_amount)
 
-                note = group.add_note('kph', check_in_amount + " doors", g.user.id)
+                note = group.add_note('kph', check_in_amount + " doors", g.user)
 
                 return_var = jsonify({
                     'check_in_time': (group.check_in_time.strftime('%I:%M %p') if group.check_in_time else None), 
@@ -306,7 +310,7 @@ def add_pass(office, page):
 
                 group = group.change_departure(new_departure_time)
 
-                note = group.add_note('kph', 'Departure changed to ' + group.departure.strftime('%I:%M %p'), g.user.id)
+                note = group.add_note('kph', 'Departure changed to ' + group.departure.strftime('%I:%M %p'), g.user)
 
                 return_var = jsonify({
                     'check_in_time': group.check_in_time.strftime('%I:%M %p'), 
@@ -322,7 +326,7 @@ def add_pass(office, page):
 
                 note_text = escape(note_text)
 
-                return_var = group.add_note(page, note_text, g.user.id)
+                return_var = group.add_note(page, note_text, g.user)
                 
             elif 'cellphone' in keys and 'vol_id' in keys:
                 cellphone = request.form.get('cellphone')
@@ -403,7 +407,7 @@ def add_pass(office, page):
                 if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
                     return Response('Invalid status', status=400)
 
-                return_var = shift.flip(page, status, g.user.id)    
+                return_var = shift.flip(page, status, g.user)    
 
             elif 'first_name' in keys:
                 first = request.form.get('first_name')
@@ -488,7 +492,7 @@ def add_pass(office, page):
 
                 note_text = escape(note_text)
 
-                return_var = shift.add_note(page, note_text, g.user.id)
+                return_var = shift.add_note(page, note_text, g.user)
 
             elif 'passes' in keys:
                 return_var = str(shift.add_pass(page))
@@ -516,7 +520,7 @@ def add_group(office, page):
         if not id.isdigit():
             return abort(400, 'Invalid shift id')
 
-    group.update_shifts(shift_ids, g.user.id)
+    group.update_shifts(shift_ids, g.user)
 
     if goal:
         if not goal.isdigit():
@@ -667,7 +671,7 @@ def delete_element(office, page):
     name = ''
 
     if page == 'kph':
-        group = CanvassGroup.query.get(parent_id)
+        group = CanvassGroup.query.options(joinedload(CanvassGroup.canvass_shifts)).get(parent_id)
         group.is_active = False
         group.last_user = g.user.id
         group.last_update = datetime.now().time()
@@ -774,12 +778,7 @@ def backup(office, page):
     location_ids = list(map(lambda l: l.locationid, locations))
 
     if page == 'kph':
-        all_groups = BackupGroup.query.join(BackupGroup.canvass_shifts).filter(BackupShift.shift_location.in_(location_ids), BackupShift.date > (datetime.today() - timedelta(days=7)).date()).order_by(desc(BackupGroup.id)).all()
-        groups = []
-
-        for gr in all_groups:
-            if gr.canvass_shifts and gr.canvass_shifts[0].shift_location in location_ids and gr.canvass_shifts[0].date > (datetime.today() - timedelta(days=7)).date():
-                groups.append(gr)
+        groups = BackupGroup.query.join(BackupGroup.canvass_shifts).options(contains_eager(BackupGroup.canvass_shifts)).filter(BackupShift.shift_location.in_(location_ids), BackupShift.date > (datetime.today() - timedelta(days=7)).date()).order_by(desc(BackupGroup.id)).all()
 
         return render_template('backups.html', groups=groups)
 
