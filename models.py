@@ -66,40 +66,6 @@ class Location(db.Model):
             'region': self.region
         }
 
-class User(db.Model):
-    __table_args__ = {'schema':schema}
-    __tablename__ = 'users'
-    id = db.Column('id', db.Integer, primary_key=True)
-    fullname = db.Column('full_name', db.String(240))
-    firstname = db.Column('first_name', db.String(120))
-    lastname = db.Column('last_name', db.String(120))
-    email = db.Column('email', db.String(120), index=True, unique=True)
-    rank = db.Column('rank', db.String(120))
-    region = db.Column('region', db.String(120))
-    office = db.Column('office', db.String(120))
-    openid = db.Column('openid', db.String(50))
-    is_allowed = db.Column('is_allowed', db.Boolean)
-    color = db.Column('color', db.String(6))
-
-    def __init__(self, email, openid):
-        self.email = email
-        self.openid = openid
-
-    def serialize(self):
-        return {
-            'id': self.id,
-            'fullname': self.fullname,
-            'firstname': self.firstname,
-            'lastname': self.lastname,
-            'email': self.email,
-            'rank': self.rank,
-            'region': self.region,
-            'office': self.office,
-            'color': self.color
-        }
-
-    def claim_name(self):
-        return (self.firstname[0]+ self.lastname[0]).upper() if (not self.firstname in [None, ''] and not self.lastname in [None, '']) else self.email[:2]
 
 class ShiftStatus(db.Model):
     __table_args__ = {'schema':'consolidated'}
@@ -172,21 +138,59 @@ class Note(db.Model):
     time = db.Column(db.Time)
     text = db.Column(db.String(255))
     note_shift = db.Column(db.Integer, db.ForeignKey(schema + '.shift.id'))
+    user = db.Column(db.Integer, db.ForeignKey(schema + '.users.id'))
 
-    def __init__(self, type, time, text, note_shift):
+    def __init__(self, type, time, text, note_shift, user):
 
         self.type = type
         self.time = time
         self.text = text
         self.note_shift = note_shift
+        self.user = user
 
     def serialize(self):
         return {
             'type': self.type,
             'time': self.time.strftime('%I:%M %p'),
-            'text': self.text
+            'text': self.text,
+            'user': self.user
         }
 
+class User(db.Model):
+    __table_args__ = {'schema':schema}
+    __tablename__ = 'users'
+    id = db.Column('id', db.Integer, primary_key=True)
+    fullname = db.Column('full_name', db.String(240))
+    firstname = db.Column('first_name', db.String(120))
+    lastname = db.Column('last_name', db.String(120))
+    email = db.Column('email', db.String(120), index=True, unique=True)
+    rank = db.Column('rank', db.String(120))
+    region = db.Column('region', db.String(120))
+    office = db.Column('office', db.String(120))
+    openid = db.Column('openid', db.String(50))
+    is_allowed = db.Column('is_allowed', db.Boolean)
+    color = db.Column('color', db.String(6))
+    notes = db.relationship(Note, lazy='joined')
+
+    def __init__(self, email, openid):
+        self.email = email
+        self.openid = openid
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'fullname': self.fullname,
+            'firstname': self.firstname,
+            'lastname': self.lastname,
+            'email': self.email,
+            'rank': self.rank,
+            'region': self.region,
+            'office': self.office,
+            'color': self.color
+        }
+
+    def claim_name(self):
+        return (self.firstname[0]+ self.lastname[0]).upper() if (not self.firstname in [None, ''] and not self.lastname in [None, '']) else self.email[:2]
         
 class CanvassGroup(db.Model):
     __table_args__ = {'schema':schema}
@@ -298,10 +302,10 @@ class CanvassGroup(db.Model):
 
         return self
 
-    def add_note(self, page, text):
+    def add_note(self, page, text, user):
         return_var = ''
         for shift in self.canvass_shifts:
-            return_var = shift.add_note(page, text)
+            return_var = shift.add_note(page, text, user)
 
         return return_var
 
@@ -370,11 +374,11 @@ class Shift(db.Model):
         self.shift_flipped = False
         self.is_active = True
 
-    def flip(self, page, status):
+    def flip(self, page, status, user):
         if status == 'No Show':
             self.flake = True
 
-        note = self.add_note(page, self.status + ' to ' + status)
+        note = self.add_note(page, self.status + ' to ' + status, user)
         
         self.status = status
 
@@ -383,7 +387,7 @@ class Shift(db.Model):
         return note
 
 
-    def add_note(self, page, text):
+    def add_note(self, page, text, user):
         self.last_contact = datetime.now().time().strftime('%I:%M %p')
 
         five_min_ago = datetime.now() - timedelta(minutes=5)
@@ -393,7 +397,7 @@ class Shift(db.Model):
             recent_note.time = datetime.now().time()
             recent_note.text = recent_note.text + '; ' + text
         else:
-            note = Note(page, self.last_contact, text, self.id)
+            note = Note(page, self.last_contact, text, self.id, user)
             db.session.add(note)
 
         return self.last_contact + ": " + text
