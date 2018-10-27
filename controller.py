@@ -247,7 +247,7 @@ def add_pass(office, page):
                     if not id.isdigit():
                         return Response('Invalid shift id', status=400)
 
-                shifts = group.update_shifts(shift_ids)
+                shifts = group.update_shifts(shift_ids, g.user)
                 for shift in shifts:
                     if return_var == None:
                         return_var = []
@@ -508,7 +508,7 @@ def add_group(office, page):
         if not id.isdigit():
             return abort(400, 'Invalid shift id')
 
-    group.update_shifts(shift_ids)
+    group.update_shifts(shift_ids. g.user)
 
     if goal:
         if not goal.isdigit():
