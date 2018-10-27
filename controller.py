@@ -18,7 +18,7 @@ from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
 
-vanservice = VanService()
+#vanservice = VanService()
 
 oid.init_app(app)
 
@@ -146,15 +146,20 @@ def office(office, page):
 
     location_ids = list(map(lambda l: l.locationid, locations))
 
-    shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
+    if page == 'kph':
+        shifts = Shift.query.options(joinedload(Shift.group)).filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
+    else:
+        shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
 
     all_shifts = []
     extra_shifts = []
     in_shifts = []
-    shift_ids = []
+    group_ids = []
     
     for shift in shifts:
-        shift_ids.append(shift.id)
+        if shift.canvass_group:
+            group_ids.append(shift.canvass_group)
+
         if shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
             extra_shifts.append(shift)
         elif shift.status == 'In':
@@ -164,8 +169,12 @@ def office(office, page):
 
     all_shifts.extend(in_shifts)
     all_shifts.extend(extra_shifts)
-        
-    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).options(contains_eager(CanvassGroup.canvass_shifts)).filter(CanvassGroup.is_active==True, Shift.id.in_(shift_ids)).order_by(asc(CanvassGroup.check_in_time)).all()
+
+    if page == 'kph':
+        groups = CanvassGroup.query.options(joinedload(CanvassGroup.canvass_shifts)).filter(CanvassGroup.is_active==True, CanvassGroup.id.in_(group_ids)).order_by(asc(CanvassGroup.check_in_time)).all()
+    
+    else:
+        groups = CanvassGroup.query.filter(CanvassGroup.is_active==True, CanvassGroup.id.in_(group_ids)).all()
 
     header_stats = HeaderStats(all_shifts, groups)
 
@@ -671,14 +680,14 @@ def delete_element(office, page):
     name = ''
 
     if page == 'kph':
-        group = CanvassGroup.query.options(joinedload(CanvassGroup.canvass_shifts)).get(parent_id)
+        group = CanvassGroup.query.get(parent_id)
         group.is_active = False
         group.last_user = g.user.id
         group.last_update = datetime.now().time()
-        name = ','.join(list(map(lambda s: s.volunteer.first_name + ' ' + s.volunteer.last_name, group.canvass_shifts)))
+        name = 'canvass group'
     
     else: 
-        shift = Shift.query.get(parent_id)
+        shift = Shift.query.options(joinedload(Shift.group)).get(parent_id)
 
         if shift.canvass_group:
             if shift.group.is_active:

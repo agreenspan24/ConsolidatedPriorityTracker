@@ -1,7 +1,7 @@
 from models import CanvassGroup, Shift, BackupGroup, BackupShift
 from kps_responses import add_kps_responses
 from datetime import datetime
-from app import db
+from app import db, schema
 from sqlalchemy.orm import contains_eager
 
 def backup():
@@ -29,7 +29,11 @@ def backup():
         backup_shift = BackupShift(shift)
         db.session.add(backup_shift)
 
-    db.session.commit()
+    if schema == 'consolidated':
+        db.session.commit()
+    else:
+        db.session.rollback()
+        
 
 def main():
     backup()

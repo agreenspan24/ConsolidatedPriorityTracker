@@ -138,7 +138,7 @@ class Note(db.Model):
     time = db.Column(db.Time)
     text = db.Column(db.String(255))
     note_shift = db.Column(db.Integer, db.ForeignKey(schema + '.shift.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey(schema + 'users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey(schema + '.users.id'))
     user_name = db.Column(db.String(2))
     user_color = db.Column(db.String(6))
 
@@ -161,7 +161,7 @@ class Note(db.Model):
             'user_name': self.user_name,
             'user_color': self.user_color
         }
-        
+
 
 class User(db.Model):
     __table_args__ = {'schema':schema}
@@ -355,7 +355,7 @@ class Shift(db.Model):
     location = db.relationship(Location, lazy='joined')
     notes = db.relationship(Note, lazy='joined')
     canvass_group = db.Column(db.Integer, db.ForeignKey(schema + '.canvass_group.id'), index=True)
-    group = db.relationship(CanvassGroup, lazy='joined')
+    group = db.relationship(CanvassGroup)
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     shift_flipped = db.Column(db.Boolean)
