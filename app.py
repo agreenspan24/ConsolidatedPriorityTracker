@@ -21,5 +21,9 @@ app.config['OIDC_ID_TOKEN_COOKIE_SECURE'] = False
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1800
 db = SQLAlchemy(app)
 oid = OpenIDConnect()
-engine = create_engine(os.environ['HEROKU_POSTGRESQL_AMBER_URL'])
 app.secret_key = os.environ['secret_key']
+
+engine = create_engine(os.environ['HEROKU_POSTGRESQL_AMBER_URL'])
+'''engine = engine.execution_options(
+    isolation_level="READ UNCOMMITTED"
+)'''

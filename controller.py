@@ -181,21 +181,25 @@ def office(office, page):
         stats = ShiftStats(all_shifts, groups)
 
         review_shifts = []
-        sync_shifts = SyncShift.query.filter(SyncShift.locationname.like(office + '%'), SyncShift.startdate==date).all()
 
-        for shift in all_shifts:
-            if shift.volunteer.van_id == None or shift.shift_flipped:
-                continue
+        try: 
+            sync_shifts = SyncShift.query.filter(SyncShift.locationname.like(office + '%'), SyncShift.startdate==date).all()
 
-            sync = next((x for x in list(sync_shifts) if (x.vanid == shift.volunteer.van_id and x.starttime == shift.time and x.eventtype == shift.eventtype)), None)
-            
-            if not sync:
-                continue
-            
-            if sync.status != shift.status and shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
-                if shift.status in ['Completed', 'Resched'] or not sync.status == 'Invited':
-                    review_shifts.append(shift)
+            for shift in all_shifts:
+                if shift.volunteer.van_id == None or shift.shift_flipped:
+                    continue
 
+                sync = next((x for x in list(sync_shifts) if (x.vanid == shift.volunteer.van_id and x.starttime == shift.time and x.eventtype == shift.eventtype)), None)
+                
+                if not sync:
+                    continue
+                
+                if sync.status != shift.status and shift.status in ['Completed', 'Declined', 'No Show', 'Resched']:
+                    if shift.status in ['Completed', 'Resched'] or not sync.status == 'Invited':
+                        review_shifts.append(shift)
+        except:
+            print('Sync shifts is running')
+        
         return render_template('review.html', active_tab=page, header_stats=header_stats, office=office, stats=stats, shifts=review_shifts)
 
     else:
@@ -437,7 +441,11 @@ def add_pass(office, page):
                     else:
                         shift.volunteer.van_id = vanid
                         
-                        next_shift = SyncShift.query.filter(SyncShift.vanid==vanid, datetime.now().date() < SyncShift.startdate).order_by(SyncShift.startdate).first()
+                        try: 
+                            next_shift = SyncShift.query.filter(SyncShift.vanid==vanid, datetime.now().date() < SyncShift.startdate).order_by(SyncShift.startdate).first()
+                        except:
+                            return Response('Could not update VanID at this time, please try again in a few minutes', 400)
+                            
                         if next_shift:
                             shift.volunteer.next_shift = next_shift.startdate
                         
@@ -818,7 +826,10 @@ def get_future_shifts(office, page):
     if not vanid.isdigit():
         return Response('Invalid vanid', 400)
 
-    future_shifts = SyncShift.query.filter(SyncShift.vanid == vanid, SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
+    try: 
+        future_shifts = SyncShift.query.filter(SyncShift.vanid == vanid, SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
+    except:
+        return Response('Could not get future shifts at this time, please check back in a few minutes', 400)
 
     return jsonify(list(map(lambda x: x.serialize(), future_shifts)))
 
