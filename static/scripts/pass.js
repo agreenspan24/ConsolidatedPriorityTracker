@@ -311,6 +311,7 @@ function get_future_shifts(vanid, name) {
     open_modal('future_shifts_modal');
     hideModalAlert();
 
+    $('#future_shifts_head').addClass("hide");
     $('#future_shifts_name').html(name);
     $('#future_shifts_body').html('');
 
@@ -341,7 +342,9 @@ function get_future_shifts(vanid, name) {
                 .replace('{5}', s.vanid)
                 .replace('{6}', (s.status == 'Confirmed' ? '' : 'hide'));
         });
-
+        if (shifts.length > 0) {
+            $('#future_shifts_head').removeClass("hide");
+        }
         $('#future_shifts_body').html(rows);
     }).fail(function() {
         $('#future_shifts_body').html('<p>There was an error getting shifts</p>');
