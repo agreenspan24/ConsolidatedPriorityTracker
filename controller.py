@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response
+from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response, send_from_directory
 
 from sqlalchemy import and_, asc, desc
 
@@ -822,6 +822,9 @@ def get_future_shifts(office, page):
 
     return jsonify(list(map(lambda x: x.serialize(), future_shifts)))
 
+@app.route('/loaderio-cb6afdec0447c3b6ec9bce41757c581c')
+def loader_io():
+    return app.send_static_file('loaderio-cb6afdec0447c3b6ec9bce41757c581c.txt')
 
 @app.errorhandler(404)
 def page_not_found(e):
