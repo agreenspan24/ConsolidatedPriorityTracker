@@ -508,7 +508,7 @@ def add_group(office, page):
         if not id.isdigit():
             return abort(400, 'Invalid shift id')
 
-    group.update_shifts(shift_ids. g.user)
+    group.update_shifts(shift_ids, g.user)
 
     if goal:
         if not goal.isdigit():
