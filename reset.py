@@ -13,7 +13,7 @@ def main():
         backup()
 
     engine.execute('DROP VIEW IF EXISTS {0}.dashboard_totals'.format(schema))
-    Note.__table__.drop(engine)
+    #Note.__table__.drop(engine)
     Shift.__table__.drop(engine)
     CanvassGroup.__table__.drop(engine)
     CanvassGroup.__table__.create(engine)
