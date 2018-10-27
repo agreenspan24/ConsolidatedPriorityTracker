@@ -228,7 +228,7 @@ class CanvassGroup(db.Model):
 
         self.is_active = True
 
-    def update_shifts(self, shift_ids):
+    def update_shifts(self, shift_ids, user):
         old_shifts = self.canvass_shifts
         self.canvass_shifts = []
 
@@ -252,7 +252,7 @@ class CanvassGroup(db.Model):
                 return abort(400, 'Canvassers must have status "In" or "Same Day Confirmed"')
 
             if shift.status == 'Same Day Confirmed':
-                shift.flip('kph', 'In')
+                shift.flip('kph', 'In', user)
                 
             self.canvass_shifts.append(shift)
 
