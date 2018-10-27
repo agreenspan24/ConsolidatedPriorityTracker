@@ -138,7 +138,7 @@ class Note(db.Model):
     time = db.Column(db.Time)
     text = db.Column(db.String(255))
     note_shift = db.Column(db.Integer, db.ForeignKey(schema + '.shift.id'))
-    user = db.Column(db.Integer, db.ForeignKey(schema + '.users.id'))
+    user_id = db.Column(db.Integer)
 
     def __init__(self, type, time, text, note_shift, user):
 
@@ -146,14 +146,14 @@ class Note(db.Model):
         self.time = time
         self.text = text
         self.note_shift = note_shift
-        self.user = user
+        self.user_id = user
 
     def serialize(self):
         return {
             'type': self.type,
             'time': self.time.strftime('%I:%M %p'),
             'text': self.text,
-            'user': self.user
+            'user': self.user_id
         }
 
 class User(db.Model):
