@@ -186,7 +186,7 @@ class Note(db.Model):
         return {
             'type': self.type,
             'time': self.time.strftime('%I:%M %p'),
-            'text': self.text
+            'text': self.text,
             'user': self.user
         }
 
