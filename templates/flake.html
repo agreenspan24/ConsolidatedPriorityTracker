@@ -1,7 +1,7 @@
 {% extends "consolidated_tabs.html" %}
 
 {% block table %}
-    {% if shifts %}
+    {% if shifts|selectattr('flake', 'equalto', True)|list|length > 0 %}
         <thead class="thead">
             <tr>
                 <th></th>
