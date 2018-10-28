@@ -18,7 +18,7 @@ from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
 
-#vanservice = VanService()
+vanservice = VanService()
 
 oid.init_app(app)
 
