@@ -869,6 +869,69 @@ def get_future_shifts(office, page):
 def loader_io():
     return app.send_static_file('loaderio-cb6afdec0447c3b6ec9bce41757c581c.txt')
 
+@oid.require_login
+@app.route('/consolidated/volunteer_history/<vol_id>', methods=['GET', 'POST'])
+def see_volunteer_history(vol_id):
+    if not vol_id:
+        return Response('No volunteer id', 500)
+    
+    if not vol_id.isdigit():
+        return Response('Invalid volunteer id', 500)
+
+    volunteer = Volunteer.query.get(vol_id)
+
+    if not volunteer:
+        return Response('Volunteer not found', 404)
+
+    if request.method == 'POST':
+
+        # VanID
+        van_id = request.form.get('vanid')
+
+        if van_id or not van_id.isdigit():
+            return Response('Invalid VanID', 400)
+
+        volunteer.van_id = van_id
+
+        # first name
+        first_name = request.form.get('firstname')
+        volunteer.first_name = escape(first_name)
+
+        # last name
+        last_name = request.form.get('lastname')
+        volunteer.last_name = escape(last_name)
+
+        # phone
+        phone_number = request.form.get('phone')
+        phone_sanitized = re.sub('[- ().+]', '', phone_number)
+
+        if phone_sanitized and not phone_sanitized.isdigit():
+            return Response('Invalid Phone', status=400)
+
+        volunteer.phone_number = phone_sanitized
+
+        # cellphone
+        cellphone = request.form.get('cellphone')
+        cellphone_sanitized = re.sub('[- ().+]', '', cellphone)
+
+        if cellphone_sanitized and not cellphone_sanitized.isdigit():
+            return Response('Invalid Cell Phone', status=400)
+
+        volunteer.cellphone = cellphone_sanitized
+
+        db.session.commit()
+
+    past_shifts = BackupShift.query.join(BackupShift.volunteer).filter(Volunteer.id == vol_id).all()
+
+    future_shifts = None
+    if volunteer.van_id:
+        future_shifts = SyncShift.query.filter(SyncShift.vanid == volunteer.van_id, SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
+
+    past_groups = BackupGroup.query.join(BackupShift.canvass_shifts).join(Shift.volunteer).filter(Volunteer.id == vol_id).all()
+    
+    return render_template('volunteer.html', volunteer=volunteer, past_shifts=past_shifts, future_shifts=future_shifts, past_groups=past_groups)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return redirect('/consolidated')

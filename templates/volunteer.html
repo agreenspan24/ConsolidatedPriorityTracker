@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="/consolidated/volunteer_history/{{volunteer.id}}" method="POST">
+    <table class="table">
+        <tbody class="tbody">
+            <tr>
+                <td>
+                    <label class="input-label">VanID</label>
+                    <div class="input-control">
+                        <input class="input-element" name="vanid" maxlength="120" value="{{volunteer.van_id}}" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">First Name</label>
+                    <div class="input-control">
+                        <input class="input-element" name="firstname" maxlength="120" value="{{volunteer.first_name}}" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Last Name</label>
+                    <div class="input-control">
+                        <input class="input-element" name="lastname" maxlength="120" value="{{volunteer.last_name}}" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Phone</label>
+                    <div class="input-control">
+                        <input class="input-element" name="phone" maxlength="120" value="{{volunteer.phone_number}}" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Cell Phone</label>
+                    <div class="input-control">
+                        <input class="input-element" name="cellphone" maxlength="120" value="{{volunteer.cellphone}}" />
+                    </div>
+                </td>
+                <td>
+                    <input class="btn btn-blue" style="margin-top:30px" type="submit" value="Update Volunteer" />
+                </td> 
+            </td>
+        </tbody>
+    </table>
+</form>
+<hr>
+
+{% if past_shifts %}
+<h3>Past Shifts</h3>
+
+<table class="table table-panel table-small">
+    <thead class="thead">
+        <tr>
+            <th>Event</th>
+            <th>Location</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Role</th>
+            <th>Final Status</th>
+            <th>Flipped?</th>
+        </tr>
+    </thead>
+    <tbody class="tbody">
+        {% for shift in past_shifts %}
+            <tr>
+                <td>{{shift.eventtype}}</td>
+                <td>{{shift.location.actual_location_name}}</td>
+                <td>{{shift.date}}</td>
+                <td>{{shift.time}}</td>
+                <td>{{shift.role}}</td>
+                <td>{{shift.status}}</td>
+                <td>{{'Yes' if shift.shift_flipped else 'No'}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if future_shifts %}
+<h3>Future Shifts</h3>
+
+<table class="table table-panel table-small">
+    <thead class="thead">
+        <tr>
+            <th>Event</th>
+            <th>Location</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Role</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody class="tbody">
+        {% for shift in future_shifts %}
+            <tr>
+                <td>{{shift.eventtype}}</td>
+                <td>{{shift.locationname}}</td>
+                <td>{{shift.startdate}}</td>
+                <td>{{shift.starttime}}</td>
+                <td>{{shift.role}}</td>
+                <td>{{shift.status}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+
+{% if past_groups %}
+<h3>Past Canvass Groups</h3>
+
+<table class="table table-panel table-small">
+    <thead class="thead">
+        <tr>
+            <th>Packets</th>
+            <th>Actual</th>
+            <th>Goal</th>
+            <th>% to Goal</th>
+            <th>Returned</th>
+            <th>Event</th>
+            <th>Date</th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody class="tbody">
+        {% for group in past_groups %}
+            <tr>
+                <td>
+                    {{group.packet_names}}
+                </td>
+                <td>
+                    {{group.actual}}
+                </td>
+                <td>
+                    {{group.goal}}
+                </td>
+                <td>
+                    {{((group.actual / (group.goal if group.goal != 0 else 1))*100)|round(2)|string + '%'}}
+                </td>
+                <td>
+                    {{'Yes' if group.is_returned else 'No'}}
+                </td>
+                <td>
+                    {{group.canvass_shifts[0].eventtype if group.canvass_shifts and group.canvass_shifts[0]}}
+                </td>
+                <td>
+                    {{group.canvass_shifts[0].date if group.canvass_shifts and group.canvass_shifts[0]}}
+                </td>
+                <td>
+                    {{group.canvass_shifts[0].time if group.canvass_shifts and group.canvass_shifts[0]}}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}
