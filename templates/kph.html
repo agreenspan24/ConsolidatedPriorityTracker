@@ -63,11 +63,11 @@
             <th>Cell</th>
             <th># Packets</th>
             <th>Packet Names</th>
-            <th></th>
             <th>Depart Time</th>
             <th>Next Check In</th>
             <th>Last Check In</th>
             <th>Check Ins</th>
+            <th></th>
             <th>Actual</th>
             <th>Goal</th>
             <th>% to Goal</th>
@@ -141,17 +141,19 @@
                 <td>
                     <input id="packet_names-{{group.id}}" name="packet_names" type="text" maxlength="255" value="{{group.packet_names if not group.packet_names == None}}" />
                 </td>
-                <td>
-                    <a id='out-{{group.id}}' name='out' onclick="updateElem('out-{{group.id}}', 'out', setOut)">
-                        {{'Depart' if group.departure == None else ('Not Done' if group.is_returned else 'Done')}}
-                    </a>
-                </td>
                 <td >
                     <input id='departure-{{group.id}}' name='departure' type="text" style="max-width:75px" value="{{group.departure.strftime('%I:%M %p') if group.departure != None else ''}}" {{'disabled' if group.departure == None or group.is_returned}} />
                 </td>
-                <td id='check_in_time-{{group.id}}'>{{group.check_in_time.strftime('%I:%M %p') if group.check_in_time != None else ''}}</td> 
+                <td>
+                    <input id='check_in_time-{{group.id}}' name='check_in_time' type="text" style="max-width:75px" value="{{group.check_in_time.strftime('%I:%M %p') if group.check_in_time != None else ''}}" {{'disabled' if group.departure == None}} />
+                </td> 
                 <td id='last_check_in-{{group.id}}'>{{group.last_check_in.strftime('%I:%M %p') if group.last_check_in != None else ''}}</td>
                 <td id='check_ins-{{group.id}}'>{{group.check_ins}}</td>
+                <td>
+                    <a id='out-{{group.id}}' name='out' href="javascript:updateElem('out-{{group.id}}', 'out', setOut)">
+                        {{'Depart' if group.departure == None else ('Not Final' if group.is_returned else 'Final')}}
+                    </a>
+                </td>
                 <td>
                     <input id="actual-{{group.id}}" name="actual" min="0" type="number" value="{{group.actual if not group.actual == None}}" style="max-width: 50px" {{'disabled' if group.departure == None}} />
                 </td>

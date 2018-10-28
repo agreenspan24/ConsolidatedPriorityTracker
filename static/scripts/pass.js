@@ -73,7 +73,7 @@ function updateGoalActual(parent_id, res, elem) {
 
 function updateCheckIns(parent_id, res, elem) {
     if (!res.is_returned) {
-        getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
+        getRowElem(parent_id, 'check_in_time').val(res.check_in_time);
         getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
         getRowElem(parent_id, 'check_ins').html(res.check_ins);
     }
@@ -107,16 +107,19 @@ function updateNames(parent_id, res, elem) {
 }
 
 function setOut(parent_id, res, elem) {
-    getRowElem(parent_id, 'out').html(res.is_returned ? 'Not Done' : 'Done');
-    getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
+    getRowElem(parent_id, 'out').html(res.is_returned ? 'Not Final' : 'Final');
+    getRowElem(parent_id, 'check_in_time').val(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
     getRowElem(parent_id, 'departure').val(res.departure);
 
     if (!res.check_in_time) {
         getRowElem(parent_id, 'departure').prop('disabled', 'disabled');
+
+        get_future_shifts(getRowElem(parent_id, 'vanid').text().trim().replace(' ', ',').replace(/\s/g, '').split(','), getRowElem(parent_id, 'name').text());
     } else {
         getRowElem(parent_id, 'actual').prop('disabled', false);
+        getRowElem(parent_id, 'actual').prop('check_in_time', false);
         getRowElem(parent_id, 'departure').prop('disabled', false);
     }
 }
@@ -163,6 +166,8 @@ function setUpListener() {
                 updateElem(id, name, updateCheckIns);
             } else if (name == 'vanid') {
                 updateElem(id, name, null);
+            } else if (name == 'check_in_time') {
+                updateElem(id, name, addNote);
             }
         }
     });
@@ -299,7 +304,7 @@ function confirm_shift(e) {
     }
 }
 
-function get_future_shifts(vanid, name) {
+function get_future_shifts(vanids, name) {
     var rowTemplate = "<tr>" +
         "<td>{0}</td>" +
         "<td>{1}</td>" + 
@@ -316,35 +321,50 @@ function get_future_shifts(vanid, name) {
     $('#future_shifts_body').html('');
 
     $.ajax({
-        type: 'GET', 
+        type: 'POST', 
         url: window.location.pathname + '/future_shifts',
         data: {
-            vanid
+            vanids: vanids
         }
-    }).done(function(shifts) {
+    }).done(function(res) {
+        var pitch_html_template = $('#pitched_rows').html();
+        console.log(pitch_html_template);
+
+        var pitched_rows = '';
+        res.vols.forEach(function (x, i) {
+            pitched_rows += pitch_html_template
+            .replace('{0}', x.has_pitched_today ? 'checked' : '')
+            .replace('{1}', x.extra_shifts_sched)
+            .replace(/\{2\}/g, i);
+        });
+
+        $('#pitched_rows').html(pitched_rows);
+
         var rows = '';
 
-        var exp_shifts = ((Date.parse('2018-11-06') - Date.now()) / (60 * 60 * 24 * 1000)) / 2;
+        var exp_shifts = ((Date.parse('2018-11-06') - Date.now()) / (60 * 60 * 24 * 1000)) / 2 * vanids.length;
 
-        if (shifts.length == 0) {
+        if (res.shifts.length == 0) {
             showModalAlert('error', 'Oops! ' + name + ' has no future shifts! Schedule them right away!');
-        } else if (shifts.length < exp_shifts) {
-            showModalAlert('warn', 'Oh no! ' + name + " doesn't has enough shifts scheduled! They should have about " + Math.round(exp_shifts - shifts.length) + ' more shifts.');
+        } else if (res.shifts.length < exp_shifts) {
+            showModalAlert('warn', 'Oh no! ' + name + " doesn't has enough shifts scheduled! They should have about " + Math.round(exp_shifts - res.shifts.length) + ' more shifts.');
         }
 
-        shifts.forEach(function(s) {
+        res.shifts.forEach(function(s) {
             rows += rowTemplate
                 .replace('{0}', s.eventtype)
                 .replace('{1}', s.locationname)
                 .replace('{2}', s.startdate)
-                .replace('{3}', s.starttime).replace('{3}', s.starttime)
+                .replace(/\{3\}/g, s.starttime)
                 .replace('{4}', s.status)
                 .replace('{5}', s.vanid)
                 .replace('{6}', (s.status == 'Confirmed' ? '' : 'hide'));
         });
-        if (shifts.length > 0) {
+
+        if (res.shifts.length > 0) {
             $('#future_shifts_head').removeClass("hide");
         }
+
         $('#future_shifts_body').html(rows);
     }).fail(function() {
         $('#future_shifts_body').html('<p>There was an error getting shifts</p>');

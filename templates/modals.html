@@ -129,6 +129,23 @@
                             <span class="reader-only">Dismiss Alert</span>
                         </a>
                     </div>
+                    <div class="grid-half" id="pitched_rows">
+                        <div class="row">
+                            <div class="col-4">
+                                <label for="has_pitched_today">Has Been Pitched Today</label>
+                                <div class="input-control center padding-top-sm">
+                                    <input id="has_pitched_today-{2}" class="switch minimal" type="checkbox" {0} />
+                                    <label for="has_pitched_today-{2}" class="switch-label">Has Been Pitched Today</label>
+                                </div>
+                            </div>
+                            <div class="col-8" id="pitched_stats">
+                                <label for="extra_shifts_sched">Extra Shifts Scheduled Today</label>
+                                <div class="input-control">
+                                    <input id="extra_shifts_sched" class="input-element" type="number" value="{1}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <table class="table">
                         <thead id="future_shifts_head" class="thead">
                             <tr>
