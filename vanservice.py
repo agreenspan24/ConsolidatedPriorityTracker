@@ -79,7 +79,6 @@ class VanService:
             unflipped_shifts = shift_ids
 
             for event in events:
-                print('event', event)
                 if len(unflipped_shifts) == 0:
                     break
                 
@@ -89,15 +88,13 @@ class VanService:
                 signups_json = self.client.get(self.api_url + 'signups?eventId=' + str(event['eventId'])).json()
 
                 signups = list(signups_json['items'])
-                print('signups', signups)
+                
                 for shift_id in shift_ids:
                     shift = next(x for x in shifts if x.id == shift_id)
-                    print('shift', shift)
 
                     signup = next((x for x in signups if x['person']['vanId'] == shift.volunteer.van_id and parse(x['startTimeOverride']).time() == shift.time), None)
 
                     if signup:
-                        print('signup found', signup)
                         if signup['status']['statusId'] != shift.status:
                             response = self.update_status(signup, shift.status)
 
