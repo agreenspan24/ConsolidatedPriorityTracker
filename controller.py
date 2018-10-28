@@ -229,7 +229,7 @@ def add_pass(office, page):
 
     if page == 'kph':
         if 'claim' in keys:
-            group = CanvassGroup.query.options(joinedload(CanvassGroup.claim_user)).get(parent_id)
+            group = CanvassGroup.query.get(parent_id)
         else:
             group = CanvassGroup.query.options(joinedload(CanvassGroup.canvass_shifts)).get(parent_id)
 
@@ -689,9 +689,8 @@ def delete_element(office, page):
     else: 
         shift = Shift.query.options(joinedload(Shift.group)).get(parent_id)
 
-        if shift.canvass_group:
-            if shift.group.is_active:
-                return Response('Please delete shift from canvass group first', 400)
+        if shift.canvass_group and shift.group.is_active:
+            return Response('Please delete shift from canvass group first', 400)
         
         shift.is_active = False
         shift.last_user = g.user.id
