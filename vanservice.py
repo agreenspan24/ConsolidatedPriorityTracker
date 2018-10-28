@@ -92,7 +92,8 @@ class VanService:
                 for shift_id in shift_ids:
                     shift = next(x for x in shifts if x.id == shift_id)
 
-                    signup = next((x for x in signups if x['person']['vanId'] == shift.volunteer.van_id and parse(x['startTimeOverride']).time() == shift.time), None)
+                    shift_time = (shift.time if event['name'] != 'Volunteer DVC - Mobilize' else shift.time + timedelta(hours=1))
+                    signup = next((x for x in signups if x['person']['vanId'] == shift.volunteer.van_id and parse(x['startTimeOverride']).time() == shift_time), None)
 
                     if signup:
                         if signup['status']['statusId'] != shift.status:
