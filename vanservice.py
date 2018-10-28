@@ -94,7 +94,7 @@ class VanService:
                     shift = next(x for x in shifts if x.id == shift_id)
                     print('shift', shift)
 
-                    signup = next((x for x in signups if x['person']['vanId'] == shift.volunteer.van_id and (parse(x['startTimeOverride']) if event['name'] != 'Volunteer DVC - Mobilize' else (parse(x['startTimeOverride']) - timedelta(hours=1))).time() == shift.time), None)
+                    signup = next((x for x in signups if x['person']['vanId'] == shift.volunteer.van_id and parse(x['startTimeOverride']).time() == shift.time), None)
 
                     if signup:
                         print('signup found', signup)
