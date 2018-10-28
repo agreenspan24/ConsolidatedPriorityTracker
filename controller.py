@@ -26,7 +26,7 @@ oid.init_app(app)
 def logout_before():
     print(session)
     
-    if request.path.startswith('/static') or request.path.startswith('/favicon'):
+    if request.path.startswith('/static') or request.path.startswith('/favicon') or request.path.startswith('/loaderio-cb6afdec0447c3b6ec9bce41757c581c'):
         return
     if request.path.startswith('/oidc_callback'):
         return
@@ -840,7 +840,7 @@ def get_future_shifts(office, page):
 
     return jsonify(list(map(lambda x: x.serialize(), future_shifts)))
 
-@app.route('/loaderio-cb6afdec0447c3b6ec9bce41757c581c')
+@app.route('/loaderio-cb6afdec0447c3b6ec9bce41757c581c/')
 def loader_io():
     return app.send_static_file('loaderio-cb6afdec0447c3b6ec9bce41757c581c.txt')
 
