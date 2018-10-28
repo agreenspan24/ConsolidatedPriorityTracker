@@ -44,7 +44,7 @@ class VanService:
     def get_events(self, eventtype):
         eventType = EventType.query.filter_by(name=eventtype).first()
 
-        queryString = '?eventTypeIds=' + str(eventType.id) + '&startingAfter=' + self.yesterday.strftime('%Y-%m-%d') + '&startingBefore=' + self.tomorrow.strftime('%Y-%m-%d')
+        queryString = '?eventTypeIds=' + str(eventType.id) + '&startingAfter=' + self.yesterday.strftime('%Y-%m-%d') + '&startingBefore=' + self.tomorrow.strftime('%Y-%m-%d') + '&$top=50'
         events = self.client.get(self.api_url + 'events' + queryString).json()
 
         return list(events['items'])
@@ -88,7 +88,7 @@ class VanService:
                 signups_json = self.client.get(self.api_url + 'signups?eventId=' + str(event['eventId'])).json()
 
                 signups = list(signups_json['items'])
-
+                
                 for shift_id in shift_ids:
                     shift = next(x for x in shifts if x.id == shift_id)
 

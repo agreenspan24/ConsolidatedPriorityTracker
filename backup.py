@@ -1,7 +1,8 @@
 from models import CanvassGroup, Shift, BackupGroup, BackupShift
 from kps_responses import add_kps_responses
 from datetime import datetime
-from app import db
+from app import db, schema
+from sqlalchemy.orm import contains_eager
 
 def backup():
     try:
@@ -9,7 +10,7 @@ def backup():
     except:
         print('kps_failed')
 
-    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(Shift.date < datetime.now().date()).all()
+    groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).options(contains_eager(CanvassGroup.canvass_shifts)).filter(Shift.date < datetime.now().date()).all()
 
     for group in groups:
         backup_group = BackupGroup(group)
@@ -28,7 +29,11 @@ def backup():
         backup_shift = BackupShift(shift)
         db.session.add(backup_shift)
 
-    db.session.commit()
+    if schema == 'consolidated':
+        db.session.commit()
+    else:
+        db.session.rollback()
+        
 
 def main():
     backup()

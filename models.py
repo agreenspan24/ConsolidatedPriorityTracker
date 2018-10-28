@@ -138,7 +138,9 @@ class Note(db.Model):
     time = db.Column(db.Time)
     text = db.Column(db.String(255))
     note_shift = db.Column(db.Integer, db.ForeignKey(schema + '.shift.id'))
-    user = db.Column(db.Integer, db.ForeignKey(schema + '.users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey(schema + '.users.id'))
+    user_name = db.Column(db.String(2))
+    user_color = db.Column(db.String(6))
 
     def __init__(self, type, time, text, note_shift, user):
 
@@ -146,19 +148,25 @@ class Note(db.Model):
         self.time = time
         self.text = text
         self.note_shift = note_shift
-        self.user = user
+        self.user_id = user.id
+        self.user_name = user.claim_name()
+        self.user_color = user.color
 
     def serialize(self):
         return {
             'type': self.type,
             'time': self.time.strftime('%I:%M %p'),
             'text': self.text,
-            'user': self.user
+            'user_id': self.user_id,
+            'user_name': self.user_name,
+            'user_color': self.user_color
         }
+
 
 class User(db.Model):
     __table_args__ = {'schema':schema}
     __tablename__ = 'users'
+
     id = db.Column('id', db.Integer, primary_key=True)
     fullname = db.Column('full_name', db.String(240))
     firstname = db.Column('first_name', db.String(120))
@@ -170,7 +178,6 @@ class User(db.Model):
     openid = db.Column('openid', db.String(50))
     is_allowed = db.Column('is_allowed', db.Boolean)
     color = db.Column('color', db.String(6))
-    notes = db.relationship(Note, lazy='joined')
 
     def __init__(self, email, openid):
         self.email = email
@@ -205,7 +212,7 @@ class CanvassGroup(db.Model):
     last_check_in = db.Column(db.Time)
     check_in_time = db.Column(db.Time)
     check_ins = db.Column(db.Integer)
-    canvass_shifts = db.relationship('Shift', lazy='joined')
+    canvass_shifts = db.relationship('Shift')
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     claim = db.Column(db.Integer, db.ForeignKey(schema + '.users.id'))
@@ -348,7 +355,7 @@ class Shift(db.Model):
     location = db.relationship(Location, lazy='joined')
     notes = db.relationship(Note, lazy='joined')
     canvass_group = db.Column(db.Integer, db.ForeignKey(schema + '.canvass_group.id'), index=True)
-    group = db.relationship(CanvassGroup, lazy='joined')
+    group = db.relationship(CanvassGroup)
     last_user = db.Column(db.Integer)
     last_update = db.Column(db.Time)
     shift_flipped = db.Column(db.Boolean)
