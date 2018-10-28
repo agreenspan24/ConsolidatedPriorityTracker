@@ -31,16 +31,16 @@ if date >= '2018-10-19' and date <= '2018-10-21':
     sldcsv = csv.reader(open('failsafe/dr1.csv'))
 
 elif date >= '2018-10-22' and date <= '2018-10-25':
-    sldcsv = csv.reader(open('failsafe/dr1.csv'))
+    sldcsv = csv.reader(open('failsafe/p1mw.csv'))
 
 elif date >= '2018-10-26' and date <= '2018-10-28':
-    sldcsv = csv.reader(open('failsafe/dr1.csv'))
+    sldcsv = csv.reader(open('failsafe/dr2.csv'))
 
 elif date >= '2018-10-29' and date <= '2018-11-01':
-    sldcsv = csv.reader(open('failsafe/dr1.csv'))
+    sldcsv = csv.reader(open('failsafe/dr2.csv'))
 
 elif date >= '2018-11-02' and date <= '2018-11-06':
-    sldcsv = csv.reader(open('failsafe/dr1.csv'))
+    sldcsv = csv.reader(open('failsafe/final5.csv'))
 else:
     print("You don't need this anymore")
 
@@ -50,7 +50,7 @@ for row in sldcsv:
         office = row[0]
         locations = Location.query.filter(Location.locationname.like(office + '%')).all()
         location_ids = list(map(lambda l: l.locationid, locations))
-        shifts = Shift.query.options(joinedload(Shift.location)).filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
+        shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).order_by(asc(Shift.time), asc(Shift.person)).all()
 
 
         with open('failsafe/backups/{date}{office}sdc.csv'.format(date=date, office=office), 'w') as sdc:
@@ -68,7 +68,7 @@ for row in sldcsv:
                 s.role,
                 s.status])
 
-        all_groups = CanvassGroup.query.filter_by(is_active=True).all()
+        all_groups = CanvassGroup.query.options(joinedload(CanvassGroup.canvass_shifts)).filter_by(is_active=True).all()
         groups = []
 
         for gr in all_groups:

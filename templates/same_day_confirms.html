@@ -34,6 +34,23 @@
                             <option value="6:00 PM">6:00 PM - 9:00 PM</option>
                         </select>
                     </div>
+                    <script>
+                        var d = new Date();
+                        var hr = d.getHours();
+
+                        var selected = '';
+                        if (hr > 11 && hr < 15) {
+                            selected = '1:00 PM';
+                        } else if (hr > 15 && hr <= 16) {
+                            selected = '4:00 PM';
+                        } else if (hr > 16 && hr <= 21) {
+                            selected = '6:00 PM';
+                        } else {
+                            selected = '10:00 AM';
+                        }
+                        
+                        $('select[name="time"]').val(selected);
+                    </script>
                 </td>
                 <td>
                     <label class="input-label">Activity</label>
