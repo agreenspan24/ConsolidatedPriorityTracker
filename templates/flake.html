@@ -72,7 +72,7 @@
                     </td>
                     {% if shift.notes != 0 %}
                         {% for note in shift.notes|sort(attribute='time', reverse=True) %}
-                            {% if note.type == "flake" %}
+                            {% if note.type in ["flake", "sdc"] %}
                                 <td>
                                     {{note.time.strftime('%I:%M %p')}}: {{note.text}}
                                     <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
