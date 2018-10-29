@@ -132,29 +132,28 @@
                     <div id="group_vol_dropdown" class="input-unit">
                         <div class="input-label">Group Member</div>
                         <div class="input-control">
-                            <select class="input-element-base"></select>
+                            <select id="vol_options" class="input-element" onchange="get_future_shifts(event, true)">
+                            </select>
                         </div>
                     </div>
                     <div class="grid-half" id="pitched_rows">
-                        <div class="row">
-                            <div class="col-4">
-                                <label for="has_pitched_today">Has Been Pitched Today</label>
-                                <div class="input-control center padding-top-sm">
-                                    <input id="has_pitched_today" class="switch minimal" type="checkbox"/>
-                                    <label for="has_pitched_today" class="switch-label">Has Been Pitched Today</label>
-                                </div>
+                        <div class="col-4">
+                            <label for="has_pitched_today">Has Been Pitched Today</label>
+                            <div class="input-control center padding-top-sm">
+                                <input id="has_pitched_today" class="switch minimal" type="checkbox"/>
+                                <label for="has_pitched_today" class="switch-label">Has Been Pitched Today</label>
                             </div>
-                            <div class="col-5" id="pitched_stats">
-                                <label for="extra_shifts_sched">Extra Shifts Scheduled Today</label>
-                                <div class="input-control">
-                                    <input id="extra_shifts_sched" class="input-element" type="number" min="0" />
-                                </div>
+                        </div>
+                        <div class="col-5" id="pitched_stats">
+                            <label for="extra_shifts_sched">Extra Shifts Scheduled Today</label>
+                            <div class="input-control">
+                                <input id="extra_shifts_sched" class="input-element" type="number" min="0" />
                             </div>
-                            <div class="col-3" id="pitched_stats">
-                                <label>&nbsp;</label>
-                                <div class="input-control">
-                                    <a id="update_vol_pitch" onclick="update_vol_pitch(event)" class="btn btn-blue btn-full">Update</a>
-                                </div>
+                        </div>
+                        <div class="col-3" id="pitched_stats">
+                            <label>&nbsp;</label>
+                            <div class="input-control">
+                                <a id="update_vol_pitch" onclick="update_vol_pitch(event)" class="btn btn-blue btn-full">Update</a>
                             </div>
                         </div>
                     </div>

@@ -336,15 +336,13 @@ def add_pass(office, page):
             elif 'check_in_time' in keys:
                 check_in_time = request.form.get('check_in_time')
 
-                print(check_in_time)
                 try:
                     group.check_in_time = parse(check_in_time) if not check_in_time in [None, ''] else None
                 except:
                     return Response('Invalid Time', 400)
-                print(check_in_time)
 
                 note = group.add_note('kph', 'Next Check In changed to ' + (group.check_in_time.strftime('%I:%M %p') if group.check_in_time else 'None'), g.user)
-                print(note)
+                
                 return_var = note
 
             elif 'note' in keys:

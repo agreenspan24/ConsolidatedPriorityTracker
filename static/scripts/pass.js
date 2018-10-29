@@ -304,13 +304,17 @@ function confirm_shift(e) {
     }
 }
 
-function get_future_shifts(vanids) {
+function get_future_shifts(vanids, is_update) {
 
     open_modal('future_shifts_modal');
     hideModalAlert();
 
     $('#future_shifts_head').addClass("hide");
     $('#future_shifts_body').html('');
+
+    if (!is_update) {
+        $('#group_vol_dropdown').addClass('hide');
+    }
 
     $.ajax({
         type: 'POST', 
@@ -319,13 +323,20 @@ function get_future_shifts(vanids) {
             vanids: vanids
         }
     }).done(function(res) {
-
         if (res.vols[0]) {
+            if (!is_update && res.vols.length > 1) {
+                var options = '';
+                res.vols.forEach(function(x){
+                    options += '<option value="' + x.van_id + '">' + x.first_name + ' ' + x.last_name + '</option>'
+                });
+                $('#vol_options').html(options);
+                $('#group_vol_dropdown').removeClass('hide');
+            }
+
             set_future_shifts_for_vol(res.vols[0], res.shifts);
         } else {
             $('#future_shifts_body').html('<p>Could not find volunteer</p>');
         }
-
     }).fail(function() {
         $('#future_shifts_body').html('<p>There was an error getting shifts</p>');
     });
@@ -334,11 +345,11 @@ function get_future_shifts(vanids) {
 function set_future_shifts_for_vol(vol, shifts) {
     $('#future_shifts_name').html(vol.first_name + ' ' + vol.last_name);
 
+    $('#has_pitched_today').removeAttr('checked');
     $('#has_pitched_today').attr('checked', (vol.has_pitched_today ? 'checked' : false));
     $("#extra_shifts_sched").val(vol.extra_shifts_sched);
     $('#future_shifts_history_link').attr('href', '/consolidated/volunteer_history/' + vol.id);
     $('#update_vol_pitch').attr('vol_id', vol.id);
-
 
     var rowTemplate = 
     "<tr>" +

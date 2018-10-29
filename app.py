@@ -8,11 +8,7 @@ from sqlalchemy import create_engine
 try:
     schema = os.environ['schema']
 except:
-    schema = 'consolidated'
-
-
-os.environ['HEROKU_POSTGRESQL_AMBER_URL'] = 'postgres://udq8m08n6hjmcm:p3d9b763d9c7c20258eeca3568605c92a55d0aa84c8b6a6a63ded7a787f65e4a4@ec2-23-20-55-108.compute-1.amazonaws.com:5432/d2970fhsvk9kkq'
-os.environ['secret_key'] = 'fasdjhkR#$@sdaf'
+    schema = 'test'
 
 app = Flask(__name__)
 app.config['DEBUG'] = False
