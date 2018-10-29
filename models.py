@@ -463,7 +463,6 @@ class ShiftStats:
         self.packets_out = 0
         self.canvassers_out = 0
         self.shifts_not_pitched = 0
-        self.shifts_pitched = 0
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
@@ -486,11 +485,8 @@ class ShiftStats:
                 self.canvassers_out += 1
 
             if s.status == 'Completed' and s.canvass_group != None:
-                print(s.id, s.volunteer.first_name, s.volunteer.has_pitched_today)
                 if s.volunteer.has_pitched_today == False:
                     self.shifts_not_pitched += 1
-                else:
-                    self.shifts_pitched += 1
 
 
         knocks = 0
@@ -516,7 +512,6 @@ class HeaderStats:
 
         self.unflipped_shifts = sum(1 for x in shifts if x.time < overdue and not x.status in flipped_status)
         self.overdue_check_ins = sum(1 for x in groups if not x.is_returned and x.check_in_time != None and x.check_in_time < time_now.time())
-        self.back_but_not_final = sum(1 for x in groups if not x.is_returned and x.check_in_time == None)
         self.flakes_not_chased = sum(1 for x in shifts if x.flake and x.status == 'No Show' and x.flake_pass < 1)
 
 

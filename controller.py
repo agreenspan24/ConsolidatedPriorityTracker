@@ -18,7 +18,10 @@ from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
 
-#vanservice = VanService()
+try:
+    vanservice = VanService()
+except:
+    print('Vanservice does not have environment variables')
 
 oid.init_app(app)
 
