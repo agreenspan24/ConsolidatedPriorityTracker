@@ -164,15 +164,17 @@
                 <td>
                     <input id='note-{{group.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">
                 </td>
-                {% if group.canvass_shifts[0].notes != 0 %}
-                    {% for note in group.canvass_shifts[0].notes|sort(attribute='time', reverse=True) %}
-                        {% if note.type == 'kph' %}
-                            <td id="notes-{{group.canvass_shifts[0].id}}">
-                                {{note.time.strftime('%I:%M %p')}}: {{note.text}}
-                                <span class="glyphicons glyphicons-remove" onclick="deleteNote({{group.canvass_shifts[0].id}}, '{{note.text}}')" style="cursor:pointer"></span>
-                            </td>
-                        {% endif %}
-                    {% endfor %}
+                {% if group.canvass_shifts[0].notes %}
+                    <td>
+                        {% for note in group.canvass_shifts[0].notes|sort(attribute='time', reverse=True) if note.type == "kph" %}
+                            {% if loop.index != 1 %}
+                                &nbsp; | &nbsp;&nbsp;
+                            {% endif %}
+                            <i class="user-icon" title="Created by User {{note.user_id}}" style="background-color:#{{note.user_color if note.user_color else '000000'}}">{{note.user_name}}</i>
+                            {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                            <span class="glyphicons glyphicons-remove" onclick="deleteNote({{group.canvass_shifts[0].id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                        {% endfor %}
+                    </td>  
                 {% endif %}
             </tr>
         {% endfor %}
