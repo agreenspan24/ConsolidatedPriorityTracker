@@ -304,20 +304,12 @@ function confirm_shift(e) {
     }
 }
 
-function get_future_shifts(vanids, name) {
-    var rowTemplate = "<tr>" +
-        "<td>{0}</td>" +
-        "<td>{1}</td>" + 
-        "<td vanid='{5}' time='{3}' ondblclick='confirm_shift(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td>" + 
-        "<td>{3}</td>" + 
-        "<td>{4}</td>" + 
-    "</tr>";
+function get_future_shifts(vanids) {
 
     open_modal('future_shifts_modal');
     hideModalAlert();
 
     $('#future_shifts_head').addClass("hide");
-    $('#future_shifts_name').html(name);
     $('#future_shifts_body').html('');
 
     $.ajax({
@@ -327,30 +319,48 @@ function get_future_shifts(vanids, name) {
             vanids: vanids
         }
     }).done(function(res) {
-        var pitch_html_template = $('#pitched_rows').html();
-        console.log(pitch_html_template);
 
-        var pitched_rows = '';
-        res.vols.forEach(function (x, i) {
-            pitched_rows += pitch_html_template
-            .replace('{0}', x.has_pitched_today ? 'checked' : '')
-            .replace('{1}', x.extra_shifts_sched)
-            .replace(/\{2\}/g, i);
-        });
-
-        $('#pitched_rows').html(pitched_rows);
-
-        var rows = '';
-
-        var exp_shifts = ((Date.parse('2018-11-06') - Date.now()) / (60 * 60 * 24 * 1000)) / 2 * vanids.length;
-
-        if (res.shifts.length == 0) {
-            showModalAlert('error', 'Oops! ' + name + ' has no future shifts! Schedule them right away!');
-        } else if (res.shifts.length < exp_shifts) {
-            showModalAlert('warn', 'Oh no! ' + name + " doesn't has enough shifts scheduled! They should have about " + Math.round(exp_shifts - res.shifts.length) + ' more shifts.');
+        if (res.vols[0]) {
+            set_future_shifts_for_vol(res.vols[0], res.shifts);
+        } else {
+            $('#future_shifts_body').html('<p>Could not find volunteer</p>');
         }
 
-        res.shifts.forEach(function(s) {
+    }).fail(function() {
+        $('#future_shifts_body').html('<p>There was an error getting shifts</p>');
+    });
+}
+
+function set_future_shifts_for_vol(vol, shifts) {
+    $('#future_shifts_name').html(vol.first_name + ' ' + vol.last_name);
+
+    $('#has_pitched_today').attr('checked', (vol.has_pitched_today ? 'checked' : false));
+    $("#extra_shifts_sched").val(vol.extra_shifts_sched);
+    $('#future_shifts_history_link').attr('href', '/consolidated/volunteer_history/' + vol.id);
+    $('#update_vol_pitch').attr('vol_id', vol.id);
+
+
+    var rowTemplate = 
+    "<tr>" +
+        "<td>{0}</td>" +
+        "<td>{1}</td>" + 
+        "<td vanid='{5}' time='{3}' ondblclick='confirm_shift(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td>" + 
+        "<td>{3}</td>" + 
+        "<td>{4}</td>" + 
+    "</tr>";
+
+    var rows = '';
+
+    var exp_shifts = ((Date.parse('2018-11-06') - Date.now()) / (60 * 60 * 24 * 1000)) / 2;
+
+    if (shifts.length == 0) {
+        showModalAlert('error', 'Oops! ' + name + ' has no future shifts! Schedule them right away!');
+    } else if (shifts.length < exp_shifts) {
+        showModalAlert('warn', 'Oh no! ' + name + " doesn't has enough shifts scheduled! They should have about " + Math.round(exp_shifts - shifts.length) + ' more shifts.');
+    }
+
+    shifts.forEach(function(s) {
+        if (s.vanid == vol.van_id) {
             rows += rowTemplate
                 .replace('{0}', s.eventtype)
                 .replace('{1}', s.locationname)
@@ -359,14 +369,31 @@ function get_future_shifts(vanids, name) {
                 .replace('{4}', s.status)
                 .replace('{5}', s.vanid)
                 .replace('{6}', (s.status == 'Confirmed' ? '' : 'hide'));
-        });
-
-        if (res.shifts.length > 0) {
-            $('#future_shifts_head').removeClass("hide");
         }
-
-        $('#future_shifts_body').html(rows);
-    }).fail(function() {
-        $('#future_shifts_body').html('<p>There was an error getting shifts</p>');
     });
+
+    if (shifts.length > 0) {
+        $('#future_shifts_head').removeClass("hide");
+    }
+
+    $('#future_shifts_body').html(rows);
+}
+
+function update_vol_pitch(event) {
+    vol_id = event.target.attributes['vol_id'].nodeValue;
+
+    $.ajax({
+        type: 'POST', 
+        url: window.location.pathname + '/vol_pitch',
+        data: {
+            vol_id: vol_id, 
+            has_pitched_today: $('#has_pitched_today').val(),
+            extra_shifts_sched: $('#extra_shifts_sched').val()
+        }
+    }).done(function() {
+        showModalAlert('success', 'Pitch information updated');
+    }).fail(function(res) {
+        showModalAlert('error', 'Pitch information could not be updated. ' + res);
+    });
+
 }

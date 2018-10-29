@@ -124,7 +124,7 @@
                             <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" style="width:75px" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}"/>
                             <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}"/>
                         {% else %}
-                            <a onclick="get_future_shifts([{{shift.volunteer.van_id}}], '{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}')">
+                            <a onclick="get_future_shifts([{{shift.volunteer.van_id}}])">
                                 {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                             </a>
                         {% endif %}

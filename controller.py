@@ -18,7 +18,7 @@ from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
 
-vanservice = VanService()
+#vanservice = VanService()
 
 oid.init_app(app)
 
@@ -865,6 +865,34 @@ def get_future_shifts(office, page):
         'shifts': list(map(lambda x: x.serialize(), future_shifts))
     })
 
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/vol_pitch', methods=['POST'])
+def update_vol_pitch(office, page):
+    vol_id = request.form.get('vol_id')
+
+    if not vol_id or not vol_id.isdigit():
+        return Response('Invalid vol id', 400)
+
+    vol = Volunteer.query.get(vol_id)
+
+    if not vol:
+        return Response('Volunteer could not be found.', 400)
+
+    has_pitched_today = request.form.get('has_pitched_today')
+    vol.has_pitched_today = bool(has_pitched_today)
+
+    extra_shifts_sched = request.form.get('extra_shifts_sched')
+
+    if extra_shifts_sched and not extra_shifts_sched.isdigit():
+        return Response('Extra shifts must be a number', 400)
+
+    vol.extra_shifts_sched = extra_shifts_sched if extra_shifts_sched else None
+
+    db.session.commit()
+
+    return Response('success', 200)
+
+
 @app.route('/loaderio-cb6afdec0447c3b6ec9bce41757c581c/')
 def loader_io():
     return app.send_static_file('loaderio-cb6afdec0447c3b6ec9bce41757c581c.txt')
@@ -888,7 +916,8 @@ def see_volunteer_history(vol_id):
         # VanID
         van_id = request.form.get('vanid')
 
-        if van_id or not van_id.isdigit():
+        print(van_id)
+        if van_id and not van_id.isdigit():
             return Response('Invalid VanID', 400)
 
         volunteer.van_id = van_id
@@ -927,7 +956,7 @@ def see_volunteer_history(vol_id):
     if volunteer.van_id:
         future_shifts = SyncShift.query.filter(SyncShift.vanid == volunteer.van_id, SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
 
-    past_groups = BackupGroup.query.join(BackupShift.canvass_shifts).join(Shift.volunteer).filter(Volunteer.id == vol_id).all()
+    past_groups = BackupGroup.query.join(BackupGroup.canvass_shifts).join(BackupShift.volunteer).options(contains_eager(BackupGroup.canvass_shifts)).filter(Volunteer.id == vol_id).all()
     
     return render_template('volunteer.html', volunteer=volunteer, past_shifts=past_shifts, future_shifts=future_shifts, past_groups=past_groups)
 

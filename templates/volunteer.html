@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
+<h1>Volunteer History for {{volunteer.first_name + ' ' + volunteer.last_name}}</h1>
 <form action="/consolidated/volunteer_history/{{volunteer.id}}" method="POST">
     <table class="table">
         <tbody class="tbody">
@@ -9,31 +9,31 @@
                 <td>
                     <label class="input-label">VanID</label>
                     <div class="input-control">
-                        <input class="input-element" name="vanid" maxlength="120" value="{{volunteer.van_id}}" />
+                        <input class="input-element" name="vanid" maxlength="120" value="{{volunteer.van_id if volunteer.van_id else ''}}" />
                     </div>
                 </td>
                 <td>
                     <label class="input-label">First Name</label>
                     <div class="input-control">
-                        <input class="input-element" name="firstname" maxlength="120" value="{{volunteer.first_name}}" />
+                        <input class="input-element" name="firstname" maxlength="120" value="{{volunteer.first_name if volunteer.first_name else ''}}" />
                     </div>
                 </td>
                 <td>
                     <label class="input-label">Last Name</label>
                     <div class="input-control">
-                        <input class="input-element" name="lastname" maxlength="120" value="{{volunteer.last_name}}" />
+                        <input class="input-element" name="lastname" maxlength="120" value="{{volunteer.last_name if volunteer.last_name else ''}}" />
                     </div>
                 </td>
                 <td>
                     <label class="input-label">Phone</label>
                     <div class="input-control">
-                        <input class="input-element" name="phone" maxlength="120" value="{{volunteer.phone_number}}" />
+                        <input class="input-element" name="phone" maxlength="120" value="{{volunteer.phone_number if volunteer.phone_number else ''}}" />
                     </div>
                 </td>
                 <td>
                     <label class="input-label">Cell Phone</label>
                     <div class="input-control">
-                        <input class="input-element" name="cellphone" maxlength="120" value="{{volunteer.cellphone}}" />
+                        <input class="input-element" name="cellphone" maxlength="120" value="{{volunteer.cellphone if volunteer.cellphone else ''}}" />
                     </div>
                 </td>
                 <td>
@@ -43,12 +43,12 @@
         </tbody>
     </table>
 </form>
-<hr>
 
 {% if past_shifts %}
+<hr>
 <h3>Past Shifts</h3>
 
-<table class="table table-panel table-small">
+<table class="table table-striped">
     <thead class="thead">
         <tr>
             <th>Event</th>
@@ -77,9 +77,10 @@
 {% endif %}
 
 {% if future_shifts %}
+<hr>
 <h3>Future Shifts</h3>
 
-<table class="table table-panel table-small">
+<table class="table table-striped">
     <thead class="thead">
         <tr>
             <th>Event</th>
@@ -107,9 +108,10 @@
 
 
 {% if past_groups %}
+<hr>
 <h3>Past Canvass Groups</h3>
 
-<table class="table table-panel table-small">
+<table class="table table-striped">
     <thead class="thead">
         <tr>
             <th>Packets</th>

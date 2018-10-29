@@ -129,19 +129,31 @@
                             <span class="reader-only">Dismiss Alert</span>
                         </a>
                     </div>
+                    <div id="group_vol_dropdown" class="input-unit">
+                        <div class="input-label">Group Member</div>
+                        <div class="input-control">
+                            <select class="input-element-base"></select>
+                        </div>
+                    </div>
                     <div class="grid-half" id="pitched_rows">
                         <div class="row">
                             <div class="col-4">
                                 <label for="has_pitched_today">Has Been Pitched Today</label>
                                 <div class="input-control center padding-top-sm">
-                                    <input id="has_pitched_today-{2}" class="switch minimal" type="checkbox" {0} />
-                                    <label for="has_pitched_today-{2}" class="switch-label">Has Been Pitched Today</label>
+                                    <input id="has_pitched_today" class="switch minimal" type="checkbox"/>
+                                    <label for="has_pitched_today" class="switch-label">Has Been Pitched Today</label>
                                 </div>
                             </div>
-                            <div class="col-8" id="pitched_stats">
+                            <div class="col-5" id="pitched_stats">
                                 <label for="extra_shifts_sched">Extra Shifts Scheduled Today</label>
                                 <div class="input-control">
-                                    <input id="extra_shifts_sched" class="input-element" type="number" value="{1}"/>
+                                    <input id="extra_shifts_sched" class="input-element" type="number" min="0" />
+                                </div>
+                            </div>
+                            <div class="col-3" id="pitched_stats">
+                                <label>&nbsp;</label>
+                                <div class="input-control">
+                                    <a id="update_vol_pitch" onclick="update_vol_pitch(event)" class="btn btn-blue btn-full">Update</a>
                                 </div>
                             </div>
                         </div>
@@ -161,6 +173,9 @@
                         </tbody>
                     </table>
                 </section>
+                <footer class="panel-footer">
+                    <a id="future_shifts_history_link" target="_blank" href="#" class="btn btn-blue btn-full">See Volunteer History</a>
+                </footer>
             </article>   
         </div>
     </div>

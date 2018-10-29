@@ -520,7 +520,7 @@ class BackupGroup(db.Model):
     goal = db.Column('goal', db.Integer)
     packet_names = db.Column('packet_names', db.String(255))
     is_returned = db.Column('is_returned', db.Boolean)
-    canvass_shifts = db.relationship('BackupShift', lazy='joined')
+    canvass_shifts = db.relationship('BackupShift')
 
     def __init__(self, group):
         self.actual = group.actual
@@ -545,7 +545,7 @@ class BackupShift(db.Model):
     person = db.Column(db.Integer, db.ForeignKey(schema + '.volunteer.id'))
     volunteer = db.relationship(Volunteer, lazy='joined')
     canvass_group = db.Column(db.Integer, db.ForeignKey('backup.backup_group.id'))
-    group = db.relationship(BackupGroup, lazy='joined')
+    group = db.relationship(BackupGroup)
 
     def __init__(self, shift):
         self.eventtype = shift.eventtype

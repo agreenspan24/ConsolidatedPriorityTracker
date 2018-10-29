@@ -7,7 +7,8 @@ rural_locations = {
    'R4F - Secondary Turf Sikeston' : 'R4F - Rural',
    'R4F - Perryville Staging Location' : 'R4F - Rural',
    'R4: Secondary Turf Farmington' : 'R4F - Rural',
-   'R4F - Secondary Turf': 'R4F - Rural'
+   'R4F - Secondary Turf': 'R4F - Rural',
+   'R2H - Cort Office': 'R2H - VanOstran Field Office'
 }
 
 dashboard_query = """
