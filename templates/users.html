@@ -11,26 +11,40 @@
             <th>Region</th>
             <th>Office</th>
             <th>Allowed</th>
+            <th>First Active</th>
+            <th>Last Active</th>
+            <th></th>
+
         </tr>
     </thead>
     <tbody class="tbody">
 {% for u in all_users %}
     {% if user.rank == 'DATA' %}
+        <form method = 'Post'>
         <tr>
-            <td>{{u.id}}</td>
+            <td>
+                <input name='id' value='{{u.id}}' type='hidden'>
+                {{u.id}}
+            </td>
             <td>{{u.email}}</td>
             <td>
-                <select>
+                <select name='rank'>
+                    {% if u.rank == None %}
+                    <option value=None {{"selected" if u.rank == None}}>None</option>
+                    {% endif %}
                     <option value='Intern' {{"selected" if u.rank == 'Intern'}}>Intern</option>
                     <option value='DFO' {{"selected" if u.rank == 'DFO'}}>DFO</option>
                     <option value='FO' {{"selected" if u.rank == 'FO'}}>FO</option>
                     <option value='FD' {{"selected" if u.rank == 'FD'}}>FD</option>
                     <option value='DATA' {{"selected" if u.rank == 'DATA'}}>DATA</option>
-                    <option value='None' {{"selected" if u.rank == None}}>None</option>
+                    
                 </select>
             </td>
             <td>
-                <select>
+                <select name='region'>
+                    {% if u.region == None %}
+                    <option value=None {{"selected" if u.region == None}}>None</option>
+                    {% endif %}
                     <option value='R1' {{"selected" if u.region == 'R1'}}>R1</option>
                     <option value='R2' {{"selected" if u.region == 'R2'}}>R2</option>
                     <option value='R3' {{"selected" if u.region == 'R3'}}>R3</option>
@@ -40,20 +54,24 @@
                     <option value='R7' {{"selected" if u.region == 'R7'}}>R7</option>
                     <option value='R8' {{"selected" if u.region == 'R8'}}>R8</option>
                     <option value='HQ' {{"selected" if u.region == 'HQ'}}>HQ</option>
-                    <option value='None' {{"selected" if u.region == None}}>None</option>
                 </select>
             </td>
             <td>
-                <select>
+                <select name='office'>
                     <option value='{{u.office}}' {{"selected" if u.office == '{{location.locationname}}'}}>{{u.office}}</option>
-                    <option value='{{u.region}}' {{"selected" if u.office == '{{u.region}}'}}>{{u.region}}</option>></option>
                     {% for location in locations %}
                     <option value='{{location.locationname}}'>{{location.locationname}}</option>
                     {% endfor %}
+                    <option value='N/A' {{"selected" if u.office == None}}>N/A</option>
                 </select>
             </td>
-            <td><input type='checkbox' name='allowed' {{"checked" if user.is_allowed == True}}></td>
+            <td><input type='checkbox' name='allowed' {{"checked" if u.is_allowed == True}}></td>
+            <td>{{u.first_active}}</td>
+            <td>{{u.most_recent}}</td>
+            <td><input type='submit' value='Update'></td>
+            
         </tr>
+        </form>
     {% endif %}
 {% endfor %}
     </tbody>

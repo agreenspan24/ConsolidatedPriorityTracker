@@ -4,6 +4,7 @@ from flask import flash, g, redirect, render_template, request, session, abort, 
 
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import contains_eager, joinedload
+from sqlalchemy.sql import func
 
 import re
 import urllib
@@ -845,16 +846,46 @@ def loader_io():
     return app.send_static_file('loaderio-cb6afdec0447c3b6ec9bce41757c581c.txt')
 
 @oid.require_login
-@app.route('/users')
+@app.route('/users', methods=['POST', 'GET'])
 def display_users():
+    if request.method == "POST":
+        id = request.form.get('id')
+        rank = request.form.get('rank')
+        region = request.form.get('region')
+        office = request.form.get('office')
+        allowed = request.form.get('allowed')
+
+        user = User.query.get(id)
+
+        if allowed == 'on':
+            allowed = True
+        else:
+            allowed = False
+        
+        if user.rank != rank:
+            user.rank = rank
+        if user.region != region:
+            user.region = region
+        if user.office != office:
+            user.office = office
+        if user.is_allowed != allowed:
+            user.is_allowed = allowed
+
+        db.session.add(user)
+        db.session.commit()
+
     if g.user.rank == 'DATA':
-        all_users = User.query.order_by(User.region.asc(), User.rank.asc()).all()
+        all_users = db.session.query(User.id, User.email, User.rank, User.region, User.office, User.is_allowed, func.min(Note.time).label('first_active'), func.min(Note.time).label('most_recent')).join(Note, User.id==Note.user_id, isouter=True).group_by(User.id, User.email, User.region, User.office).order_by(asc(User.region), asc(User.office)).all()
         locations = Location.query.order_by(Location.locationname.asc()).all()
     elif g.user.rank == 'FD':
-        all_users = User.query.filter(region=g.user.region).all()
+        all_users = User.query.filter(region=g.user.region).join(User.notes).all()
         locations = Location.query.filter_by(region=g.user.region).order_by(Location.locationname.asc()).all()
     else:
         return redirect('/consolidated')
+
+    
+
+    
     
     return render_template('users.html', all_users=all_users, locations=locations, user=g.user)
 

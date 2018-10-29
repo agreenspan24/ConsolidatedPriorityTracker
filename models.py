@@ -178,6 +178,7 @@ class User(db.Model):
     openid = db.Column('openid', db.String(50))
     is_allowed = db.Column('is_allowed', db.Boolean)
     color = db.Column('color', db.String(6))
+    notes = db.relationship(Note)
 
     def __init__(self, email, openid):
         self.email = email
