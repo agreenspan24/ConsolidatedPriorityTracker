@@ -31,11 +31,6 @@
                         <span class="notification-num">{{header_stats.overdue_check_ins}}</span>
                     </span>
                 {% endif %}
-                {% if header_stats.back_but_not_final > 0 %}
-                    <span class="notification" title="Back but not Final" style="height: 25px;font-size: 15px;line-height: 25px;width: 25px;right: 45px;background-color:#fcc419">
-                        <span class="notification-num">{{header_stats.back_but_not_final}}</span>
-                    </span>
-                {% endif %}
             </a>
         </div>
         <div class="tab {{'active' if active_tab == 'flake'}} dropdown-notifications">

@@ -343,8 +343,11 @@ function get_future_shifts(event, is_update, vanids) {
 function set_future_shifts_for_vol(vol, shifts) {
     $('#future_shifts_name').html(vol.first_name + ' ' + vol.last_name);
 
-    $('#has_pitched_today').removeAttr('checked');
-    $('#has_pitched_today').attr('checked', (vol.has_pitched_today ? 'checked' : false));
+    if (vol.has_pitched_today) {
+        $('#has_pitched_today').attr('checked', 'checked');
+    } else {
+        $('#has_pitched_today').removeAttr('checked');
+    }
     $("#extra_shifts_sched").val(vol.extra_shifts_sched);
     $('#future_shifts_history_link').attr('href', '/consolidated/volunteer_history/' + vol.id);
     $('#update_vol_pitch').attr('vol_id', vol.id);
@@ -390,13 +393,14 @@ function set_future_shifts_for_vol(vol, shifts) {
 
 function update_vol_pitch(event) {
     vol_id = event.target.attributes['vol_id'].nodeValue;
+    console.log($('#has_pitched_today:checked'));
 
     $.ajax({
         type: 'POST', 
         url: window.location.pathname + '/vol_pitch',
         data: {
             vol_id: vol_id, 
-            has_pitched_today: $('#has_pitched_today').val(),
+            has_pitched_today: $('#has_pitched_today:checked').length ? "True" : "False",
             extra_shifts_sched: $('#extra_shifts_sched').val()
         }
     }).done(function() {
@@ -404,5 +408,4 @@ function update_vol_pitch(event) {
     }).fail(function(res) {
         showModalAlert('error', 'Pitch information could not be updated. ' + res);
     });
-
 }

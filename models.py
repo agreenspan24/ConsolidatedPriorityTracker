@@ -462,6 +462,8 @@ class ShiftStats:
         self.percent_to_goal = 0.00
         self.packets_out = 0
         self.canvassers_out = 0
+        self.shifts_not_pitched = 0
+        self.shifts_pitched = 0
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
@@ -482,6 +484,13 @@ class ShiftStats:
                     self.vol_flaked += 1
             if s.status == 'In' and s.role == 'Canvassing':
                 self.canvassers_out += 1
+
+            if s.status == 'Completed' and s.canvass_group != None:
+                print(s.id, s.volunteer.first_name, s.volunteer.has_pitched_today)
+                if s.volunteer.has_pitched_today == False:
+                    self.shifts_not_pitched += 1
+                else:
+                    self.shifts_pitched += 1
 
 
         knocks = 0

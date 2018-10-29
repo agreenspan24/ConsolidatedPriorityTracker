@@ -16,6 +16,7 @@
     <th colspan="2">Flakes Attempted</th>
     <th colspan="2">Flakes Rescheduled</th>
     <th colspan="2">Flake Chase Remaining</th>
+    <th colspan="2">Shifts Unpitched</th>
 {% endblock %}
 
 {% block rows %}
@@ -51,6 +52,8 @@
             <td>{{(res.flake_rescheduled_perc * 100)|round(2)|string + '%'}}</td>
             <td>{{res.flake_chase_remaining}}</td>
             <td>{{(res.flake_chase_remaining_perc * 100)|round(2)|string + '%'}}</td>
+            <td>{{res.shifts_unpitched}}</td>
+            <td>{{(res.shifts_unpitched_perc * 100)|round(2)|string + '%'}}</td>
         </tr>  
     {% endfor %}
 {% endblock %}

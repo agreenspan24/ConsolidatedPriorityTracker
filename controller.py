@@ -877,7 +877,8 @@ def update_vol_pitch(office, page):
         return Response('Volunteer could not be found.', 400)
 
     has_pitched_today = request.form.get('has_pitched_today')
-    vol.has_pitched_today = bool(has_pitched_today)
+    
+    vol.has_pitched_today = True if has_pitched_today == 'True' else False
 
     extra_shifts_sched = request.form.get('extra_shifts_sched')
 
