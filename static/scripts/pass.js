@@ -73,7 +73,7 @@ function updateGoalActual(parent_id, res, elem) {
 
 function updateCheckIns(parent_id, res, elem) {
     if (!res.is_returned) {
-        getRowElem(parent_id, 'check_in_time').val(res.check_in_time);
+        getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
         getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
         getRowElem(parent_id, 'check_ins').html(res.check_ins);
     }
@@ -108,7 +108,7 @@ function updateNames(parent_id, res, elem) {
 
 function setOut(parent_id, res, elem) {
     getRowElem(parent_id, 'out').html(res.is_returned ? 'Not Final' : 'Final');
-    getRowElem(parent_id, 'check_in_time').val(res.check_in_time);
+    getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
     getRowElem(parent_id, 'check_ins').html(res.check_ins);
     getRowElem(parent_id, 'departure').val(res.departure);
@@ -116,10 +116,9 @@ function setOut(parent_id, res, elem) {
     if (!res.check_in_time) {
         getRowElem(parent_id, 'departure').prop('disabled', 'disabled');
 
-        get_future_shifts(getRowElem(parent_id, 'vanid').text().trim().replace(' ', ',').replace(/\s/g, '').split(','), getRowElem(parent_id, 'name').text());
+        get_future_shifts(null, false, getRowElem(parent_id, 'vanid').text().trim().replace(' ', ',').replace(/\s/g, '').split(','));
     } else {
         getRowElem(parent_id, 'actual').prop('disabled', false);
-        getRowElem(parent_id, 'actual').prop('check_in_time', false);
         getRowElem(parent_id, 'departure').prop('disabled', false);
     }
 }
@@ -166,8 +165,6 @@ function setUpListener() {
                 updateElem(id, name, updateCheckIns);
             } else if (name == 'vanid') {
                 updateElem(id, name, null);
-            } else if (name == 'check_in_time') {
-                updateElem(id, name, addNote);
             }
         }
     });
@@ -304,7 +301,7 @@ function confirm_shift(e) {
     }
 }
 
-function get_future_shifts(vanids, is_update) {
+function get_future_shifts(event, is_update, vanids) {
 
     open_modal('future_shifts_modal');
     hideModalAlert();
@@ -320,15 +317,16 @@ function get_future_shifts(vanids, is_update) {
         type: 'POST', 
         url: window.location.pathname + '/future_shifts',
         data: {
-            vanids: vanids
+            vanids: vanids || [event.target.value]
         }
     }).done(function(res) {
-        if (res.vols[0]) {
+        if (res.vols) {
             if (!is_update && res.vols.length > 1) {
                 var options = '';
                 res.vols.forEach(function(x){
                     options += '<option value="' + x.van_id + '">' + x.first_name + ' ' + x.last_name + '</option>'
                 });
+                
                 $('#vol_options').html(options);
                 $('#group_vol_dropdown').removeClass('hide');
             }
