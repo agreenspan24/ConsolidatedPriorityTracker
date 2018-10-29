@@ -852,21 +852,20 @@ def loader_io():
 def display_users():
     if request.method == "POST":
         if g.user.rank == 'DATA':
-            rank = request.form.get('rank')
-            region = request.form.get('region')
+            rank = escape(request.form.get('rank'))
+            region = escape(request.form.get('region'))
             allowed = request.form.get('allowed')
-            rank = escape(rank)
-            region = escape(region)
+            
         
         id = request.form.get('id')
-        office = request.form.get('office')
-        office = escape(office)
+        office = escape(request.form.get('office'))
+
         
 
         if id.isdigit():
             user = User.query.get(id)
         else:
-            return redirect('/users')
+            return Response('Invalid User Id', 400)
         
         if allowed == 'on':
             allowed = True
@@ -940,22 +939,15 @@ def add_user():
         lastname = escape(request.form.get('lastname'))
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            #validates email address (alert needed)
-            return redirect('/users')
+            return Response('Invalid Email', 400)
         
         if g.user.rank == "DATA":
             is_allowed = True
         else:
             is_allowed = False
         
-        if g.user.rank != 'DATA' and rank in ['FD', 'DATA']:
-            #possibly just have it default to FO if this is the case?
-            return redirect('/users')
-
-        print(email)
-        print(rank)
-        print(region)
-        print(office)
+        if g.user.rank != 'DATA' and rank not in ['Intern','DFO','FO']:
+            rank = 'FO'
 
         user = User.query.filter_by(email=email).first()
         if not user:
@@ -963,8 +955,7 @@ def add_user():
             db.session.add(user)
             db.session.commit()
         else:
-            #if email already in users
-            return redirect('/users')
+            return Response('User already exists', 400)
 
 
     return redirect('/users')
