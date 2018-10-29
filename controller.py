@@ -39,7 +39,7 @@ def logout_before():
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
 
-        if g.user == None or not g.user.is_allowed or (schema == 'test' and g.user.rank != 'DATA'):
+        if g.user == None or not g.user.is_allowed:
             redir = True
             
     else:
@@ -87,11 +87,13 @@ def login_auth():
 @app.route('/', methods=['GET'])    
 def index():
 
-    if g.user.office and g.user.office != "None":
-        return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
+    if g.user.rank == 'Intern' or g.user.rank == 'DFO' or g.user.rank == 'FO':
+        if g.user.office and g.user.office not in ["None", "N/A"]:
+            return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
     
-    if g.user.region:
-        return redirect('/consolidated/' + g.user.region + '/sdc')
+    if g.user.rank == 'FD' and g.user.region != 'HQ':
+        if g.user.region:
+            return redirect('/consolidated/' + g.user.region + '/sdc')
 
     return redirect('/consolidated')    
 
@@ -849,14 +851,23 @@ def loader_io():
 @app.route('/users', methods=['POST', 'GET'])
 def display_users():
     if request.method == "POST":
+        if g.user.rank == 'DATA':
+            rank = request.form.get('rank')
+            region = request.form.get('region')
+            allowed = request.form.get('allowed')
+            rank = escape(rank)
+            region = escape(region)
+        
         id = request.form.get('id')
-        rank = request.form.get('rank')
-        region = request.form.get('region')
         office = request.form.get('office')
-        allowed = request.form.get('allowed')
+        office = escape(office)
+        
 
-        user = User.query.get(id)
-
+        if id.isdigit():
+            user = User.query.get(id)
+        else:
+            return redirect('/users')
+        
         if allowed == 'on':
             allowed = True
         else:
@@ -874,11 +885,38 @@ def display_users():
         db.session.add(user)
         db.session.commit()
 
-    if g.user.rank == 'DATA':
-        all_users = db.session.query(User.id, User.email, User.rank, User.region, User.office, User.is_allowed, func.min(Note.time).label('first_active'), func.min(Note.time).label('most_recent')).join(Note, User.id==Note.user_id, isouter=True).group_by(User.id, User.email, User.region, User.office).order_by(asc(User.region), asc(User.office)).all()
+    if g.user.rank == 'DATA' or g.user.region == 'HQ':
+        all_users = db.session.query(User.id,
+                                     User.email, 
+                                     User.rank, 
+                                     User.region, 
+                                     User.office, 
+                                     User.is_allowed,
+                                     User.firstname,
+                                     User.lastname, 
+                                     func.min(Note.time).label('first_active'), 
+                                     func.min(Note.time).label('most_recent')
+                                     ).join(Note, User.id==Note.user_id, isouter=True
+                                     ).group_by(User.id, User.email, User.region, User.office
+                                     ).order_by(asc(User.region), asc(User.office)
+                                     ).all()
         locations = Location.query.order_by(Location.locationname.asc()).all()
     elif g.user.rank == 'FD':
-        all_users = User.query.filter(region=g.user.region).join(User.notes).all()
+        all_users = db.session.query(User.id, 
+                                    User.email, 
+                                    User.rank, 
+                                    User.region, 
+                                    User.office, 
+                                    User.is_allowed, 
+                                    User.firstname,
+                                    User.lastname,
+                                    func.min(Note.time).label('first_active'), 
+                                    func.min(Note.time).label('most_recent')
+                                    ).join(Note, User.id==Note.user_id, isouter=True
+                                    ).filter(User.region==g.user.region
+                                    ).group_by(User.id, User.email, User.region, User.office
+                                    ).order_by(asc(User.region), asc(User.office)
+                                    ).all()
         locations = Location.query.filter_by(region=g.user.region).order_by(Location.locationname.asc()).all()
     else:
         return redirect('/consolidated')
@@ -888,6 +926,48 @@ def display_users():
     
     
     return render_template('users.html', all_users=all_users, locations=locations, user=g.user)
+
+@oid.require_login
+@app.route('/users/add_user', methods = ['POST'])
+def add_user():
+    if request.method == 'POST':
+
+        email = request.form.get('email')
+        rank = request.form.get('rank')
+        region = request.form.get('region')
+        office = request.form.get('office')
+        firstname = escape(request.form.get('firstname'))
+        lastname = escape(request.form.get('lastname'))
+
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            #validates email address (alert needed)
+            return redirect('/users')
+        
+        if g.user.rank == "DATA":
+            is_allowed = True
+        else:
+            is_allowed = False
+        
+        if g.user.rank != 'DATA' and rank in ['FD', 'DATA']:
+            #possibly just have it default to FO if this is the case?
+            return redirect('/users')
+
+        print(email)
+        print(rank)
+        print(region)
+        print(office)
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(email=email, rank=rank, region=region, office=office, is_allowed=is_allowed, firstname=firstname, lastname=lastname)
+            db.session.add(user)
+            db.session.commit()
+        else:
+            #if email already in users
+            return redirect('/users')
+
+
+    return redirect('/users')
 
 
 @app.errorhandler(404)

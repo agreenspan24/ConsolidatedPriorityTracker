@@ -180,9 +180,16 @@ class User(db.Model):
     color = db.Column('color', db.String(6))
     notes = db.relationship(Note)
 
-    def __init__(self, email, openid):
+    def __init__(self, email, openid=None, rank='N/A', region='N/A', office='N/A', is_allowed=False, firstname=None, lastname=None):
         self.email = email
         self.openid = openid
+        self.rank = rank
+        self.region = region
+        self.office = office
+        self.is_allowed = is_allowed
+        self.firstname = firstname
+        self.lastname = lastname
+        
 
     def serialize(self):
         return {
