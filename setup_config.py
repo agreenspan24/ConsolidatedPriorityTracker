@@ -120,7 +120,7 @@ LEFT JOIN confirm_attempt_totals cat
 	ON l.locationname = cat.locationname
 LEFT JOIN canvass_totals ct
 	ON l.locationname = ct.locationname
-WHERE region LIKE 'R%
+WHERE region LIKE 'R%'
 ), region_totals AS (SELECT region, region || ' Total' office
 , SUM(canvass_total_scheduled)::bigint canvass_total_scheduled
 , SUM(canvass_same_day_confirmed)::bigint canvass_same_day_confirmed
@@ -150,7 +150,7 @@ WHERE region LIKE 'R%
 , SUM(shifts_unpitched)::bigint shifts_unpitched
 , AVG(shifts_unpitched_perc) shifts_unpitched_perc
 , SUM(extra_shifts_sched)::bigint extra_shifts_sched
-, AVG(extra_shifts_sched_avg)::bigint extra_shifts_sched_avg
+, AVG(extra_shifts_sched_avg) extra_shifts_sched_avg
 , SUM(canvassers_all_day)::bigint canvassers_all_day
 , SUM(actual_all_day)::bigint actual_all_day
 , SUM(goal_all_day)::bigint goal_all_day
@@ -194,7 +194,7 @@ GROUP BY region
 , SUM(shifts_unpitched)::bigint shifts_unpitched
 , AVG(shifts_unpitched_perc) shifts_unpitched_perc
 , SUM(extra_shifts_sched)::bigint extra_shifts_sched
-, AVG(extra_shifts_sched_avg)::bigint extra_shifts_sched_avg
+, AVG(extra_shifts_sched_avg) extra_shifts_sched_avg
 , SUM(canvassers_all_day)::bigint canvassers_all_day
 , SUM(actual_all_day)::bigint actual_all_day
 , SUM(goal_all_day)::bigint goal_all_day
