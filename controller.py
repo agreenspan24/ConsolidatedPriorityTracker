@@ -88,8 +88,7 @@ def login_auth():
 @app.route('/', methods=['GET'])    
 def index():
 
-    if g.user.rank in ['Intern', 'DFO', 'FO']:
-        if g.user.office and g.user.office != 'N/A':
+    if g.user.rank in ['Intern', 'DFO', 'FO'] and g.user.office and g.user.office != 'N/A':
             return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
     
     if g.user.region and g.user.rank == 'FD':
@@ -855,35 +854,47 @@ def loader_io():
 @app.route('/users', methods=['POST', 'GET'])
 def display_users():
     if request.method == "POST":
-        if g.user.rank == 'DATA':
-            rank = escape(request.form.get('rank'))
-            region = request.form.get('region')
-            allowed = request.form.get('allowed')
-            
-        
-        id = request.form.get('id')
-        office = request.form.get('office')
 
-        office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
-        if office:
-            office = office.locationname
+        id = request.form.get('id')
 
         if id.isdigit():
             user = User.query.get(id)
         else:
             return Response('Invalid User Id', 400)
         
-        allowed = True if allowed == 'on' else False
-        
-        if rank in ranks and user.rank != rank:
-            user.rank = rank
-        if region in regions and user.region != region:
-            user.region = region
-        if user.office != office:
-            user.office = office
-        if user.is_allowed != allowed:
-            user.is_allowed = allowed
+        if g.user.rank == 'DATA':
+            rank = escape(request.form.get('rank'))
+            
+            if rank in ranks and user.rank != rank:
+                user.rank = rank
+            
+            region = request.form.get('region')
+            
+            if region in regions and user.region != region:
+                user.region = region
+            
+            allowed = request.form.get('allowed')
+            
+            allowed = True if allowed == 'on' else False
+            
+            if user.is_allowed != allowed:
+                user.is_allowed = allowed
+            
+        office = request.form.get('office')
 
+        if g.user.rank=='DATA':
+            office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
+        elif g.user.rank=='FD':
+            office = Location.query.filter(Location.locationname.like(office[0:3] + '%'), Location.region==g.user.region).first()
+        else:
+            return redirect('/users')
+        
+        if office:
+            office = office.locationname
+
+            if user.office != office:
+                user.office = office
+        
         db.session.add(user)
         db.session.commit()
 
@@ -920,6 +931,7 @@ def display_users():
                                     ).order_by(asc(User.region), asc(User.office)
                                     ).all()
         locations = Location.query.filter_by(region=g.user.region).order_by(Location.locationname.asc()).all()
+
     else:
         return redirect('/consolidated')
         
@@ -937,13 +949,13 @@ def add_user():
         firstname = escape(request.form.get('firstname'))
         lastname = escape(request.form.get('lastname'))
 
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            return Response('Invalid Email', 400)
+
         user = User.query.filter_by(email=email).first()
         if not user:
-            
-            if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-                return Response('Invalid Email', 400)
 
-            elif rank not in ranks:
+            if rank not in ranks:
                 return Response('Invalid Rank', 400)
 
             if region not in regions:
