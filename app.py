@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 try:
     schema = os.environ['schema']
 except:
-    schema = 'consolidated'
+    schema = 'test'
 
 app = Flask(__name__)
 app.config['DEBUG'] = False
@@ -22,6 +22,9 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1800
 db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = os.environ['secret_key']
+
+if schema == 'test':
+    app.config['SQLALCHEMY_ECHO'] = True
 
 engine = create_engine(os.environ['HEROKU_POSTGRESQL_AMBER_URL'])
 '''engine = engine.execution_options(
