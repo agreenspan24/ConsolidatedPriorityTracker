@@ -345,8 +345,10 @@ function set_future_shifts_for_vol(vol, shifts) {
 
     if (vol.has_pitched_today) {
         $('#has_pitched_today').attr('checked', 'checked');
+        $('#has_pitched_today').prop('checked', 'checked');
     } else {
         $('#has_pitched_today').removeAttr('checked');
+        $('#has_pitched_today').prop('checked', false);
     }
     $("#extra_shifts_sched").val(vol.extra_shifts_sched);
     $('#future_shifts_history_link').attr('href', '/consolidated/volunteer_history/' + vol.id);
