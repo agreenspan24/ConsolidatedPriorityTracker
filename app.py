@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 try:
     schema = os.environ['schema']
 except:
-    schema = 'consolidated'
+    schema = 'test'
 
 app = Flask(__name__)
 app.config['DEBUG'] = False

@@ -70,15 +70,17 @@
                     <td>
                         <input id='note-{{shift.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter to Save">
                     </td>
-                    {% if shift.notes != 0 %}
-                        {% for note in shift.notes|sort(attribute='time', reverse=True) %}
-                            {% if note.type in ["flake", "sdc"] %}
-                                <td>
-                                    {{note.time.strftime('%I:%M %p')}}: {{note.text}}
-                                    <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
-                                </td>
-                            {% endif %}
-                        {% endfor %}
+                    {% if shift.notes %}
+                        <td>
+                            {% for note in shift.notes|sort(attribute='time', reverse=True) if note.type in ["sdc", "flake"] %}
+                                {% if loop.index != 1 %}
+                                    &nbsp; | &nbsp;&nbsp;
+                                {% endif %}
+                                <i class="user-icon" title="Created by User {{note.user_id}}" style="background-color:#{{note.user_color if note.user_color else '000000'}}">{{note.user_name}}</i>
+                                {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                                <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                            {% endfor %}
+                        </td>  
                     {% endif %}
                 </tr>
             {% endfor%}
