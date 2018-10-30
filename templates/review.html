@@ -105,6 +105,7 @@
             <th>Name</th>
             <th>Event</th>
             <th>Time</th>
+            <th>Has Been Pitched Today</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -124,6 +125,7 @@
             </td>
             <td>{{shift.eventtype}}</td>
             <td>{{shift.time.strftime('%I:%M %p')}}</td>
+            <td>{{'' if shift.status != 'Completed' else ('Yes' if shift.volunteer.has_pitched_today else 'No')}}</td>
             <td>
               {{shift.status}}
             </td>
