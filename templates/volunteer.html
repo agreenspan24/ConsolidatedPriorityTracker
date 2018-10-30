@@ -99,20 +99,20 @@
     }
 </script>
 <div class="grid-full" id="pitched_rows">
-    <div class="col-3">
+    <div class="col-4">
         <label for="has_pitched_today">Has Been Pitched Today</label>
         <div class="input-control center padding-top-sm">
             <input id="has_pitched_today" class="switch minimal" type="checkbox" {{"checked" if volunteer.has_pitched_today else "" }}/>
             <label for="has_pitched_today" class="switch-label">Has Been Pitched Today</label>
         </div>
     </div>
-    <div class="col-4">
+    <div class="col-6">
         <label for="extra_shifts_sched">Extra Shifts Scheduled Today</label>
         <div class="input-control">
             <input id="extra_shifts_sched" class="input-element" type="number" min="0" value="{{volunteer.extra_shifts_sched}}" />
         </div>
     </div>
-    <div class="col-3">
+    <div class="col-4">
         <label>&nbsp;</label>
         <div class="input-control">
             <a id="update_vol_pitch" onclick="update_vol_pitch(event)" vol_id="{{volunteer.id}}" class="btn btn-blue btn-full">Update</a>

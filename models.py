@@ -484,9 +484,8 @@ class ShiftStats:
             if s.status == 'In' and s.role == 'Canvassing':
                 self.canvassers_out += 1
 
-            if s.status == 'Completed' and s.canvass_group != None:
-                if s.volunteer.has_pitched_today == False:
-                    self.shifts_not_pitched += 1
+            if s.status == 'Completed' and s.canvass_group != None and s.volunteer.has_pitched_today in [None, False]:
+                self.shifts_not_pitched += 1
 
 
         knocks = 0

@@ -30,7 +30,7 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN s.flake AND NOT s.status = 'No Show' THEN 1 ELSE 0 END) flake_attempts
 	, SUM(CASE WHEN s.flake AND s.status = 'Rescheduled' THEN 1 ELSE 0 END) flake_rescheduled
 	, SUM(CASE WHEN s.status = 'Completed' AND s.canvass_group IS NOT NULL THEN 1 ELSE 0 END) total_shifts_finished
-	, SUM(CASE WHEN s.status = 'Completed' AND s.canvass_group IS NOT NULL AND NOT v.has_pitched_today THEN 1 ELSE 0 END) shifts_unpitched
+	, SUM(CASE WHEN s.status = 'Completed' AND s.canvass_group IS NOT NULL AND (v.has_pitched_today IS NULL OR NOT v.has_pitched_today) THEN 1 ELSE 0 END) shifts_unpitched
 	FROM {0}.shift s
 	JOIN {0}.location l
 		ON l.locationid = s.shift_location
