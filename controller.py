@@ -10,6 +10,7 @@ import re
 import urllib
 
 from app import app, oid, schema
+from setup_config import ranks, regions
 
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
@@ -87,13 +88,16 @@ def login_auth():
 @app.route('/', methods=['GET'])    
 def index():
 
-    if g.user.rank == 'Intern' or g.user.rank == 'DFO' or g.user.rank == 'FO':
+    if g.user.rank in ['Intern', 'DFO', 'FO']:
         if g.user.office and g.user.office not in ["None", "N/A"]:
             return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
     
-    if g.user.rank == 'FD' and g.user.region != 'HQ':
-        if g.user.region:
-            return redirect('/consolidated/' + g.user.region + '/sdc')
+    if g.user.region and g.user.rank == 'FD':
+        if g.user.region == 'HQ':
+            return redirect('/dashboard/top')
+
+        return redirect('/consolidated/' + g.user.region + '/sdc')
+
 
     return redirect('/consolidated')    
 
@@ -853,31 +857,28 @@ def display_users():
     if request.method == "POST":
         if g.user.rank == 'DATA':
             rank = escape(request.form.get('rank'))
-            region = escape(request.form.get('region'))
+            region = request.form.get('region')
             allowed = request.form.get('allowed')
             
         
         id = request.form.get('id')
-        office = escape(request.form.get('office'))
+        office = request.form.get('office')
 
-        
+        office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
 
         if id.isdigit():
             user = User.query.get(id)
         else:
             return Response('Invalid User Id', 400)
         
-        if allowed == 'on':
-            allowed = True
-        else:
-            allowed = False
+        allowed = True if allowed == 'on' else False
         
         if user.rank != rank:
             user.rank = rank
         if user.region != region:
             user.region = region
-        if user.office != office:
-            user.office = office
+        if office and user.office != office.locationname:
+            user.office = office.locationname
         if user.is_allowed != allowed:
             user.is_allowed = allowed
 
@@ -919,12 +920,8 @@ def display_users():
         locations = Location.query.filter_by(region=g.user.region).order_by(Location.locationname.asc()).all()
     else:
         return redirect('/consolidated')
-
-    
-
-    
-    
-    return render_template('users.html', all_users=all_users, locations=locations, user=g.user)
+        
+    return render_template('users.html', all_users=all_users, locations=locations, user=g.user, ranks=ranks, regions=regions)
 
 @oid.require_login
 @app.route('/users/add_user', methods = ['POST'])
@@ -938,28 +935,38 @@ def add_user():
         firstname = escape(request.form.get('firstname'))
         lastname = escape(request.form.get('lastname'))
 
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            return Response('Invalid Email', 400)
-        
-        if g.user.rank == "DATA":
-            is_allowed = True
-        else:
-            is_allowed = False
-        
-        if g.user.rank != 'DATA' and rank not in ['Intern','DFO','FO']:
-            rank = 'FO'
-
         user = User.query.filter_by(email=email).first()
         if not user:
+            
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                return Response('Invalid Email', 400)
+
+            elif rank not in ranks:
+                return Response('Invalid Rank', 400)
+
+            if region not in regions:
+                return Response('Invalid Region', 400)
+
+            office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
+            if office is None:
+                return Response('Invalid Office', 400)
+            
+            if g.user.rank == "DATA":
+                is_allowed = True
+            else:
+                is_allowed = False
+
+            if g.user.rank != 'DATA' and rank not in ['Intern','DFO','FO']:
+                rank = 'FO'
+
             user = User(email=email, rank=rank, region=region, office=office, is_allowed=is_allowed, firstname=firstname, lastname=lastname)
             db.session.add(user)
             db.session.commit()
+
         else:
             return Response('User already exists', 400)
 
-
     return redirect('/users')
-
 
 @app.errorhandler(404)
 def page_not_found(e):

@@ -44,15 +44,9 @@
                         {% if user.rank == 'DATA' or user.region == 'HQ' %}
                         <select class="input-element input-element-base select" name="region" >   
                             <optgroup label='--Region--'>
-                                <option value='R1'>R1</option>
-                                <option value='R2'>R2</option>
-                                <option value='R3'>R3</option>
-                                <option value='R4'>R4</option>
-                                <option value='R5'>R5</option>
-                                <option value='R6'>R6</option>
-                                <option value='R7'>R7</option>
-                                <option value='R8'>R8</option>
-                                <option value='HQ'>HQ</option>
+                                    {% for region in regions%}
+                                    <option value='{{region}}'>{{region}}</option>
+                                    {% endfor %}
                             </optgroup>
                         </select>
                         {% else %}
@@ -116,11 +110,9 @@
                     {% if u.rank == None %}
                     <option value=None {{"selected" if u.rank == None}}>None</option>
                     {% endif %}
-                    <option value='Intern' {{"selected" if u.rank == 'Intern'}}>Intern</option>
-                    <option value='DFO' {{"selected" if u.rank == 'DFO'}}>DFO</option>
-                    <option value='FO' {{"selected" if u.rank == 'FO'}}>FO</option>
-                    <option value='FD' {{"selected" if u.rank == 'FD'}}>FD</option>
-                    <option value='DATA' {{"selected" if u.rank == 'DATA'}}>DATA</option>
+                    {% for rank in ranks %}
+                    <option value='{{rank}}' {{"selected" if u.rank == rank }}>{{rank}}</option>
+                    {% endfor %}
                     
                 </select>
                 {% else %}
@@ -134,15 +126,9 @@
                     {% if u.region == None %}
                     <option value=None {{"selected" if u.region == None}}>None</option>
                     {% endif %}
-                    <option value='R1' {{"selected" if u.region == 'R1'}}>R1</option>
-                    <option value='R2' {{"selected" if u.region == 'R2'}}>R2</option>
-                    <option value='R3' {{"selected" if u.region == 'R3'}}>R3</option>
-                    <option value='R4' {{"selected" if u.region == 'R4'}}>R4</option>
-                    <option value='R5' {{"selected" if u.region == 'R5'}}>R5</option>
-                    <option value='R6' {{"selected" if u.region == 'R6'}}>R6</option>
-                    <option value='R7' {{"selected" if u.region == 'R7'}}>R7</option>
-                    <option value='R8' {{"selected" if u.region == 'R8'}}>R8</option>
-                    <option value='HQ' {{"selected" if u.region == 'HQ'}}>HQ</option>
+                    {% for region in regions%}
+                    <option value='{{region}}' {{"selected" if u.rank == region }}>{{region}}</option>
+                    {% endfor %}
                 </select>
                 {% else %}
                 <input name='region' value='{{u.region}}' type='hidden'>
