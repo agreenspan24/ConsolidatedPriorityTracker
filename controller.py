@@ -89,7 +89,7 @@ def login_auth():
 def index():
 
     if g.user.rank in ['Intern', 'DFO', 'FO']:
-        if g.user.office and g.user.office not in ["None", "N/A"]:
+        if g.user.office and g.user.office != 'N/A':
             return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
     
     if g.user.region and g.user.rank == 'FD':
@@ -865,6 +865,8 @@ def display_users():
         office = request.form.get('office')
 
         office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
+        if office:
+            office = office.locationname
 
         if id.isdigit():
             user = User.query.get(id)
@@ -873,12 +875,12 @@ def display_users():
         
         allowed = True if allowed == 'on' else False
         
-        if user.rank != rank:
+        if rank in ranks and user.rank != rank:
             user.rank = rank
-        if user.region != region:
+        if region in regions and user.region != region:
             user.region = region
-        if office and user.office != office.locationname:
-            user.office = office.locationname
+        if user.office != office:
+            user.office = office
         if user.is_allowed != allowed:
             user.is_allowed = allowed
 
@@ -947,10 +949,16 @@ def add_user():
             if region not in regions:
                 return Response('Invalid Region', 400)
 
-            office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
-            if office is None:
-                return Response('Invalid Office', 400)
+            if firstname == '':
+                firstname = None
             
+            if lastname == '':
+                lastname = None
+            
+            office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
+            if office:
+                office = office.locationname
+
             if g.user.rank == "DATA":
                 is_allowed = True
             else:

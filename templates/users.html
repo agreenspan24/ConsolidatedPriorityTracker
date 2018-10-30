@@ -60,9 +60,11 @@
                     <div class="input-control">
                         <select class="input-element input-element-base select" name="office">   
                             <optgroup label='--Office--'>
+                                <option value=None>N/A</option>
                                 {% for location in locations %}
                                 <option value='{{location.locationname}}'>{{location.locationname}}</option>
                                 {% endfor %}
+                                
                             </optgroup>
                         </select>
                     </div>
@@ -127,7 +129,7 @@
                     <option value=None {{"selected" if u.region == None}}>None</option>
                     {% endif %}
                     {% for region in regions%}
-                    <option value='{{region}}' {{"selected" if u.rank == region }}>{{region}}</option>
+                    <option value='{{region}}' {{"selected" if u.region == region }}>{{region}}</option>
                     {% endfor %}
                 </select>
                 {% else %}
@@ -137,11 +139,10 @@
             </td>
             <td>
                 <select class="input-element input-element-base select" name='office'>
-                    <option value='{{u.office}}' {{"selected" if u.office == '{{location.locationname}}'}}>{{u.office}}</option>
                     {% for location in locations %}
-                    <option value='{{location.locationname}}'>{{location.locationname}}</option>
+                    <option value='{{location.locationname}}' {{"selected" if u.office == location.locationname }}>{{location.locationname}}</option>
                     {% endfor %}
-                    <option value='N/A' {{"selected" if u.office == None}}>N/A</option>
+                    <option value='None' {{"selected" if u.office == None}}>N/A</option>
                 </select>
             </td>
             <td><input type='checkbox' name='allowed' {{"checked" if u.is_allowed == True}} {{"disabled" if user.rank != 'DATA'}}></td>
