@@ -28,6 +28,9 @@ def update_shifts():
         volunteer.next_shift = None
         volunteer.next_shift_time = None
         volunteer.next_shift_confirmed = False
+
+        volunteer.extra_shifts_sched = None
+        volunteer.has_pitched_today = False
         
         next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, today < SyncShift.startdate).order_by(SyncShift.startdate).first()
         if next_shift:
