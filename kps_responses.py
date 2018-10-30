@@ -34,7 +34,7 @@ def add_kps_responses():
 
     for gr in groups:
         for shift in gr.canvass_shifts:
-            if shift.volunteer.van_id != None and shift.eventtype != 'Out of State':
+            if shift.volunteer and shift.volunteer.van_id != None and shift.eventtype != 'Out of State':
                 if shift.volunteer.van_id in vol_dict.keys():
                     vol_dict[shift.volunteer.van_id] += gr.actual
                 else:
