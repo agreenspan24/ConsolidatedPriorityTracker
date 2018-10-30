@@ -921,7 +921,6 @@ def see_volunteer_history(vol_id):
         # VanID
         van_id = request.form.get('vanid')
 
-        print(van_id)
         if van_id and not van_id.isdigit():
             return Response('Invalid VanID', 400)
 

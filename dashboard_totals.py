@@ -33,6 +33,7 @@ class DashboardTotal(db.Model):
         Column('flake_chase_remaining_perc', db.Numeric),
         Column('shifts_unpitched', db.BigInteger),
         Column('shifts_unpitched_perc', db.Numeric),
+        Column('extra_shifts_sched', db.BigInteger),
         Column('canvassers_all_day', db.Numeric),
         Column('actual_all_day', db.BigInteger),
         Column('goal_all_day', db.BigInteger),

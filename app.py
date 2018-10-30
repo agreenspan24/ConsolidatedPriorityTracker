@@ -22,7 +22,9 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1800
 db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = os.environ['secret_key']
-#app.config['SQLALCHEMY_ECHO'] = True
+
+if schema == 'test':
+    app.config['SQLALCHEMY_ECHO'] = True
 
 engine = create_engine(os.environ['HEROKU_POSTGRESQL_AMBER_URL'])
 '''engine = engine.execution_options(
