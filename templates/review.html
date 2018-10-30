@@ -132,7 +132,7 @@
             </td>
             <td>{{shift.eventtype}}</td>
             <td>{{shift.time.strftime('%I:%M %p')}}</td>
-            <td>{{'' if shift.status != 'Completed' else ('Yes' if shift.volunteer.has_pitched_today else 'No')}}</td>
+            <td>{{'' if shift.status != 'Completed' and shift.canvass_group else ('Yes' if shift.volunteer.has_pitched_today else 'No')}}</td>
             <td>{{shift.volunteer.extra_shifts_sched if shift.status == 'Completed' and shift.canvass_group != None else ''}}</td>
             <td>
               {{shift.status}}
