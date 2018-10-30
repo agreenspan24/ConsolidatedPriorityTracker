@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import flash, g, redirect, render_template, request, session, abort, jsonify, escape, json, Response, send_from_directory
+from flask import flash, g, redirect, render_template, request, session, jsonify, escape, json, Response, send_from_directory
 
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import contains_eager, joinedload
@@ -18,7 +18,10 @@ from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
 
-vanservice = VanService()
+try:
+    vanservice = VanService()
+except:
+    print('Vanservice does not have environment variables')
 
 oid.init_app(app)
 
@@ -223,7 +226,7 @@ def add_pass(office, page):
     page_load_time = datetime.strptime(urllib.parse.unquote(request.form.get('page_load_time')), '%I:%M %p').time()
 
     if not parent_id or not parent_id.isdigit():
-        return abort(400)
+        return Response('Invalid ID', 400)
 
     return_var = None
 
@@ -265,6 +268,10 @@ def add_pass(office, page):
                         return Response('Invalid shift id', status=400)
 
                 shifts = group.update_shifts(shift_ids, g.user)
+
+                if isinstance(shifts, str):
+                    return Response(shifts, 400)
+
                 for shift in shifts:
                     if return_var == None:
                         return_var = []
@@ -329,6 +336,17 @@ def add_pass(office, page):
                     'note': note
                 })
 
+            elif 'check_in_time' in keys:
+                check_in_time = request.form.get('check_in_time')
+
+                try:
+                    group.check_in_time = parse(check_in_time) if not check_in_time in [None, ''] else None
+                except:
+                    return Response('Invalid Time', 400)
+
+                note = group.add_note('kph', 'Next Check In changed to ' + (group.check_in_time.strftime('%I:%M %p') if group.check_in_time else 'None'), g.user)
+                
+                return_var = note
 
             elif 'note' in keys:
                 note_text = request.form.get('note')
@@ -527,19 +545,22 @@ def add_group(office, page):
 
     for id in shift_ids:
         if not id.isdigit():
-            return abort(400, 'Invalid shift id')
+            return Response('Invalid shift id', 400)
 
-    group.update_shifts(shift_ids, g.user)
+    res = group.update_shifts(shift_ids, g.user)
+
+    if isinstance(res, str):
+        return Response(res, 400)
 
     if goal:
         if not goal.isdigit():
-            return abort(400, 'Goal must be a number')
+            return Response('Goal must be a number', 400)
         
         group.goal = int(goal)
     
     if packets_given:
         if not packets_given.isdigit():
-            return abort(400, '# of Packets must be a number')
+            return Response('# of Packets must be a number', 400)
 
         group.packets_given = int(packets_given)
 
@@ -573,13 +594,13 @@ def add_walk_in(office, page):
         phone_sanitized = re.sub('[- ().+]', '', phone)
 
         if not phone_sanitized.isdigit():
-            return abort(400, 'Invalid Phone')
+            return Response('Invalid Phone', 400)
         
     if time and not time in ['10:00 AM', '1:00 PM', '4:00 PM', '6:00 PM']:
-        return abort(400, 'Invalid time')
+        return Response('Invalid time', 400)
 
     if role and not role in ['Canvassing', 'Phonebanking', 'Comfort Vol', 'Intern Onboarding', 'Intern Interview']:
-        return abort(400, 'Invalid activity')
+        return Response('Invalid activity', 400)
 
     eventtype = "Volunteer DVC" if role in ['Canvassing', 'Phonebanking'] else role
 
@@ -823,26 +844,124 @@ def confirm_shift(office, page):
 
 
 @oid.require_login
-@app.route('/consolidated/<office>/<page>/future_shifts', methods=['GET'])
+@app.route('/consolidated/<office>/<page>/future_shifts', methods=['POST'])
 def get_future_shifts(office, page):
-    vanid = request.args.get('vanid')
+    vanids = request.form.getlist('vanids[]')
 
-    if not vanid:
+    if not vanids:
         return Response('No vanid found', 400)
 
-    if not vanid.isdigit():
+    if any(not x.isdigit() for x in vanids):
         return Response('Invalid vanid', 400)
 
+    volunteers = Volunteer.query.filter(Volunteer.van_id.in_(vanids)).all()
+
     try: 
-        future_shifts = SyncShift.query.filter(SyncShift.vanid == vanid, SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
+        future_shifts = SyncShift.query.filter(SyncShift.vanid.in_(vanids), SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
     except:
         return Response('Could not get future shifts at this time, please check back in a few minutes', 400)
 
-    return jsonify(list(map(lambda x: x.serialize(), future_shifts)))
+    return jsonify({
+        'vols': list(map(lambda x: x.serialize(), volunteers)),
+        'shifts': list(map(lambda x: x.serialize(), future_shifts))
+    })
+
+@oid.require_login
+@app.route('/consolidated/<office>/<page>/vol_pitch', methods=['POST'])
+def update_vol_pitch(office, page):
+    vol_id = request.form.get('vol_id')
+
+    if not vol_id or not vol_id.isdigit():
+        return Response('Invalid vol id', 400)
+
+    vol = Volunteer.query.get(vol_id)
+
+    if not vol:
+        return Response('Volunteer could not be found.', 400)
+
+    has_pitched_today = request.form.get('has_pitched_today')
+    
+    vol.has_pitched_today = True if has_pitched_today == 'True' else False
+
+    extra_shifts_sched = request.form.get('extra_shifts_sched')
+
+    if extra_shifts_sched and not extra_shifts_sched.isdigit():
+        return Response('Extra shifts must be a number', 400)
+
+    vol.extra_shifts_sched = extra_shifts_sched if extra_shifts_sched else None
+
+    db.session.commit()
+
+    return Response('success', 200)
+
 
 @app.route('/loaderio-cb6afdec0447c3b6ec9bce41757c581c/')
 def loader_io():
     return app.send_static_file('loaderio-cb6afdec0447c3b6ec9bce41757c581c.txt')
+
+@oid.require_login
+@app.route('/consolidated/volunteer_history/<vol_id>', methods=['GET', 'POST'])
+def see_volunteer_history(vol_id):
+    if not vol_id:
+        return Response('No volunteer id', 500)
+    
+    if not vol_id.isdigit():
+        return Response('Invalid volunteer id', 500)
+
+    volunteer = Volunteer.query.get(vol_id)
+
+    if not volunteer:
+        return Response('Volunteer not found', 404)
+
+    if request.method == 'POST':
+
+        # VanID
+        van_id = request.form.get('vanid')
+
+        print(van_id)
+        if van_id and not van_id.isdigit():
+            return Response('Invalid VanID', 400)
+
+        volunteer.van_id = van_id
+
+        # first name
+        first_name = request.form.get('firstname')
+        volunteer.first_name = escape(first_name)
+
+        # last name
+        last_name = request.form.get('lastname')
+        volunteer.last_name = escape(last_name)
+
+        # phone
+        phone_number = request.form.get('phone')
+        phone_sanitized = re.sub('[- ().+]', '', phone_number)
+
+        if phone_sanitized and not phone_sanitized.isdigit():
+            return Response('Invalid Phone', status=400)
+
+        volunteer.phone_number = phone_sanitized
+
+        # cellphone
+        cellphone = request.form.get('cellphone')
+        cellphone_sanitized = re.sub('[- ().+]', '', cellphone)
+
+        if cellphone_sanitized and not cellphone_sanitized.isdigit():
+            return Response('Invalid Cell Phone', status=400)
+
+        volunteer.cellphone = cellphone_sanitized
+
+        db.session.commit()
+
+    past_shifts = BackupShift.query.join(BackupShift.volunteer).filter(Volunteer.id == vol_id).all()
+
+    future_shifts = None
+    if volunteer.van_id:
+        future_shifts = SyncShift.query.filter(SyncShift.vanid == volunteer.van_id, SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
+
+    past_groups = BackupGroup.query.join(BackupGroup.canvass_shifts).join(BackupShift.volunteer).options(contains_eager(BackupGroup.canvass_shifts)).filter(Volunteer.id == vol_id).all()
+    
+    return render_template('volunteer.html', volunteer=volunteer, past_shifts=past_shifts, future_shifts=future_shifts, past_groups=past_groups)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -851,7 +970,7 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_service_error(e):
     if request.endpoint == 'pass':
-        return abort(500)
+        return Response('Internal Service Error', 500)
 
     return redirect('/consolidated')
 

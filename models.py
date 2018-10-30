@@ -5,8 +5,6 @@ from sqlalchemy.sql import text
 from datetime import datetime, time, timedelta
 from sqlalchemy.inspection import inspect
 from sqlalchemy_views import CreateView, DropView
-from flask import abort
-import os
 
 class SyncShift(db.Model):
     __table_args__ = {'schema':'sync'}
@@ -97,6 +95,8 @@ class Volunteer(db.Model):
     next_shift = db.Column(db.Date)
     next_shift_time = db.Column(db.Time)
     next_shift_confirmed = db.Column(db.Boolean)
+    has_pitched_today = db.Column(db.Boolean)
+    extra_shifts_sched = db.Column(db.Integer)
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -112,18 +112,19 @@ class Volunteer(db.Model):
         self.next_shift = None
         self.next_shift_time = None
         self.next_shift_confirmed = False
+        self.has_pitched_today = False
+        self.extra_shifts_sched = None
 
     def serialize(self):
         return {
             'id': self.id,
             'van_id': self.van_id,
-            'knocks': self.knocks,
             'first_name': self.first_name,
             'last_name': self.last_name,
             'phone_number': self.phone_number,
             'cellphone': self.cellphone,
-            'last_user': self.last_user,
-            'last_update': self.last_update
+            'has_pitched_today': self.has_pitched_today,
+            'extra_shifts_sched': self.extra_shifts_sched
         }
 
     def updated_by_other(self, page_load_time, user):
@@ -241,22 +242,22 @@ class CanvassGroup(db.Model):
 
         if len(shift_ids) < 1:
             self.canvass_shifts = old_shifts
-            return abort(400, 'Group must have at least one canvasser')
+            return 'Group must have at least one canvasser'
 
         for id in shift_ids:
             shift = Shift.query.get(id)
 
             if not shift or shift.is_active == False:
                 self.canvass_shifts = old_shifts
-                return abort(400, 'Shift not found')
+                return 'Shift not found'
 
             if shift.canvass_group != None and shift.group.is_active:
                 self.canvass_shifts = old_shifts
-                return abort(400, 'Canvasser can only be in one group')
+                return 'Canvasser can only be in one group'
 
             if not shift.status in ['In', 'Same Day Confirmed']:
                 self.canvass_shifts = old_shifts
-                return abort(400, 'Canvassers must have status "In" or "Same Day Confirmed"')
+                return 'Canvassers must have status "In" or "Same Day Confirmed"'
 
             if shift.status == 'Same Day Confirmed':
                 shift.flip('kph', 'In', user)
@@ -461,6 +462,7 @@ class ShiftStats:
         self.percent_to_goal = 0.00
         self.packets_out = 0
         self.canvassers_out = 0
+        self.shifts_not_pitched = 0
 
         for s in shifts:
             if s.eventtype == "Intern DVC":
@@ -481,6 +483,10 @@ class ShiftStats:
                     self.vol_flaked += 1
             if s.status == 'In' and s.role == 'Canvassing':
                 self.canvassers_out += 1
+
+            if s.status == 'Completed' and s.canvass_group != None:
+                if s.volunteer.has_pitched_today == False:
+                    self.shifts_not_pitched += 1
 
 
         knocks = 0
@@ -518,7 +524,7 @@ class BackupGroup(db.Model):
     goal = db.Column('goal', db.Integer)
     packet_names = db.Column('packet_names', db.String(255))
     is_returned = db.Column('is_returned', db.Boolean)
-    canvass_shifts = db.relationship('BackupShift', lazy='joined')
+    canvass_shifts = db.relationship('BackupShift')
 
     def __init__(self, group):
         self.actual = group.actual
@@ -543,7 +549,7 @@ class BackupShift(db.Model):
     person = db.Column(db.Integer, db.ForeignKey(schema + '.volunteer.id'))
     volunteer = db.relationship(Volunteer, lazy='joined')
     canvass_group = db.Column(db.Integer, db.ForeignKey('backup.backup_group.id'))
-    group = db.relationship(BackupGroup, lazy='joined')
+    group = db.relationship(BackupGroup)
 
     def __init__(self, shift):
         self.eventtype = shift.eventtype
