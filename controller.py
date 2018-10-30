@@ -820,6 +820,9 @@ def backup(office, page):
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/confirm_shift', methods=['POST'])
 def confirm_shift(office, page):
+    if not g.user.rank in ['DATA', 'FD', 'FO', 'DFO']:
+        return Response('You do not have access to confirm future shifts. Please ask paid staffer to do this.', 400)
+        
     vanid = request.form.get('vanid')
 
     if not vanid:
