@@ -8,7 +8,7 @@ function getRowElem(parent_id, name){
 }
 
 function getName(parent_id) {
-    return getRowElem(parent_id, 'name').html();
+    return getRowElem(parent_id, 'name').text();
 }
 
 function updateElem(elem_id, elem_name, success_callback) {
@@ -23,14 +23,14 @@ function updateElem(elem_id, elem_name, success_callback) {
 
     var data = {
         parent_id: parent_id,
-        page_load_time: $("#page_load_time").html()
+        page_load_time: $("#page_load_time").text()
     };
 
     data[elem_name] = val;
 
     if (elem_name == 'cellphone') {
         shift_id = elem_id.split('-')[1];
-        data['vol_id'] = getRowElem(shift_id, 'vol_id').html();
+        data['vol_id'] = getRowElem(shift_id, 'vol_id').text();
     }
 
     $.ajax({
@@ -58,7 +58,7 @@ function updateElem(elem_id, elem_name, success_callback) {
 // success callbacks
 function addNote(parent_id, res, elem) {
     var child = document.createElement('td');
-    child.innerHTML = res;
+    child.innerText = res;
     getRowElem(parent_id, 'row').append(child);
     
     if (elem.attr('name') == 'note') {
@@ -68,14 +68,14 @@ function addNote(parent_id, res, elem) {
 
 function updateGoalActual(parent_id, res, elem) {
     var perc = getRowElem(parent_id, 'actual').val() / getRowElem(parent_id, 'goal').val();
-    getRowElem(parent_id, 'perc').html(Math.round(perc * 10000) / 100 + '%');
+    getRowElem(parent_id, 'perc').text(Math.round(perc * 10000) / 100 + '%');
 }
 
 function updateCheckIns(parent_id, res, elem) {
     if (!res.is_returned) {
-        getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
-        getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
-        getRowElem(parent_id, 'check_ins').html(res.check_ins);
+        getRowElem(parent_id, 'check_in_time').text(res.check_in_time);
+        getRowElem(parent_id, 'last_check_in').text(res.last_check_in);
+        getRowElem(parent_id, 'check_ins').text(res.check_ins);
     }
     
     updateGoalActual(parent_id, res, elem);
@@ -83,7 +83,7 @@ function updateCheckIns(parent_id, res, elem) {
 }
 
 function updatePasses(parent_id, res, elem) {
-    getRowElem(parent_id, 'passes').html(res);
+    getRowElem(parent_id, 'passes').text(res);
 }
 
 function updateNames(parent_id, res, elem) {
@@ -110,10 +110,10 @@ function updateNames(parent_id, res, elem) {
 }
 
 function setOut(parent_id, res, elem) {
-    getRowElem(parent_id, 'out').html(res.is_returned ? 'Not Final' : 'Final');
-    getRowElem(parent_id, 'check_in_time').html(res.check_in_time);
-    getRowElem(parent_id, 'last_check_in').html(res.last_check_in);
-    getRowElem(parent_id, 'check_ins').html(res.check_ins);
+    getRowElem(parent_id, 'out').text(res.is_returned ? 'Not Final' : 'Final');
+    getRowElem(parent_id, 'check_in_time').text(res.check_in_time);
+    getRowElem(parent_id, 'last_check_in').text(res.last_check_in);
+    getRowElem(parent_id, 'check_ins').text(res.check_ins);
     getRowElem(parent_id, 'departure').val(res.departure);
 
     if (!res.check_in_time) {
@@ -195,7 +195,7 @@ function get_recently_updated() {
         type: 'GET', 
         url: window.location.pathname + '/recently_updated',
         data: {
-            page_load_time: $("#page_load_time").html()
+            page_load_time: $("#page_load_time").text()
         }
     }).done(show_recently_updated)
     .fail(function(res){
@@ -330,22 +330,22 @@ function get_future_shifts(event, is_update, vol_ids) {
                     options += '<option value="' + x.id + '">' + x.first_name + ' ' + x.last_name + '</option>'
                 });
                 
-                $('#vol_options').html(options);
+                $('#vol_options').text(options);
                 $('#group_vol_dropdown').removeClass('hide');
             }
 
             set_future_shifts_for_vol(res.vols[0], res.shifts);
         } else {
-            $('#future_shifts_body').html('<p>Could not find volunteer</p>');
+            showModalAlert('warn', 'Could not find volunteer.');
         }
     }).fail(function() {
-        $('#future_shifts_body').html('<p>There was an error getting shifts</p>');
+        showModalAlert('error', 'There was an error getting shifts.');
     });
 }
 
 function set_future_shifts_for_vol(vol, shifts) {
     var name = vol.first_name + ' ' + vol.last_name;
-    $('#future_shifts_name').html(name);
+    $('#future_shifts_name').text(name);
 
     if (vol.has_pitched_today) {
         $('#has_pitched_today').attr('checked', 'checked');
