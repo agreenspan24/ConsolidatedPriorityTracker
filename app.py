@@ -12,7 +12,7 @@ except:
 
 app = Flask(__name__)
 app.config['DEBUG'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['HEROKU_POSTGRESQL_AMBER_URL'] 
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'] 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['OIDC_CLIENT_SECRETS'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'client_secrets.json')
@@ -26,7 +26,7 @@ app.secret_key = os.environ['secret_key']
 if schema == 'test':
     app.config['SQLALCHEMY_ECHO'] = True
 
-engine = create_engine(os.environ['HEROKU_POSTGRESQL_AMBER_URL'])
+engine = create_engine(os.environ['DATABASE_URL'])
 '''engine = engine.execution_options(
     isolation_level="READ UNCOMMITTED"
 )'''
