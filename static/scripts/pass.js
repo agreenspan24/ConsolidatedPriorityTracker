@@ -128,12 +128,12 @@ function setOut(parent_id, res, elem) {
 
 function updateClaim(parent_id, res, elem) {
     if (res.name !== 'Claim') {
-        html = '<i class="user-icon" style="background-color:#' + (res.color || '000000') + '">' + res.name + '</i>';
+        claim = '<i class="user-icon" style="background-color:#' + (res.color || '000000') + '">' + res.name + '</i>';
     } else {
-        html = res.name;
+        claim = res.name;
     }
 
-    getRowElem(parent_id, 'claim').html(html);
+    getRowElem(parent_id, 'claim').html(claim);
 }
  
 function setUpListener() {
@@ -310,7 +310,7 @@ function get_future_shifts(event, is_update, vol_ids) {
     hideModalAlert();
 
     $('#future_shifts_head').addClass("hide");
-    $('#future_shifts_body').html('');
+    $('#future_shifts_body').text('');
 
     if (!is_update) {
         $('#group_vol_dropdown').addClass('hide');
