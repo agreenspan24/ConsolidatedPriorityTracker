@@ -4,7 +4,8 @@
     {% if shifts|selectattr('flake', 'equalto', True)|list|length > 0 %}
         <thead class="thead">
             <tr>
-                <th></th>
+                <th>&nbsp;</th>
+                <th class="small">Unviewed<br />edits by</th>
                 <th>Claim</th>
                 <th>Name</th>
                 <th>Phone</th>
@@ -21,12 +22,13 @@
         </thead>
         <tbody class="tbody">
             {% for shift in shifts if shift.flake %}
-                <tr id="row-{{shift.id}}" class="{{'bg-green2' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('bg-red2' if shift.status in ['Declined', 'Resched'])}}">
+                <tr id="row-{{shift.id}}" data-item-id="{{shift.id}}" class="{{'bg-green2' if shift.status in ['Same Day Confirmed', 'In', 'Completed'] else ('bg-red2' if shift.status in ['Declined', 'Resched'])}}">
                     <td>
                         {{loop.index}}
                         <span class="glyphicons glyphicons-refresh hide" aria-hidden="true" style="margin:0"></span>
                     </td>
-                    <td>
+                    <td class="editors">&nbsp;</td>
+                    <td class="claims">
                         <a id="claim-{{shift.id}}" name="claim" onclick="updateElem('claim-{{shift.id}}', 'claim', updateClaim)" {{'disabled' if shift.claim != None and shift.claim != g.user.id}}>
                             {% if not shift.claim %}
                                 Claim
@@ -39,8 +41,8 @@
                         <span id="vanid-{{shift.id}}" class="hide">{{shift.volunteer.van_id}}</span>
                         {{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}
                     </td>
-                    <td>{{('({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:])) if shift.volunteer.phone_number }}</td>
-                    <td>
+                    <td class="phone">{{('({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:])) if shift.volunteer.phone_number }}</td>
+                    <td class="cellphone">
                         <input id='phone-{{shift.id}}' name="cellphone" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
                     </td>
                     <td vanid="{{shift.volunteer.van_id if (shift.volunteer.van_id and shift.volunteer.next_shift and not shift.volunteer.next_shift_confirmed)}}" ondblclick="confirm_next_shift(event)" style="cursor:pointer">

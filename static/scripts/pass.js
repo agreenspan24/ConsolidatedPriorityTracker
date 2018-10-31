@@ -122,10 +122,15 @@ function setOut(parent_id, res, elem) {
 }
 
 function updateClaim(parent_id, res, elem) {
+    console.log(res.name);
     if (res.name !== 'Claim') {
-        html = '<i class="user-icon" style="background-color:#' + (res.color || '000000') + '">' + res.name + '</i>';
+        console.log("res.name !== 'Claim'")
+        html = 'Release'
+        // html = '<i class="user-icon" style="background-color:#' + (res.color || '000000') + '">' + res.name + '</i>';
     } else {
-        html = res.name;
+        console.log("res.name === 'Claim'")
+        html = 'Claim'
+        //html = res.name;
     }
 
     getRowElem(parent_id, 'claim').html(html);
@@ -170,7 +175,7 @@ function setUpListener() {
 
 $(document).ready(setUpListener);
 
-function show_recently_updated(elements) {
+/*function show_recently_updated(elements) {
     elements.forEach(function(element) {
         updateClaim(element.id, element);
 
@@ -206,7 +211,7 @@ function get_recently_updated() {
 
 if (!window.location.pathname.endsWith('review')) {
     setInterval(get_recently_updated, 20000);
-}
+}*/
 
 function deleteElement(parent_id) {
     if (confirm('Are you sure you want to delete this row?')) {

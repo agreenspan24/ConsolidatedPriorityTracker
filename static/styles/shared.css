@@ -1,0 +1,11 @@
+#current-viewers {
+    float: right;
+    margin-right: 2em;
+}
+#current-viewers .users {
+    float: right;
+}
+#current-viewers .small {
+    clear: both;
+    color: #ffffff;
+}

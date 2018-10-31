@@ -3,14 +3,22 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_oidc import OpenIDConnect
 import os
+
 from sqlalchemy import create_engine
+from flask_socketio import SocketIO
+from flask_cache_buster import CacheBuster
 
 try:
     schema = os.environ['schema']
 except:
     schema = 'consolidated'
 
+
+
 app = Flask(__name__)
+# For additional debugging, add:
+# logger=True, engineio_logger=True to SocketIO
+socketio = SocketIO(app)
 app.config['DEBUG'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['HEROKU_POSTGRESQL_AMBER_URL'] 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -22,6 +30,14 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1800
 db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = os.environ['secret_key']
+
+
+cache_config = {
+     'extensions': ['.js', '.css'],
+     'hash_size': 10
+}
+cache_buster = CacheBuster(config=cache_config)
+cache_buster.register_cache_buster(app)
 
 engine = create_engine(os.environ['HEROKU_POSTGRESQL_AMBER_URL'])
 '''engine = engine.execution_options(

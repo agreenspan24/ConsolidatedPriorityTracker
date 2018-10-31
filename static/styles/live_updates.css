@@ -1,0 +1,58 @@
+.vertical-text {
+    transform: rotate(-90deg);
+    transform-origin: left top 0;
+    float: left;
+}
+.user-icon {
+    margin: 0 2px;
+}
+.user-icon.fade-in {
+    opacity: 1;
+    animation-name: fadeInOpacity;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-in;
+    animation-duration: 1s;
+}
+
+@keyframes fadeInOpacity {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+.phone.claimed {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+tr.edited, .key .edited {
+    background: repeating-linear-gradient(
+      -45deg,
+      #f7f0e6,
+      #f7f0e6 10px,
+      #f7e1c3 10px,
+      #f7e1c3 20px
+    ) !important;
+}
+tr.claimed, .key .claimed {
+    background: repeating-linear-gradient(
+      -45deg,
+      #deecf9,
+      #deecf9 10px,
+      #b7d9f8 10px,
+      #b7d9f8 20px
+    ) !important;
+}
+.key {
+    margin: 1em 0em;
+}
+.key > div {
+    float: left;
+    padding: 2px;
+    margin-right: 4px;
+}
+.key > div.edited, .key > div.claimed {
+    min-width: 10em;
+    border: 1px solid #cccccc;
+}

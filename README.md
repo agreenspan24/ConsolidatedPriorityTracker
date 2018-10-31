@@ -41,7 +41,7 @@ Ensure that you are using your virtual environment (see above)
 
     source ./venv/bin/activate
     
-Run `gunicorn -b 0.0.0.0:5000 -w 6 controller:app`
+Run `gunicorn -b 0.0.0.0:5000 -w 6 controller:app --reload` (or `heroku local` to read from `Procfile`)
 
 (Note that you *must use port 5000* or the OID redirect will not work and you may need to terminate other services like AirServer that are currently using that port)
     
