@@ -946,18 +946,19 @@ def display_users():
             
         office = request.form.get('office')
 
-        if g.user.rank=='DATA':
-            office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
-        elif g.user.rank=='FD':
-            office = Location.query.filter(Location.locationname.like(office[0:3] + '%'), Location.region==g.user.region).first()
-        else:
-            return redirect('/users')
+        if office:
+            if g.user.rank=='DATA':
+                office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
+            elif g.user.rank=='FD':
+                office = Location.query.filter(Location.locationname.like(office[0:3] + '%'), Location.region==g.user.region).first()
+            else:
+                return redirect('/users')
         
         if office:
             office = office.locationname
 
-            if user.office != office:
-                user.office = office
+        if user.office != office:
+            user.office = office
         
         db.session.add(user)
         db.session.commit()
@@ -1019,21 +1020,14 @@ def add_user():
         user = User.query.filter_by(email=email).first()
         if not user:
 
-            if rank not in ranks:
-                return Response('Invalid Rank', 400)
-
-            if region not in regions:
-                return Response('Invalid Region', 400)
-
             if firstname == '':
                 firstname = None
             
             if lastname == '':
                 lastname = None
-            
-            office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
-            if office:
-                office = office.locationname
+
+            if not region in regions or (g.user.rank != 'DATA' and g.user.region != 'HQ' and region != g.user.region):
+                return Response('Invalid Region', 400)
 
             if g.user.rank == "DATA":
                 is_allowed = True
@@ -1042,6 +1036,9 @@ def add_user():
 
             if g.user.rank != 'DATA' and rank not in ['Intern','DFO','FO']:
                 rank = 'FO'
+
+            office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
+            office = office.locationname if office else None
 
             user = User(email=email, rank=rank, region=region, office=office, is_allowed=is_allowed, firstname=firstname, lastname=lastname)
             db.session.add(user)
