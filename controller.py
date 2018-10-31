@@ -988,7 +988,7 @@ def display_users():
                                     User.firstname,
                                     User.lastname,
                                     func.min(Note.time).label('first_active'), 
-                                    func.min(Note.time).label('most_recent')
+                                    func.max(Note.time).label('most_recent')
                                     ).join(Note, User.id==Note.user_id, isouter=True
                                     ).filter(User.region==g.user.region
                                     ).group_by(User.id, User.email, User.region, User.office
