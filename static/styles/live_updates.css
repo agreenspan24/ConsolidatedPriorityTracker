@@ -22,11 +22,34 @@
         opacity: 1;
     }
 }
-.phone.claimed {
+tr .phone .static, tr .cellphone .static {
+    display: none;
+}
+tr.claimed .phone, tr.claimed .cellphone {
     opacity: 0.5;
     text-decoration: line-through;
 }
-tr.edited, .key .edited {
+tr.owns .phone, tr.owns .cellphone,
+tr.owns .phone input, tr.owns .cellphone input {
+    font-weight: bold;
+    color: #2b8ce3;
+}
+tr.claimed .phone .static, tr.claimed .cellphone .static {
+    display: block;
+}
+tr.claimed .phone input, tr.claimed .cellphone input {
+    display: none;
+}
+tr.edited, .key .edited, th.editors {
+    background: repeating-linear-gradient(
+      -45deg,
+      #fddddd,
+      #fddddd 10px,
+      #feb2b2 10px,
+      #feb2b2 20px
+    ) !important;
+}
+tr.claimed, .key .claimed, th.claims {
     background: repeating-linear-gradient(
       -45deg,
       #f7f0e6,
@@ -35,7 +58,7 @@ tr.edited, .key .edited {
       #f7e1c3 20px
     ) !important;
 }
-tr.claimed, .key .claimed {
+tr.owns, .key .owns, th.owns {
     background: repeating-linear-gradient(
       -45deg,
       #deecf9,
@@ -44,6 +67,7 @@ tr.claimed, .key .claimed {
       #b7d9f8 20px
     ) !important;
 }
+
 .key {
     margin: 1em 0em;
 }
@@ -52,7 +76,7 @@ tr.claimed, .key .claimed {
     padding: 2px;
     margin-right: 4px;
 }
-.key > div.edited, .key > div.claimed {
+.key > div.edited, .key > div.claimed, .key > div.owns {
     min-width: 10em;
     border: 1px solid #cccccc;
 }

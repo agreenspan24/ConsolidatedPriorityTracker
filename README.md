@@ -29,7 +29,7 @@ For Mac OS, ensure the OS X command line developer tools (`xcode-select --instal
     
 Set configuration in `~/.bashrc` (and then remember to `source` the file once you've updated it). For example:
 
-    export HEROKU_POSTGRESQL_AMBER_URL=postgres://user:password@host:5432/database
+    export DATABASE_URL=postgres://user:password@host:5432/database
     export schema=test
     export api_user=SOME_API_USER
     export api_key=SOME_API_KEY

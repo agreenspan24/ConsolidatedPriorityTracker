@@ -87,12 +87,14 @@ function updatePasses(parent_id, res, elem) {
 }
 
 function updateNames(parent_id, res, elem) {
+    var vol_id = '';
     var vanid = '';
     var name = '';
     var phone = '';
     var cellphone = ''; 
 
     res.forEach(function(shift, index) {
+        vol_id += '<p id="vol_id-' + shift.id + '">'+ shift.vol_id + ',</p>';
         vanid += '<p id="shift-' + shift.id + '">'+ shift.van_id + '</p>';
         name += '<span>'+ shift.name + '</span>';
         phone += '<p>'+ shift.phone + '</p>';
@@ -100,7 +102,8 @@ function updateNames(parent_id, res, elem) {
             'type="text" style="width:125px" value="' + (shift.cellphone || '') + '"/></p>';
     });
 
-    getRowElem(parent_id, 'vanid').html(vanid);
+    getRowElem(parent_id, 'vol_id').html(vol_id);
+    getRowElem(parent_id, 'van_id').html(vanid);
     getRowElem(parent_id, 'name').html(name);
     getRowElem(parent_id, 'phone').html(phone);
     getRowElem(parent_id, 'cellphone').html(cellphone);
@@ -116,7 +119,7 @@ function setOut(parent_id, res, elem) {
     if (!res.check_in_time) {
         getRowElem(parent_id, 'departure').prop('disabled', 'disabled');
 
-        get_future_shifts(null, false, getRowElem(parent_id, 'vanid').text().trim().replace(' ', ',').replace(/\s/g, '').split(','));
+        get_future_shifts(null, false, getRowElem(parent_id, 'vol_id').text().trim().replace(/\s/g, '').split(','));
     } else {
         getRowElem(parent_id, 'actual').prop('disabled', false);
         getRowElem(parent_id, 'departure').prop('disabled', false);
@@ -124,18 +127,18 @@ function setOut(parent_id, res, elem) {
 }
 
 function updateClaim(parent_id, res, elem) {
-    console.log(res.name);
-    if (res.name !== 'Claim') {
+    return;
+    /* if (res.name !== 'Claim') {
         console.log("res.name !== 'Claim'")
         html = 'Release'
         // html = '<i class="user-icon" style="background-color:#' + (res.color || '000000') + '">' + res.name + '</i>';
     } else {
         console.log("res.name === 'Claim'")
         html = 'Claim'
+        
         //html = res.name;
     }
-
-    getRowElem(parent_id, 'claim').html(html);
+    // getRowElem(parent_id, 'claim').html(html);*/
 }
  
 function setUpListener() {
@@ -306,7 +309,7 @@ function confirm_shift(e) {
     }
 }
 
-function get_future_shifts(event, is_update, vanids) {
+function get_future_shifts(event, is_update, vol_ids) {
 
     open_modal('future_shifts_modal');
     hideModalAlert();
@@ -322,14 +325,14 @@ function get_future_shifts(event, is_update, vanids) {
         type: 'POST', 
         url: window.location.pathname + '/future_shifts',
         data: {
-            vanids: vanids || [event.target.value]
+            vol_ids: vol_ids || [event.target.value]
         }
     }).done(function(res) {
         if (res.vols) {
             if (!is_update && res.vols.length > 1) {
                 var options = '';
                 res.vols.forEach(function(x){
-                    options += '<option value="' + x.van_id + '">' + x.first_name + ' ' + x.last_name + '</option>'
+                    options += '<option value="' + x.id + '">' + x.first_name + ' ' + x.last_name + '</option>'
                 });
                 
                 $('#vol_options').html(options);
@@ -346,7 +349,8 @@ function get_future_shifts(event, is_update, vanids) {
 }
 
 function set_future_shifts_for_vol(vol, shifts) {
-    $('#future_shifts_name').html(vol.first_name + ' ' + vol.last_name);
+    var name = vol.first_name + ' ' + vol.last_name;
+    $('#future_shifts_name').html(name);
 
     if (vol.has_pitched_today) {
         $('#has_pitched_today').attr('checked', 'checked');
@@ -372,7 +376,9 @@ function set_future_shifts_for_vol(vol, shifts) {
 
     var exp_shifts = ((Date.parse('2018-11-06') - Date.now()) / (60 * 60 * 24 * 1000)) / 2;
 
-    if (shifts.length == 0) {
+    if (!vol.van_id){
+        showModalAlert('warn', 'No vanid for volunteer. Please add one and schedule them for shifts in VAN.')
+    } else if (shifts.length == 0) {
         showModalAlert('error', 'Oops! ' + name + ' has no future shifts! Schedule them right away!');
     } else if (shifts.length < exp_shifts) {
         showModalAlert('warn', 'Oh no! ' + name + " doesn't has enough shifts scheduled! They should have about " + Math.round(exp_shifts - shifts.length) + ' more shifts.');
@@ -400,7 +406,6 @@ function set_future_shifts_for_vol(vol, shifts) {
 
 function update_vol_pitch(event) {
     vol_id = event.target.attributes['vol_id'].nodeValue;
-    console.log($('#has_pitched_today:checked'));
 
     $.ajax({
         type: 'POST', 
