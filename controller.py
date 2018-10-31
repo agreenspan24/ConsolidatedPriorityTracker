@@ -4,11 +4,13 @@ from flask import flash, g, redirect, render_template, request, session, jsonify
 
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import contains_eager, joinedload
+from sqlalchemy.sql import func
 
 import re
 import urllib
 
 from app import app, oid, schema
+from setup_config import ranks, regions
 
 ##from cptvanapi import CPTVANAPI
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
@@ -41,7 +43,7 @@ def logout_before():
     if 'openid' in session:
         g.user = User.query.filter(User.openid==session['openid']).first()
 
-        if g.user == None or not g.user.is_allowed or (schema == 'test' and g.user.rank != 'DATA'):
+        if g.user == None or not g.user.is_allowed:
             redir = True
             
     else:
@@ -89,11 +91,15 @@ def login_auth():
 @app.route('/', methods=['GET'])    
 def index():
 
-    if g.user.office and g.user.office != "None":
-        return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
+    if g.user.rank in ['Intern', 'DFO', 'FO'] and g.user.office and g.user.office != 'N/A':
+            return redirect('/consolidated/' + g.user.office[0:3] + '/sdc')
     
-    if g.user.region:
+    if g.user.region and g.user.rank == 'FD':
+        if g.user.region == 'HQ':
+            return redirect('/dashboard/top')
+
         return redirect('/consolidated/' + g.user.region + '/sdc')
+
 
     return redirect('/consolidated')    
 
@@ -907,6 +913,141 @@ def update_vol_pitch(office, page):
 @app.route('/loaderio-cb6afdec0447c3b6ec9bce41757c581c/')
 def loader_io():
     return app.send_static_file('loaderio-cb6afdec0447c3b6ec9bce41757c581c.txt')
+
+@oid.require_login
+@app.route('/users', methods=['POST', 'GET'])
+def display_users():
+    if request.method == "POST":
+
+        id = request.form.get('id')
+
+        if id.isdigit():
+            user = User.query.get(id)
+        else:
+            return Response('Invalid User Id', 400)
+        
+        if g.user.rank == 'DATA':
+            rank = escape(request.form.get('rank'))
+            
+            if rank in ranks and user.rank != rank:
+                user.rank = rank
+            
+            region = request.form.get('region')
+            
+            if region in regions and user.region != region:
+                user.region = region
+            
+            allowed = request.form.get('allowed')
+            
+            allowed = True if allowed == 'on' else False
+            
+            if user.is_allowed != allowed:
+                user.is_allowed = allowed
+            
+        office = request.form.get('office')
+
+        if office:
+            if g.user.rank=='DATA':
+                office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
+            elif g.user.rank=='FD':
+                office = Location.query.filter(Location.locationname.like(office[0:3] + '%'), Location.region==g.user.region).first()
+            else:
+                return redirect('/users')
+        
+        if office:
+            office = office.locationname
+
+        if user.office != office:
+            user.office = office
+        
+        db.session.add(user)
+        db.session.commit()
+
+    if g.user.rank == 'DATA' or g.user.region == 'HQ':
+        all_users = db.session.query(User.id,
+                                     User.email, 
+                                     User.rank, 
+                                     User.region, 
+                                     User.office, 
+                                     User.is_allowed,
+                                     User.firstname,
+                                     User.lastname, 
+                                     func.min(Note.time).label('first_active'), 
+                                     func.min(Note.time).label('most_recent')
+                                     ).join(Note, User.id==Note.user_id, isouter=True
+                                     ).group_by(User.id, User.email, User.region, User.office
+                                     ).order_by(asc(User.region), asc(User.office)
+                                     ).all()
+        locations = Location.query.order_by(Location.locationname.asc()).all()
+    elif g.user.rank == 'FD':
+        all_users = db.session.query(User.id, 
+                                    User.email, 
+                                    User.rank, 
+                                    User.region, 
+                                    User.office, 
+                                    User.is_allowed, 
+                                    User.firstname,
+                                    User.lastname,
+                                    func.min(Note.time).label('first_active'), 
+                                    func.min(Note.time).label('most_recent')
+                                    ).join(Note, User.id==Note.user_id, isouter=True
+                                    ).filter(User.region==g.user.region
+                                    ).group_by(User.id, User.email, User.region, User.office
+                                    ).order_by(asc(User.region), asc(User.office)
+                                    ).all()
+        locations = Location.query.filter_by(region=g.user.region).order_by(Location.locationname.asc()).all()
+
+    else:
+        return redirect('/consolidated')
+        
+    return render_template('users.html', all_users=all_users, locations=locations, user=g.user, ranks=ranks, regions=regions)
+
+@oid.require_login
+@app.route('/users/add_user', methods = ['POST'])
+def add_user():
+    if request.method == 'POST':
+
+        email = request.form.get('email')
+        rank = request.form.get('rank')
+        region = request.form.get('region')
+        office = request.form.get('office')
+        firstname = escape(request.form.get('firstname'))
+        lastname = escape(request.form.get('lastname'))
+
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            return Response('Invalid Email', 400)
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+
+            if firstname == '':
+                firstname = None
+            
+            if lastname == '':
+                lastname = None
+
+            if not region in regions or (g.user.rank != 'DATA' and g.user.region != 'HQ' and region != g.user.region):
+                return Response('Invalid Region', 400)
+
+            if g.user.rank == "DATA":
+                is_allowed = True
+            else:
+                is_allowed = False
+
+            if g.user.rank != 'DATA' and rank not in ['Intern','DFO','FO']:
+                rank = 'FO'
+
+            office = Location.query.filter(Location.locationname.like(office[0:3] + '%')).first()
+            office = office.locationname if office else None
+
+            user = User(email=email, rank=rank, region=region, office=office, is_allowed=is_allowed, firstname=firstname, lastname=lastname)
+            db.session.add(user)
+            db.session.commit()
+
+        else:
+            return Response('User already exists', 400)
+
+    return redirect('/users')
 
 @oid.require_login
 @app.route('/consolidated/volunteer_history/<vol_id>', methods=['GET', 'POST'])
