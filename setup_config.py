@@ -120,7 +120,7 @@ LEFT JOIN confirm_attempt_totals cat
 	ON l.locationname = cat.locationname
 LEFT JOIN canvass_totals ct
 	ON l.locationname = ct.locationname
-WHERE region LIKE 'R%'
+WHERE region LIKE 'R%%'
 ), region_totals AS (SELECT region, region || ' Total' office
 , SUM(canvass_total_scheduled)::bigint canvass_total_scheduled
 , SUM(canvass_same_day_confirmed)::bigint canvass_same_day_confirmed
