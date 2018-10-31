@@ -10,7 +10,6 @@
                     <label class="input-label">First Name</label>
                     <div class="input-control">
                         <input class="input-element" name="firstname" maxlength="120" />
-    
                     </div>
                 </td>
                 <td>
@@ -132,7 +131,7 @@
                             <input id='firstname-{{shift.id}}' name="first_name" maxlength="120" type="text" style="width:75px" value="{{shift.volunteer.first_name if not shift.volunteer.first_name == None}}"/>
                             <input id='lastname-{{shift.id}}' name="last_name" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.last_name if not shift.volunteer.last_name == None}}"/>
                         {% else %}
-                            <a onclick="get_future_shifts({{shift.volunteer.van_id}}, '{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}')">
+                            <a onclick="get_future_shifts(event, false, [{{shift.volunteer.van_id}}])">
                                 <abbr title="Future Shifts for {{shift.volunteer.first_name}}">{{shift.volunteer.first_name + ' ' + shift.volunteer.last_name}}</abbr>
                             </a>
                         {% endif %}
@@ -177,15 +176,17 @@
                     <td>
                         <input id='note-{{shift.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">
                     </td>
-                    {% if shift.notes != 0 %}
-                        {% for note in shift.notes|sort(attribute='time', reverse=True) %}
-                            {% if note.type == "sdc" %}
-                                <td>
-                                    {{note.time.strftime('%I:%M %p')}}: {{note.text}}
-                                    <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
-                                </td>  
-                            {% endif %}
-                        {% endfor %}
+                    {% if shift.notes %}
+                        <td>
+                            {% for note in shift.notes|sort(attribute='time', reverse=True) if note.type in ["sdc", "flake"] %}
+                                {% if loop.index != 1 %}
+                                    &nbsp; | &nbsp;&nbsp;
+                                {% endif %}
+                                <i class="user-icon" title="Created by User {{note.user_id}}" style="background-color:#{{note.user_color if note.user_color else '000000'}}">{{note.user_name}}</i>
+                                {{note.time.strftime('%I:%M %p')}}: {{note.text}}
+                                <span class="glyphicons glyphicons-remove" onclick="deleteNote({{shift.id}}, '{{note.text}}')" style="cursor:pointer"></span>
+                            {% endfor %}
+                        </td>  
                     {% endif %}
                 </tr>
             {% endfor %}

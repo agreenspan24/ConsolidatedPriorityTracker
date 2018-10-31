@@ -129,6 +129,34 @@
                             <span class="reader-only">Dismiss Alert</span>
                         </a>
                     </div>
+                    <div id="group_vol_dropdown" class="input-unit">
+                        <div class="input-label">Group Member</div>
+                        <div class="input-control">
+                            <select id="vol_options" class="input-element" onchange="get_future_shifts(event, true)">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-half" id="pitched_rows">
+                        <div class="col-4">
+                            <label>Has Been Pitched Today</label>
+                            <div class="input-control center padding-top-sm">
+                                <input id="has_pitched_today" class="switch minimal" type="checkbox" />
+                                <label for="has_pitched_today" class="switch-label">Has Been Pitched Today</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label for="extra_shifts_sched">Extra Shifts Scheduled Today</label>
+                            <div class="input-control">
+                                <input id="extra_shifts_sched" class="input-element" type="number" min="0" />
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <label>&nbsp;</label>
+                            <div class="input-control">
+                                <a id="update_vol_pitch" onclick="update_vol_pitch(event)" class="btn btn-blue btn-full">Update</a>
+                            </div>
+                        </div>
+                    </div>
                     <table class="table">
                         <thead id="future_shifts_head" class="thead">
                             <tr>
@@ -144,6 +172,12 @@
                         </tbody>
                     </table>
                 </section>
+                <footer class="panel-footer">
+                    <div class="panel-buttons">
+                        <a class="btn btn-clear" onclick="hide_modal()">Close</a>
+                        <a id="future_shifts_history_link" target="_blank" href="#" class="btn btn-blue">See Volunteer History</a>
+                    </div>
+                </footer>
             </article>   
         </div>
     </div>

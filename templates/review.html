@@ -82,6 +82,18 @@
         <div class="stat-title">Total % to Goal</div>
       </div>
     </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.shifts_not_pitched}}</div>
+        <div class="stat-title">Shifts Not Pitched for Extra Shifts</div>
+      </div>
+    </li>
+    <li class="stat-item">
+      <div class="stat-info">
+        <div class="stat-data">{{stats.extra_shifts_sched}}</div>
+        <div class="stat-title">Extra Shifts Scheduled</div>
+      </div>
+    </li>
   </ul>
   <hr />
   {% endif %}
@@ -99,6 +111,8 @@
             <th>Name</th>
             <th>Event</th>
             <th>Time</th>
+            <th>Has Been Pitched Today</th>
+            <th>Extra Shifts Scheduled</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -118,6 +132,8 @@
             </td>
             <td>{{shift.eventtype}}</td>
             <td>{{shift.time.strftime('%I:%M %p')}}</td>
+            <td>{{'' if shift.status != 'Completed' or not shift.canvass_group else ('Yes' if shift.volunteer.has_pitched_today else 'No')}}</td>
+            <td>{{shift.volunteer.extra_shifts_sched if shift.status == 'Completed' and shift.canvass_group != None else ''}}</td>
             <td>
               {{shift.status}}
             </td>

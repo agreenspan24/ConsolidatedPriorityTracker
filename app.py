@@ -11,7 +11,7 @@ from flask_cache_buster import CacheBuster
 try:
     schema = os.environ['schema']
 except:
-    schema = 'consolidated'
+    schema = 'test'
 
 
 
@@ -31,13 +31,15 @@ db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = os.environ['secret_key']
 
-
 cache_config = {
      'extensions': ['.js', '.css'],
      'hash_size': 10
 }
 cache_buster = CacheBuster(config=cache_config)
 cache_buster.register_cache_buster(app)
+
+if schema == 'test':
+    app.config['SQLALCHEMY_ECHO'] = True
 
 engine = create_engine(os.environ['HEROKU_POSTGRESQL_AMBER_URL'])
 '''engine = engine.execution_options(
