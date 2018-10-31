@@ -26,7 +26,7 @@
                 <td>
                     <label class="input-label">Rank</label>
                     <div class="input-control">
-                            <select class="input-element input-element-base select" name="rank" >   
+                            <select class="input-element input-element-base" name="rank" >   
                                 <optgroup label='--Rank--'></optgroup>
                                     <option value='Intern'>Intern</option>
                                     <option value='DFO'>DFO</option>
@@ -42,7 +42,7 @@
                     <label class="input-label">Region</label>
                     <div class="input-control">
                         {% if user.rank == 'DATA' or user.region == 'HQ' %}
-                        <select class="input-element input-element-base select" name="region" >   
+                        <select class="input-element input-element-base" name="region" >   
                             <optgroup label='--Region--'>
                                     {% for region in regions%}
                                     <option value='{{region}}'>{{region}}</option>
@@ -58,9 +58,9 @@
                 <td>
                     <label class="input-label">Office</label>
                     <div class="input-control">
-                        <select class="input-element input-element-base select" name="office">   
+                        <select class="input-element input-element-base" name="office">   
                             <optgroup label='--Office--'>
-                                <option value=None>N/A</option>
+                                <option value="None">N/A</option>
                                 {% for location in locations %}
                                 <option value='{{location.locationname}}'>{{location.locationname}}</option>
                                 {% endfor %}
@@ -70,7 +70,10 @@
                     </div>
                 </td>
                 <td>
-                    <input class="btn btn-blue" style="margin-top:30px" type="submit" value="Add User"/>
+                    <label class="input-label">&nbsp;</label>
+                    <div class="input-control">
+                        <input class="btn btn-blue" type="submit" value="Add User"/>
+                    </div>
                 </td> 
             </td>
         </tbody>
@@ -108,7 +111,7 @@
             <td>{{u.lastname}}</td>
             <td>
                 {% if user.rank == 'DATA' %}
-                <select class="input-element input-element-base select" name='rank'>
+                <select class="input-element input-element-base" name='rank'>
                     {% if u.rank == None %}
                     <option value=None {{"selected" if u.rank == None}}>None</option>
                     {% endif %}
@@ -124,7 +127,7 @@
             </td>
             <td>
                 {% if user.rank == 'DATA' %}
-                <select class="input-element input-element-base select" name='region'>
+                <select class="input-element input-element-base" name='region'>
                     {% if u.region == None %}
                     <option value=None {{"selected" if u.region == None}}>None</option>
                     {% endif %}
@@ -138,7 +141,7 @@
                 {% endif %}
             </td>
             <td>
-                <select class="input-element input-element-base select" name='office'>
+                <select class="input-element input-element-base" name='office'>
                     {% for location in locations %}
                     <option value='{{location.locationname}}' {{"selected" if u.office == location.locationname }}>{{location.locationname}}</option>
                     {% endfor %}
