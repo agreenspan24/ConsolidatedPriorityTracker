@@ -283,7 +283,8 @@ def add_pass(office, page):
                         return_var = []
 
                     return_var.append({
-                        'shift_id': shift.id,
+                        'id': shift.id,
+                        'vol_id': shift.volunteer.id, 
                         'van_id': shift.volunteer.van_id,
                         'name': shift.volunteer.first_name + ' ' + shift.volunteer.last_name,
                         'phone': shift.volunteer.phone_number,
@@ -855,15 +856,16 @@ def confirm_shift(office, page):
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/future_shifts', methods=['POST'])
 def get_future_shifts(office, page):
-    vanids = request.form.getlist('vanids[]')
+    vol_ids = request.form.getlist('vol_ids[]')
 
-    if not vanids:
-        return Response('No vanid found', 400)
+    if not vol_ids:
+        return Response('No vol_id found', 400)
 
-    if any(not x.isdigit() for x in vanids):
-        return Response('Invalid vanid', 400)
+    vol_ids = list(x for x in vol_ids if x.isdigit())
 
-    volunteers = Volunteer.query.filter(Volunteer.van_id.in_(vanids)).all()
+    volunteers = Volunteer.query.filter(Volunteer.id.in_(vol_ids)).all()
+
+    vanids = list(x.van_id for x in volunteers if x.van_id)
 
     try: 
         future_shifts = SyncShift.query.filter(SyncShift.vanid.in_(vanids), SyncShift.startdate > datetime.today().date()).order_by(SyncShift.startdate).all()
@@ -880,7 +882,11 @@ def get_future_shifts(office, page):
 def update_vol_pitch(office, page):
     vol_id = request.form.get('vol_id')
 
-    if not vol_id or not vol_id.isdigit():
+    if not vol_id:
+        return Response('No vol id', 400)
+    
+    
+    if not vol_id.isdigit():
         return Response('Invalid vol id', 400)
 
     vol = Volunteer.query.get(vol_id)

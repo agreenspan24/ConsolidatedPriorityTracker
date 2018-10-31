@@ -496,7 +496,7 @@ class ShiftStats:
             if s.status == 'Completed' and s.canvass_group != None:
                 if s.volunteer.has_pitched_today in [None, False]:
                     self.shifts_not_pitched += 1
-                else:
+                elif s.volunteer.extra_shifts_sched:
                     self.extra_shifts_sched += s.volunteer.extra_shifts_sched
 
 
