@@ -109,7 +109,7 @@
                     </select>
                     <span id="vol_id-{{group.id}}" class="hide">
                         {% for shift in group.canvass_shifts %}
-                            <span id="vol_id-{{shift.id}}">{{shift.volunteer.id}}</span>
+                            <p id="vol_id-{{shift.id}}">{{shift.volunteer.id}},</p>
                         {% endfor %}
                     </span>
                     <span id="name-{{group.id}}" class="hide">

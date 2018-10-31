@@ -35,6 +35,7 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN s.flake AND s.status = 'Rescheduled' THEN 1 ELSE 0 END) flake_rescheduled
 	, SUM(CASE WHEN s.status = 'Completed' AND s.canvass_group IS NOT NULL THEN 1 ELSE 0 END) total_shifts_finished
 	, SUM(CASE WHEN s.status = 'Completed' AND s.canvass_group IS NOT NULL AND (v.has_pitched_today IS NULL OR NOT v.has_pitched_today) THEN 1 ELSE 0 END) shifts_unpitched
+	, SUM(CASE WHEN s.status = 'Completed' AND s.canvass_group IS NOT NULL AND v.has_pitched_today AND v.extra_shifts_sched IS NOT NULL THEN v.extra_shifts_sched ELSE 0 END) extra_shifts_sched
 	FROM {0}.shift s
 	JOIN {0}.location l
 		ON l.locationid = s.shift_location
@@ -105,6 +106,8 @@ WITH confirm_attempt_totals AS (
 , COALESCE((cat.flake_total - cat.flake_attempts) * 1.0 / (CASE WHEN cat.flake_total < 1 THEN 1 ELSE cat.flake_total END), 0) flake_chase_remaining_perc
 , COALESCE(cat.shifts_unpitched, 0) shifts_unpitched 
 , COALESCE(cat.shifts_unpitched * 1.0 / (CASE WHEN cat.total_shifts_finished < 1 THEN 1 ELSE cat.total_shifts_finished END), 0) shifts_unpitched_perc
+, COALESCE(cat.extra_shifts_sched, 0) extra_shifts_sched 
+, COALESCE(cat.extra_shifts_sched * 1.0 / (CASE WHEN cat.total_shifts_finished < 1 THEN 1 ELSE cat.total_shifts_finished END), 0) extra_shifts_sched_avg
 , COALESCE(ct.canvassers_all_day, 0) canvassers_all_day
 , COALESCE(ct.actual_all_day, 0) actual_all_day
 , COALESCE(ct.goal_all_day, 0) goal_all_day
@@ -121,7 +124,7 @@ LEFT JOIN confirm_attempt_totals cat
 	ON l.locationname = cat.locationname
 LEFT JOIN canvass_totals ct
 	ON l.locationname = ct.locationname
-WHERE NOT region IN ('In', 'Ou', 'Th')
+WHERE region LIKE 'R%'
 ), region_totals AS (SELECT region, region || ' Total' office
 , SUM(canvass_total_scheduled)::bigint canvass_total_scheduled
 , SUM(canvass_same_day_confirmed)::bigint canvass_same_day_confirmed
@@ -150,6 +153,8 @@ WHERE NOT region IN ('In', 'Ou', 'Th')
 , AVG(flake_chase_remaining_perc) flake_chase_remaining_perc
 , SUM(shifts_unpitched)::bigint shifts_unpitched
 , AVG(shifts_unpitched_perc) shifts_unpitched_perc
+, SUM(extra_shifts_sched)::bigint extra_shifts_sched
+, AVG(extra_shifts_sched_avg) extra_shifts_sched_avg
 , SUM(canvassers_all_day)::bigint canvassers_all_day
 , SUM(actual_all_day)::bigint actual_all_day
 , SUM(goal_all_day)::bigint goal_all_day
@@ -192,6 +197,8 @@ GROUP BY region
 , AVG(flake_chase_remaining_perc) flake_chase_remaining_perc
 , SUM(shifts_unpitched)::bigint shifts_unpitched
 , AVG(shifts_unpitched_perc) shifts_unpitched_perc
+, SUM(extra_shifts_sched)::bigint extra_shifts_sched
+, AVG(extra_shifts_sched_avg) extra_shifts_sched_avg
 , SUM(canvassers_all_day)::bigint canvassers_all_day
 , SUM(actual_all_day)::bigint actual_all_day
 , SUM(goal_all_day)::bigint goal_all_day
