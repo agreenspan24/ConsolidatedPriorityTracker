@@ -149,8 +149,8 @@
                 </select>
             </td>
             <td><input type='checkbox' name='allowed' {{"checked" if u.is_allowed == True}} {{"disabled" if user.rank != 'DATA'}}></td>
-            <td>{{u.first_active.strftime('%I:%M %p') if u.first_active not None else u.first_active}}</td>
-            <td>{{u.most_recent.strftime('%I:%M %p') if u.most_recent not None else u.most_recent}}</td>
+            <td>{{u.first_active.strftime('%I:%M %p') if u.first_active != None else u.first_active}}</td>
+            <td>{{u.most_recent.strftime('%I:%M %p') if u.most_recent != None else u.most_recent}}</td>
             <td><input type='submit' value='Update'></td>
             
         </tr>
