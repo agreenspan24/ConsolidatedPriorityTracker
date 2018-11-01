@@ -53,11 +53,6 @@ def authenticated_only(f):
 
 @app.before_request
 def logout_before():
-    if request.url.startswith('http://'):
-        url = request.url.replace('http://', 'https://', 1)
-        code = 301
-        print('redirect https')
-        return redirect(url, code=code)
     
     if request.path.startswith('/static') or request.path.startswith('/favicon') or request.path.startswith('/loaderio-cb6afdec0447c3b6ec9bce41757c581c'):
         return
