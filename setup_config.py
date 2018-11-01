@@ -11,6 +11,10 @@ rural_locations = {
    'R2H - Cort Office': 'R2H - VanOstran Field Office'
 }
 
+ranks = ['Intern', 'DFO', 'FO', 'FD', 'DATA']
+
+regions = ['R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'HQ']
+
 dashboard_query = """
 CREATE VIEW {0}.dashboard_totals AS 
 WITH confirm_attempt_totals AS (
