@@ -786,7 +786,12 @@ def user():
 
         office = request.form.get('office')
 
-        office = escape(office)
+        if office and office != 'None' and not office in list(map(lambda x: x.locationname, offices)):
+            return Response('Invalid Office', 400)
+        
+        if office == "None":
+            office = None
+
         user.office = office
 
         db.session.commit()
