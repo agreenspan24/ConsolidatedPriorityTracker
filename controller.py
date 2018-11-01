@@ -626,8 +626,6 @@ def add_walk_in(office, page):
         db.session.commit()
 
     shift.person = vol.id
-
-    shift.person = vol.id
     db.session.add(shift)
 
     db.session.commit()
