@@ -22,17 +22,16 @@ function configureWebSockets(office, page, userId) {
     };
     
     
-    socket = io(wsScheme + location.host + '/live-updates', {transports: ['websocket']});
+    socket = io(wsScheme + location.host + '/live-updates');
     
     var json = { office: office, page: page }
 
     socket.on('connect', function () {
       console.log('Connected to WS!');
-      
-      
       socket.emit('join', json);
-      socket.emit('view', json);
     });
+    
+    socket.emit('view', json);
 
     // TODO: this function timer should decay (instead of being called every 10s)
     clearInterval(viewerInterval);

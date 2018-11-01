@@ -9,3 +9,6 @@
     clear: both;
     color: #ffffff;
 }
+tab.active:hover a {
+    color: #343a40 !important;
+}
