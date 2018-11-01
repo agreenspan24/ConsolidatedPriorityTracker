@@ -54,7 +54,7 @@
                     <td>{{shift.role}}</td>
                     <td>{{shift.eventtype}}</td>
                     <td>
-                        <a id='passes-{{shift.id}}' name="passes" onclick="updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.flake_pass}}</a>
+                        <a id='passes-{{shift.id}}' name="passes" tabindex="0" href="javascript:updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.flake_pass}}</a>
                     </td>
                     <td>
                         <select id='status-{{shift.id}}' onchange="updateElem('status-{{shift.id}}', 'status', addNote)" value='{{shift.status}}'>

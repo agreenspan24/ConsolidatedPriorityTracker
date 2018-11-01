@@ -492,6 +492,8 @@ def add_pass(office, page):
                         else:
                             shift.volunteer.next_shift = None
                             shift.volunteer.next_shift_confirmed = False
+                else:
+                    shift.volunteer.van_id = None
             
             elif 'phone' in keys:
                 phone = request.form.get('phone')
