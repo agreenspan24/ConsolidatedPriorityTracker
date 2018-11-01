@@ -10,15 +10,20 @@
             $('.modal-wrapper').removeClass('modal-backdrop fade in');
             $('.modal').hide();
         }
+        function maybe_hide_modal(e) {
+            if (e.target.className.startsWith('modal ')) {
+                hide_modal();
+            }
+        }
     </script>
-    <div id="add_modal" class="modal fade in" role="dialog" tabindex="-1" aria-hidden="true" >
+    <div id="add_modal" class="modal fade in" role="dialog" tabindex="-1" aria-hidden="true" onclick="maybe_hide_modal(event)" >
         <div class="modal-dialog">
             <article class="modal-content panel">
                 <header class="modal-header panel-header">
                     <h2 class="panel-title">Add Walk-In Volunteer</h2>
                     <nav class="panel-nav">
                     <button class="btn btn-link dismiss" onclick="hide_modal()">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">x</span>
                         <span class="reader-only">close modal</span>
                     </button>
                     </nav>
@@ -97,14 +102,14 @@
             </article>   
         </div>
     </div>
-    <div id="future_shifts_modal" class="modal fade in" role="dialog" tabindex="-1" aria-hidden="true" >
+    <div id="future_shifts_modal" class="modal fade in" role="dialog" tabindex="-1" aria-hidden="true" onclick="maybe_hide_modal(event)" >
         <div class="modal-dialog">
             <article class="modal-content panel">
                 <header class="modal-header panel-header">
                     <h2 class="panel-title">Future Shifts for <span id="future_shifts_name"></span></h2>
                     <nav class="panel-nav">
                     <button class="btn btn-link dismiss" onclick="hide_modal()">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">x</span>
                         <span class="reader-only">close modal</span>
                     </button>
                     </nav>

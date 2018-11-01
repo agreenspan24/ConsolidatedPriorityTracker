@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block content%}
+<form action="/users/add_user" method="POST">
+    <table class="table">
+        <tbody class="tbody">
+            <tr>
+                <td>
+                    <label class="input-label">Email</label>
+                    <div class="input-control">
+                        <input class="input-element" name="email" maxlength="120" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">First Name</label>
+                    <div class="input-control">
+                        <input class="input-element" name="firstname" maxlength="120" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Last Name</label>
+                    <div class="input-control">
+                        <input class="input-element" name="lastname" maxlength="120" />
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Rank</label>
+                    <div class="input-control">
+                            <select class="input-element input-element-base" name="rank" >   
+                                <optgroup label='--Rank--'></optgroup>
+                                    <option value='Intern'>Intern</option>
+                                    <option value='DFO'>DFO</option>
+                                    <option value='FO'>FO</option>
+                                    {% if user.rank == 'DATA'%}
+                                    <option value='FD'>FD</option>
+                                    <option value='DATA'>DATA</option>
+                                    {% endif %}
+                            </select>
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Region</label>
+                    <div class="input-control">
+                        {% if user.rank == 'DATA' or user.region == 'HQ' %}
+                        <select class="input-element input-element-base" name="region" >   
+                            <optgroup label='--Region--'>
+                                    {% for region in regions%}
+                                    <option value='{{region}}'>{{region}}</option>
+                                    {% endfor %}
+                            </optgroup>
+                        </select>
+                        {% else %}
+                        <input name='region' value='{{user.region}}' type='hidden'>
+                        {{user.region}}
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">Office</label>
+                    <div class="input-control">
+                        <select class="input-element input-element-base" name="office">   
+                            <optgroup label='--Office--'>
+                                <option value="None">N/A</option>
+                                {% for location in locations %}
+                                <option value='{{location.locationname}}'>{{location.locationname}}</option>
+                                {% endfor %}
+                                
+                            </optgroup>
+                        </select>
+                    </div>
+                </td>
+                <td>
+                    <label class="input-label">&nbsp;</label>
+                    <div class="input-control">
+                        <input class="btn btn-blue" type="submit" value="Add User"/>
+                    </div>
+                </td> 
+            </td>
+        </tbody>
+    </table>
+</form>
+
+<div class="table-wrapper">
+    <table class="table table-panel table-data table-small">
+    <thead class="thead">
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Rank</th>
+            <th>Region</th>
+            <th>Office</th>
+            <th>Allowed</th>
+            <th>First Active</th>
+            <th>Last Active</th>
+            <th></th>
+
+        </tr>
+    </thead>
+    <tbody class="tbody">
+{% for u in all_users %}
+        <form method = 'Post'>
+        <tr>
+            <td>
+                <input name='id' value='{{u.id}}' type='hidden'>
+                {{u.id}}
+            </td>
+            <td>{{u.email}}</td>
+            <td>{{u.firstname}}</td>
+            <td>{{u.lastname}}</td>
+            <td>
+                {% if user.rank == 'DATA' %}
+                <select class="input-element input-element-base" name='rank'>
+                    {% if u.rank == None %}
+                    <option value=None {{"selected" if u.rank == None}}>None</option>
+                    {% endif %}
+                    {% for rank in ranks %}
+                    <option value='{{rank}}' {{"selected" if u.rank == rank }}>{{rank}}</option>
+                    {% endfor %}
+                    
+                </select>
+                {% else %}
+                <input name='rank' value='{{u.rank}}' type='hidden'>
+                {{u.rank}}
+                {% endif %}
+            </td>
+            <td>
+                {% if user.rank == 'DATA' %}
+                <select class="input-element input-element-base" name='region'>
+                    {% if u.region == None %}
+                    <option value=None {{"selected" if u.region == None}}>None</option>
+                    {% endif %}
+                    {% for region in regions%}
+                    <option value='{{region}}' {{"selected" if u.region == region }}>{{region}}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                <input name='region' value='{{u.region}}' type='hidden'>
+                {{u.region}}
+                {% endif %}
+            </td>
+            <td>
+                <select class="input-element input-element-base" name='office'>
+                    {% for location in locations %}
+                    <option value='{{location.locationname}}' {{"selected" if u.office == location.locationname }}>{{location.locationname}}</option>
+                    {% endfor %}
+                    <option value='None' {{"selected" if u.office == None}}>N/A</option>
+                </select>
+            </td>
+            <td><input type='checkbox' name='allowed' {{"checked" if u.is_allowed == True}} {{"disabled" if user.rank != 'DATA'}}></td>
+            <td>{{u.first_active.strftime('%I:%M %p') if u.first_active != None else u.first_active}}</td>
+            <td>{{u.most_recent.strftime('%I:%M %p') if u.most_recent != None else u.most_recent}}</td>
+            <td><input type='submit' value='Update'></td>
+            
+        </tr>
+        </form>
+{% endfor %}
+    </tbody>
+    </table>
+{% endblock %}
