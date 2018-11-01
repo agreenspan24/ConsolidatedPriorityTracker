@@ -30,7 +30,7 @@ function updateElem(elem_id, elem_name, success_callback) {
 
     if (elem_name == 'cellphone') {
         shift_id = elem_id.split('-')[1];
-        data['vol_id'] = getRowElem(shift_id, 'vol_id').text();
+        data['vol_id'] = getRowElem(shift_id, 'vol_id').text().replace(/,/, '');
     }
 
     $.ajax({
@@ -103,7 +103,7 @@ function updateNames(parent_id, res, elem) {
     });
 
     getRowElem(parent_id, 'vol_id').html(vol_id);
-    getRowElem(parent_id, 'van_id').html(vanid);
+    getRowElem(parent_id, 'vanid').html(vanid);
     getRowElem(parent_id, 'name').html(name);
     getRowElem(parent_id, 'phone').html(phone);
     getRowElem(parent_id, 'cellphone').html(cellphone);
@@ -330,7 +330,7 @@ function get_future_shifts(event, is_update, vol_ids) {
                     options += '<option value="' + x.id + '">' + x.first_name + ' ' + x.last_name + '</option>'
                 });
                 
-                $('#vol_options').text(options);
+                $('#vol_options').html(options);
                 $('#group_vol_dropdown').removeClass('hide');
             }
 
