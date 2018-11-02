@@ -47,31 +47,13 @@ tr.claimed .phone input, tr.claimed .cellphone input {
     display: none;
 }
 tr.edited, .key .edited, th.editors {
-    background: repeating-linear-gradient(
-      -45deg,
-      #fff5f5,
-      #fff5f5 10px,
-      #ffcfcf 10px,
-      #ffcfcf 20px
-    ) !important;
+    background-color: #ffe3e3 !important;
 }
 tr.claimed, .key .claimed, th.claims {
-    background: repeating-linear-gradient(
-      -45deg,
-      #fff4e6,
-      #fff4e6 10px,
-      #feddb5 10px,
-      #feddb5 20px
-    ) !important;
+    background-color: #ffe8cc !important;
 }
 tr.owns, .key .owns, th.owns {
-    background: repeating-linear-gradient(
-      -45deg,
-      #e8f7ff,
-      #e8f7ff 10px,
-      #ddf3ff 10px,
-      #ddf3ff 20px
-    ) !important;
+    background-color: #ccedff !important;
 }
 
 .key {
