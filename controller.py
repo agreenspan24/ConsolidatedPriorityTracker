@@ -22,6 +22,7 @@ from dateutil.parser import parse
 from vanservice import VanService
 from dashboard_totals import DashboardTotal
 import os
+from werkzeug.serving import make_ssl_devcert
 
 try:
     vanservice = VanService()
@@ -1239,4 +1240,6 @@ def internal_service_error(e):
     return redirect('/consolidated')
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, host='0.0.0.0', port='443')
+
+    make_ssl_devcert('/ssl', host='0.0.0.0')
+    socketio.run(app, debug=True, host='0.0.0.0', sslcontext=("/ssl.cert", "/ssl.key"))
