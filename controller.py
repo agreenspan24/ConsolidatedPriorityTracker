@@ -74,7 +74,7 @@ def logout_before():
         redir = True
     if redir and not request.path.startswith('/login'):
         return redirect('/login')
-        
+
 @app.before_request
 def enforce_ssl():
     if ('localhost' not in request.url) and ('127.0.0.1' not in request.url) and \
@@ -95,12 +95,6 @@ def login_page():
 @app.route('/login_auth', methods=['GET','POST'])
 @oid.require_login
 def login_auth():
-    if ('localhost' not in request.url) and ('127.0.0.1' not in request.url) and \
-        request.url.startswith('http://'):
-        url = request.url.replace('http://', 'https://', 1)
-        code = 307
-        return redirect(url, code=code)
-    
     
     if 'user' in g:
         if g.user is not None:
