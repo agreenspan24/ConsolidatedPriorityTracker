@@ -4,7 +4,8 @@ from datetime import datetime
 from setup_config import black_list, rural_locations
 
 def update_shifts():
-    today = datetime.now().date()
+    now = datetime.now()
+    today = now.date()
     date = today.strftime('%Y-%m-%d')
     syncshifts = SyncShift.query.filter_by(startdate=date).all()
     the_void = Location.query.get(1)
@@ -29,8 +30,9 @@ def update_shifts():
         volunteer.next_shift_time = None
         volunteer.next_shift_confirmed = False
 
-        volunteer.extra_shifts_sched = None
-        volunteer.has_pitched_today = False
+        if now.hour < 9: 
+            volunteer.extra_shifts_sched = None
+            volunteer.has_pitched_today = False
         
         next_shift = SyncShift.query.filter(SyncShift.vanid==today_shift.vanid, today < SyncShift.startdate).order_by(SyncShift.startdate).first()
         if next_shift:
