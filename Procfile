@@ -1,1 +1,1 @@
-web: gunicorn -b 0.0.0.0:$PORT -w 6 controller:app
+web: gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -b 0.0.0.0:$PORT -w 1 controller:app

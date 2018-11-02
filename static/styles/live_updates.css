@@ -1,0 +1,74 @@
+th.small {
+    color: #948788;
+}
+.vertical-text {
+    transform: rotate(-90deg);
+    transform-origin: left top 0;
+    float: left;
+}
+.user-icon {
+    margin: 0 2px;
+}
+.user-icon.fade-in {
+    opacity: 1;
+    animation-name: fadeInOpacity;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-in;
+    animation-duration: 1s;
+}
+
+@keyframes fadeInOpacity {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+tr .phone .static, tr .cellphone .static {
+    display: none;
+}
+tr.claimed .phone, tr.claimed .cellphone {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+tr.owns {
+    font-weight: bold;
+}
+tr.owns .phone, tr.owns .cellphone,
+tr.owns .phone input, tr.owns .cellphone input {
+    font-weight: bold;
+    color: #2b8ce3;
+}
+tr.claimed .phone .static, tr.claimed .cellphone .static {
+    display: block;
+}
+tr.claimed .phone input, tr.claimed .cellphone input {
+    display: none;
+}
+tr.edited, .key .edited, th.editors {
+    background-color: #f3d9fa !important;
+}
+tr.claimed, .key .claimed, th.claims {
+    background-color: #ffe8cc !important;
+}
+tr.owns, .key .owns, th.owns {
+    background-color: #ccedff !important;
+}
+
+.key {
+    margin: 1em 0em;
+}
+.key > div {
+    float: left;
+    padding: 2px;
+    margin-right: 4px;
+}
+.key > div.edited, .key > div.claimed, .key > div.owns {
+    min-width: 10em;
+    border: 1px solid #cccccc;
+}
+
+.glyphicons .glyphicons-refresh {
+    cursor:pointer;
+}
