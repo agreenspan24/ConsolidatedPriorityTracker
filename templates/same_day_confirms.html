@@ -124,7 +124,7 @@
                         {% endif %}
                     </td>
                     <td class="claims">
-                        <a id="claim-{{shift.id}}" name="claim" onclick="updateElem('claim-{{shift.id}}', 'claim')" {{'disabled' if shift.claim != None and shift.claim != g.user.id}}>
+                        <a id="claim-{{shift.id}}" name="claim" tabindex="0" href="javascript:updateElem('claim-{{shift.id}}', 'claim')" {{'disabled' if shift.claim != None and shift.claim != g.user.id}}>
                             {% if shift.claim %}
                                 <i class="user-icon" data-user-id="{{ shift.claim }}" style="background-color:#{{shift.claim_user.color if shift.claim_user.color else '000000'}}">{{shift.claim_user.claim_name()}}</i>
                             {% else %}
