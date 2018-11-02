@@ -117,7 +117,7 @@
                     {% endfor %}
                 </td>
                 <td class="claims">
-                    <a id="claim-{{group.id}}" name="claim" onclick="updateElem('claim-{{group.id}}', 'claim')" {{'disabled' if group.claim != None and group.claim != g.user.id}}>
+                    <a id="claim-{{group.id}}" name="claim" tabindex="0" href="javascript:updateElem('claim-{{group.id}}', 'claim')" {{'disabled' if group.claim != None and group.claim != g.user.id}}>
                         {% if group.claim %}
                             <i class="user-icon" data-user-id="{{ group.claim }}" style="background-color:#{{group.claim_user.color if group.claim_user.color else '000000'}}">{{group.claim_user.claim_name()}}</i>
                         {% else %}
