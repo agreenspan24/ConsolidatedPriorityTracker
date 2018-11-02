@@ -74,20 +74,11 @@ def logout_before():
     if redir and not request.path.startswith('/login'):
         return redirect('/login')
 
-@app.before_request
-def enforce_ssl():
-    if ('localhost' not in request.url) and ('127.0.0.1' not in request.url) and \
-        request.url.startswith('http://'):
-        url = request.url.replace('http://', 'https://', 1)
-        print("Should redirecting {} to {}".format(request.url, url))
-        #code = 301
-        #return redirect(url, code=code)
-
 
 @app.route('/login', methods=['GET','POST'])
 def login_page():
     if request.method == 'POST':
-        return redirect(url_for('login_auth'))
+        return redirect('/login_auth')
     return render_template('login.html', next='/login_auth')
 
 
