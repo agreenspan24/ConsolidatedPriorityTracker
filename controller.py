@@ -1,7 +1,7 @@
 import functools
 from datetime import datetime
 
-from flask import flash, g, redirect, render_template, request, session, jsonify, escape, json, Response, send_from_directory
+from flask import flash, g, redirect, render_template, request, session, jsonify, escape, json, Response, send_from_directory, url_for
 
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import contains_eager, joinedload
@@ -88,7 +88,7 @@ def enforce_ssl():
 @app.route('/login', methods=['GET','POST'])
 def login_page():
     if request.method == 'POST':
-        return redirect('/login_auth')
+        return redirect(url_for('login_auth'))
     return render_template('login.html', next='/login_auth')
 
 
