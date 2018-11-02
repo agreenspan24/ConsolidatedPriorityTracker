@@ -1242,4 +1242,4 @@ def internal_service_error(e):
 if __name__ == "__main__":
 
     make_ssl_devcert('/ssl', host='0.0.0.0')
-    socketio.run(app, debug=True, host='0.0.0.0', sslcontext=("/ssl.cert", "/ssl.key"))
+    socketio.run(app, debug=True, host='0.0.0.0', sslcontext=("/ssl.cert", "/ssl.key"), certfile="/ssl.cert", keyfile="/ssl.key")
