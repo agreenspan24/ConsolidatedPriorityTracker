@@ -44,7 +44,7 @@ def authenticated_only(f):
         if 'openid' in session:
             g.user = User.query.filter(User.openid==session['openid']).first()
             
-            if g.user is None or not g.user.is_allowed or (schema == 'test' and g.user.rank != 'DATA'):
+            if g.user is None or not g.user.is_allowed:
                 disconnect()
             else:
                 return f(*args, **kwargs)
@@ -74,6 +74,15 @@ def logout_before():
         redir = True
     if redir and not request.path.startswith('/login'):
         return redirect('/login')
+        
+@app.before_request
+def enforce_ssl():
+    if ('localhost' not in request.url) and ('127.0.0.1' not in request.url) and \
+        request.url.startswith('http://'):
+        url = request.url.replace('http://', 'https://', 1)
+        print("Redirecting {} to {}".format(request.url, url))
+        code = 301
+        return redirect(url, code=code)
 
 
 @app.route('/login', methods=['GET','POST'])
@@ -573,10 +582,9 @@ def add_pass(office, page):
     # Broadcast to anyone in this room (that is, the relevant office) that the page has
     # updates. User ID is passed so we don't highlight/disable for the user herself; user
     # name is passed so it can be easily added to the page
-    user = User.query.get(g.user.id)
-    # Note that time.time() is the UNIX timestamp *in UTC*
+    # Note that time.time() is the UNIX timestamp
     json = { 'item_id': parent_id, 'page': page, 'user_id': g.user.id, \
-             'user_color': user.color, 'user_short_name': user.claim_name(), \
+             'user_color': g.user.color, 'user_short_name': g.user.claim_name(), \
              'action_type': action_type, 'keys': keys, 'viewed_at': int(time.time()) }
     __emit_update('updates', office, page, json, propogate=True)
 
@@ -803,9 +811,8 @@ def on_view(data):
     
         # Broadcast the viewers that are looking at this page (the relevant office)
         # User ID, name, and color are passed to show the users that are in 
-        user = User.query.get(g.user.id)
-        # Note that time.time() is the UNIX timestamp *in UTC*
-        json = { 'user_id': g.user.id, 'user_color': user.color, 'user_short_name': user.claim_name(), \
+        # Note that time.time() is the UNIX timestamp
+        json = { 'user_id': g.user.id, 'user_color': g.user.color, 'user_short_name': g.user.claim_name(), \
                  'viewed_at': int(time.time()) }
         __emit_update('viewers', office, page, json)
     
@@ -1240,6 +1247,4 @@ def internal_service_error(e):
     return redirect('/consolidated')
 
 if __name__ == "__main__":
-
-    make_ssl_devcert('/ssl', host='0.0.0.0')
-    socketio.run(app, debug=True, host='0.0.0.0', sslcontext=("/ssl.cert", "/ssl.key"), certfile="/ssl.cert", keyfile="/ssl.key")
+    socketio.run(app, debug=True)

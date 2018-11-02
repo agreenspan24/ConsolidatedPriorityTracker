@@ -125,21 +125,6 @@ function setOut(parent_id, res, elem) {
         getRowElem(parent_id, 'departure').prop('disabled', false);
     }
 }
-
-function updateClaim(parent_id, res, elem) {
-    return;
-    /* if (res.name !== 'Claim') {
-        console.log("res.name !== 'Claim'")
-        html = 'Release'
-        // html = '<i class="user-icon" style="background-color:#' + (res.color || '000000') + '">' + res.name + '</i>';
-    } else {
-        console.log("res.name === 'Claim'")
-        html = 'Claim'
-        
-        //html = res.name;
-    }
-    // getRowElem(parent_id, 'claim').html(html);*/
-}
  
 function setUpListener() {
     $('td input').on('keydown', function(e) {
