@@ -105,6 +105,9 @@ def login_auth():
         if False: #Placeholder, can remove
             pass
         else:
+            if ('localhost' not in request.url) and ('127.0.0.1' not in request.url) and \
+                request.url.startswith('http://'):
+                    request.url = request.url.replace('http://', 'https://', 1)
             user_info = oid.user_getinfo(['sub','email'])
             session['openid'] = user_info['sub']
             user = User.query.filter_by(email=user_info['email']).first()
