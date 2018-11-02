@@ -80,9 +80,9 @@ def enforce_ssl():
     if ('localhost' not in request.url) and ('127.0.0.1' not in request.url) and \
         request.url.startswith('http://'):
         url = request.url.replace('http://', 'https://', 1)
-        print("Redirecting {} to {}".format(request.url, url))
-        code = 301
-        return redirect(url, code=code)
+        print("Should redirecting {} to {}".format(request.url, url))
+        #code = 301
+        #return redirect(url, code=code)
 
 
 @app.route('/login', methods=['GET','POST'])
