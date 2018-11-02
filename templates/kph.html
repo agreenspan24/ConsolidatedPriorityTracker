@@ -55,10 +55,11 @@
 {% if groups %}
     <thead class="thead">
         <tr>
-            <th></th>
-            <th>Claim</th>
+            <th>&nbsp;</th>
+            <th class="small editors">Unviewed<br />edits by</th>
             <th>Name</th>
             <th>VanID</th>
+            <th class="claims">Claim</th>
             <th>Phone Number</th>
             <th>Cell</th>
             <th># Packets</th>
@@ -77,21 +78,13 @@
     </thead>
     <tbody class="tbody">
         {% for group in groups %}
-            <tr id="row-{{group.id}}" class="{{'bg-green2' if group.is_returned else ('bg-red2' if group.check_in_time != None and group.check_in_time < g.time_now)}}">
+            <tr id="row-{{group.id}}" data-item-id="{{group.id}}" class="{{'bg-green2' if group.is_returned else ('bg-red2' if group.check_in_time != None and group.check_in_time < g.time_now)}} {{'claimed' if group.claim and group.claim != g.user.id }} {{'owns' if group.claim and group.claim == g.user.id }}">
                 <td>
                     {{loop.index}}
                     <span class="glyphicons glyphicons-remove" onclick="deleteElement({{group.id}})" style="cursor:pointer;margin:0"></span>
                     <span class="glyphicons glyphicons-refresh hide" aria-hidden="true"></span>
                 </td>
-                <td>
-                    <a id="claim-{{group.id}}" name="claim" onclick="updateElem('claim-{{group.id}}', 'claim', updateClaim)" {{'disabled' if group.claim != None and group.claim != g.user.id}}>
-                        {% if not group.claim %}
-                            Claim
-                        {% else %}
-                            <i class="user-icon" style="background-color:#{{group.claim_user.color if group.claim_user.color else '000000'}}">{{group.claim_user.claim_name()}}</i>
-                        {% endif %}
-                    </a>
-                </td>
+                <td class="editors">&nbsp;</td>
                 <td style="vertical-align: top">
                     <select class="input-element" name="shift_id[]" id="shift_id-{{group.id}}"
                         onchange="updateElem('shift_id-{{group.id}}', 'shift_id[]', updateNames)" multiple>
@@ -123,15 +116,27 @@
                         <p id="vanid-{{shift.id}}">{{shift.volunteer.van_id}}</p>
                     {% endfor %}
                 </td>
-                <td id="phone-{{group.id}}">
+                <td class="claims">
+                    <a id="claim-{{group.id}}" name="claim" onclick="updateElem('claim-{{group.id}}', 'claim')" {{'disabled' if group.claim != None and group.claim != g.user.id}}>
+                        {% if group.claim %}
+                            <i class="user-icon" data-user-id="{{ group.claim }}" style="background-color:#{{group.claim_user.color if group.claim_user.color else '000000'}}">{{group.claim_user.claim_name()}}</i>
+                        {% else %}
+                            Claim
+                        {% endif %}
+                    </a>
+                </td>
+                <td class="phone" id="phone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
                         <p id="phone-{{shift.id}}">{{'({}) {}-{}'.format(shift.volunteer.phone_number[0:3], shift.volunteer.phone_number[3:6], shift.volunteer.phone_number[6:]) if shift.volunteer.phone_number else '' }}</p>
                     {% endfor %}
                 </td>
-                <td id="cellphone-{{group.id}}">
+                <td class="cellphone" id="cellphone-{{group.id}}">
                     {% for shift in group.canvass_shifts %}
                         <p>
                             <input id='cell-{{shift.id}}-{{group.id}}' name="cellphone" maxlength="120" type="text" style="width:100px" value="{{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}"/>
+                            <span class="static" id='cell-{{shift.id}}-{{group.id}}-static'>
+                                {{shift.volunteer.cellphone if not shift.volunteer.cellphone == None}}
+                            </span>
                         </p>
                     {% endfor %}
                 </td>

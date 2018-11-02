@@ -1,3 +1,4 @@
+import functools
 from datetime import datetime
 
 from flask import flash, g, redirect, render_template, request, session, jsonify, escape, json, Response, send_from_directory
@@ -9,11 +10,13 @@ from sqlalchemy.sql import func
 import re
 import urllib
 
-from app import app, oid, schema
+from app import app, oid, schema, socketio
 from setup_config import ranks, regions
 
 ##from cptvanapi import CPTVANAPI
+from flask_socketio import send, emit, join_room, leave_room, disconnect
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
+import time
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 from vanservice import VanService
@@ -27,9 +30,29 @@ except:
 
 oid.init_app(app)
 
+'''
+This wrapper is only for the web sockets endpoints because the @login_required
+decorator doesn't work as per the docs; Also, the before_request handlers do not run
+for socket events, so the code that populates g does not get a chance to run, as documented
+See: https://flask-socketio.readthedocs.io/en/latest/
+'''
+def authenticated_only(f):
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        
+        if 'openid' in session:
+            g.user = User.query.filter(User.openid==session['openid']).first()
+            
+            if g.user is None or not g.user.is_allowed:
+                disconnect()
+            else:
+                return f(*args, **kwargs)
+        else:
+            disconnect()
+    return wrapped
+
 @app.before_request
 def logout_before():
-    print(session)
     
     if request.path.startswith('/static') or request.path.startswith('/favicon') or request.path.startswith('/loaderio-cb6afdec0447c3b6ec9bce41757c581c'):
         return
@@ -62,6 +85,7 @@ def login_page():
 @app.route('/login_auth', methods=['GET','POST'])
 @oid.require_login
 def login_auth():
+    
     if 'user' in g:
         if g.user is not None:
             return redirect('/consolidated')
@@ -140,6 +164,7 @@ def consolidated():
 @oid.require_login
 @app.route('/consolidated/<office>/<page>', methods=['GET', 'POST'])
 def office(office, page):
+    
     date = datetime.today().strftime('%Y-%m-%d')
 
     office = escape(office)
@@ -188,10 +213,12 @@ def office(office, page):
     header_stats = HeaderStats(all_shifts, groups)
 
     if page == 'sdc':
-        return render_template('same_day_confirms.html', active_tab=page, header_stats=header_stats, office=office, shifts=all_shifts)
+        return render_template('same_day_confirms.html', active_tab=page, header_stats=header_stats, office=office, \
+                 shifts=all_shifts)
 
     elif page == 'kph':
-        return render_template('kph.html', active_tab=page, header_stats=header_stats, office=office, shifts=all_shifts, groups=groups)
+        return render_template('kph.html', active_tab=page, header_stats=header_stats, office=office, shifts=all_shifts, \
+                 groups=groups)
 
     elif page == 'flake':
         return render_template('flake.html', active_tab=page, header_stats=header_stats, office=office, shifts=all_shifts)
@@ -235,7 +262,11 @@ def add_pass(office, page):
         return Response('Invalid ID', 400)
 
     return_var = None
-
+    
+    office = escape(office)
+    page = escape(page)
+    action_type = 'OTHER'
+    
     if page == 'kph':
         if 'claim' in keys:
             group = CanvassGroup.query.get(parent_id)
@@ -252,13 +283,15 @@ def add_pass(office, page):
             if group.claim:
                 if group.claim != g.user.id:
                     return Response('Another user has claimed this group', 400)
-
+                
+                action_type = 'UNCLAIM'
                 group.claim = None
                 return_var = jsonify({
                     'name': 'Claim',
                     'color': None
                 })
             else:
+                action_type = 'CLAIM'
                 group.claim = g.user.id
                 return_var = jsonify({
                     'name': g.user.claim_name(),
@@ -422,12 +455,14 @@ def add_pass(office, page):
                     return Response('Another user has claimed this shift', 400)
 
                 shift.claim = None
+                action_type = 'UNCLAIM'
                 return_var = jsonify({
                     'name': 'Claim',
                     'color': None
                 })
             else:
                 shift.claim = g.user.id
+                action_type = 'CLAIM'
                 return_var = jsonify({
                     'name': g.user.claim_name(),
                     'color': g.user.color
@@ -534,6 +569,17 @@ def add_pass(office, page):
             
             shift.last_update = datetime.now().time()
             shift.last_user = g.user.id
+    
+    # Broadcast to anyone in this room (that is, the relevant office) that the page has
+    # updates. User ID is passed so we don't highlight/disable for the user herself; user
+    # name is passed so it can be easily added to the page
+    # Note that time.time() is the UNIX timestamp
+    json = { 'item_id': parent_id, 'page': page, 'user_id': g.user.id, \
+             'user_color': g.user.color, 'user_short_name': g.user.claim_name(), \
+             'action_type': action_type, 'keys': keys, 'viewed_at': int(time.time()) }
+    __emit_update('updates', office, page, json, propogate=True)
+
+    print('JSON blog {}'.format(json))
 
     db.session.commit()
 
@@ -660,6 +706,7 @@ def dashboard(page):
 
     return render_template('dashboard.html', active_tab=page, results=totals)
 
+'''
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/recently_updated', methods=['GET'])
 def get_recently_updated(office, page):
@@ -700,6 +747,73 @@ def get_recently_updated(office, page):
             })
 
     return jsonify(updates)
+'''
+
+# Private helper methods
+def __office_to_region(office):
+    if re.match(r'.+[A-Z]$', office):
+        return office[0:-1]
+    else:
+        return office
+
+def __room_name(office, page):
+    return '{}-{}'.format(office, page)
+
+def __is_region(office):
+    return re.match(r'.+[0-9]$', office)
+
+def __emit_update(topic, office, page, json, propogate=False):
+    room = __room_name(office, page)
+    socketio.emit(topic, json, room = room, namespace='/live-updates')
+    print("{}/{}: {}".format(topic, room, json))
+    
+    if propogate:
+        # Also emit a message to the room representing this region
+        if not __is_region(office):
+            room = __room_name(__office_to_region(office), page)
+            print("{}/{} (region): {}".format(topic, room, json))
+            socketio.emit(topic, json, room = room, namespace='/live-updates')
+        # if this IS a region, emit to all the child offices
+        else:
+            locations = Location.query.filter_by(region=office).all()
+            for location in locations:
+                matches = re.match(r'^(R[0-9][A-Z]).+', location.locationname)
+                if matches:
+                    room = __room_name(__office_to_region(matches.group(1)), page)
+                    print("{}/{} (office): {}".format(topic, room, json))
+                    socketio.emit(topic, json, room = room, namespace='/live-updates')
+
+@socketio.on('join', namespace='/live-updates')
+@authenticated_only
+def on_join(data):
+    print('received WS message!!! ' + str(data))
+    room = __room_name(escape(data['office']), escape(data['page']))
+    join_room(room)
+    
+    join_room('broadcast')
+    # send(username + ' has entered the room.', room=room)
+    
+@socketio.on('view', namespace='/live-updates')
+@authenticated_only
+def on_view(data):
+    if 'office' in data and 'page' in data:
+        office = escape(data['office'])
+        page = escape(data['page'])
+    
+        # Broadcast the viewers that are looking at this page (the relevant office)
+        # User ID, name, and color are passed to show the users that are in 
+        # Note that time.time() is the UNIX timestamp
+        json = { 'user_id': g.user.id, 'user_color': g.user.color, 'user_short_name': g.user.claim_name(), \
+                 'viewed_at': int(time.time()) }
+        __emit_update('viewers', office, page, json)
+    
+'''
+@socketio.on('echo', namespace='/live-updates')
+@authenticated_only
+def handle_echo(message):
+    print('You sent (broadcasting): ' + str(message))
+    emit('echo', 'You sent: ' + str(message), room='broadcast')
+'''
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/delete_element', methods=['DELETE'])
@@ -1129,4 +1243,4 @@ def internal_service_error(e):
     return redirect('/consolidated')
 
 if __name__ == "__main__":
-    app.run()
+    socketio.run(app, debug=True)

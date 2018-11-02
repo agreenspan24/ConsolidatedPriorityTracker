@@ -125,16 +125,6 @@ function setOut(parent_id, res, elem) {
         getRowElem(parent_id, 'departure').prop('disabled', false);
     }
 }
-
-function updateClaim(parent_id, res, elem) {
-    if (res.name !== 'Claim') {
-        claim = '<i class="user-icon" style="background-color:#' + (res.color || '000000') + '">' + res.name + '</i>';
-    } else {
-        claim = res.name;
-    }
-
-    getRowElem(parent_id, 'claim').html(claim);
-}
  
 function setUpListener() {
     $('td input').on('keydown', function(e) {
@@ -175,7 +165,7 @@ function setUpListener() {
 
 $(document).ready(setUpListener);
 
-function show_recently_updated(elements) {
+/*function show_recently_updated(elements) {
     elements.forEach(function(element) {
         updateClaim(element.id, element);
 
@@ -211,7 +201,7 @@ function get_recently_updated() {
 
 if (!window.location.pathname.endsWith('review')) {
     setInterval(get_recently_updated, 20000);
-}
+}*/
 
 function deleteElement(parent_id) {
     if (confirm('Are you sure you want to delete this row?')) {
