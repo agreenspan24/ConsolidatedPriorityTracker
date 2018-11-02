@@ -7,6 +7,7 @@ import os
 from sqlalchemy import create_engine
 from flask_socketio import SocketIO
 from flask_cache_buster import CacheBuster
+from werkzeug.contrib.fixers import ProxyFix
 
 try:
     schema = os.environ['schema']
@@ -16,10 +17,13 @@ except:
 
 
 app = Flask(__name__)
+
+app.wsgi_app = ProxyFix(app.wsgi_app)
+
 # For additional debugging, add:
 # logger=True, engineio_logger=True to SocketIO
-
 socketio = SocketIO(app)
+
 app.config['DEBUG'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'] 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
