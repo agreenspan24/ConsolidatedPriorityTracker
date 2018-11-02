@@ -1,7 +1,7 @@
 import functools
 from datetime import datetime
 
-from flask import flash, g, redirect, render_template, request, session, jsonify, escape, json, Response, send_from_directory, url_for
+from flask import flash, g, redirect, render_template, request, session, jsonify, escape, json, Response, send_from_directory
 
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import contains_eager, joinedload
