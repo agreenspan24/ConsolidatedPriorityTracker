@@ -25,6 +25,7 @@
             <img src="{{ url_for('static',filename='img/favicon.ico') }}" 
               alt='mdplogo' height='40' />
           </a>
+          <h1 class="padding-left-md padding-top-sm" style="display: inline-block;vertical-align: top">{% block office %}{% endblock %}</h1>
           <div class="app-user-controls">
             <div class="dropdown action-menu">
               <button class="btn btn-link btn-blue" onclick="$('#header_menu').toggle()">

@@ -346,6 +346,17 @@ function set_future_shifts_for_vol(vol, shifts) {
     }
     $("#extra_shifts_sched").val(vol.extra_shifts_sched);
     $('#future_shifts_history_link').attr('href', '/consolidated/volunteer_history/' + vol.id);
+
+    if (vol.code) {
+        $('#future_shifts_contact_details').removeClass('hide');
+        $('#future_shifts_event_scheduler').removeClass('hide');
+        $('#future_shifts_contact_details').attr('href', 'https://www.votebuilder.com/ContactsDetails.aspx?VanID=' + vol.code);
+        $('#future_shifts_event_scheduler').attr('href', 'https://www.votebuilder.com/EventScheduler.aspx?VanID=' + vol.code);
+    } else {
+        $('#future_shifts_contact_details').addClass('hide');
+        $('#future_shifts_event_scheduler').addClass('hide');
+    }
+
     $('#update_vol_pitch').attr('vol_id', vol.id);
 
     var rowTemplate = 

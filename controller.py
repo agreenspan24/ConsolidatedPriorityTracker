@@ -527,6 +527,8 @@ def add_pass(office, page):
                         else:
                             shift.volunteer.next_shift = None
                             shift.volunteer.next_shift_confirmed = False
+                else:
+                    shift.volunteer.van_id = None
             
             elif 'phone' in keys:
                 phone = request.form.get('phone')
@@ -662,11 +664,12 @@ def add_walk_in(office, page):
 
     shift = Shift(eventtype, time, datetime.now().date(), 'In', role, None, location.locationid)
 
-    vol = Volunteer(None, firstname, lastname, phone_sanitized, None)
-    db.session.add(vol)
-    db.session.commit()
+    vol = Volunteer.query.filter_by(first_name=firstname, last_name=lastname, phone_number=phone_sanitized).order_by(Volunteer.van_id).first()
 
-    vol = Volunteer.query.filter_by(first_name=firstname, last_name=lastname, van_id=None).first()
+    if not vol:
+        vol = Volunteer(None, firstname, lastname, phone_sanitized, None)
+        db.session.add(vol)
+        db.session.commit()
 
     shift.person = vol.id
     db.session.add(shift)

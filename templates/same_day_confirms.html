@@ -169,7 +169,7 @@
                         </select>
                     </td>
                     <td>
-                        <a id='passes-{{shift.id}}' name="passes" onclick="updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.call_pass}}</a>
+                        <a id='passes-{{shift.id}}' name="passes" tabindex="0" href="javascript:updateElem('passes-{{shift.id}}', 'passes', updatePasses)">{{shift.call_pass}}</a>
                     </td>
                     <td>
                         <input id='note-{{shift.id}}' name="note" type='text' maxlength="255" placeholder="Hit Enter To Save">

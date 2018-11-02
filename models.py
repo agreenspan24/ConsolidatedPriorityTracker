@@ -40,6 +40,14 @@ class SyncShift(db.Model):
             'mobilephone': self.mobilephone
         }
 
+class SyncVanIdMap(db.Model):
+    __table_args__ = {'schema':'sync'}
+    __tablename__ = 'vanid_map'
+
+    id = db.Column('van_id', db.Integer, primary_key=True)
+    code = db.Column('code', db.String(20))
+    cd_url = db.Column('cd_url', db.String(100))
+
 class Location(db.Model):
     __table_args__ = {'schema':schema}
     #__tablename__ = 'location'
@@ -97,6 +105,7 @@ class Volunteer(db.Model):
     next_shift_confirmed = db.Column(db.Boolean)
     has_pitched_today = db.Column(db.Boolean)
     extra_shifts_sched = db.Column(db.Integer)
+    code = db.Column(db.String(20))
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -114,6 +123,7 @@ class Volunteer(db.Model):
         self.next_shift_confirmed = False
         self.has_pitched_today = False
         self.extra_shifts_sched = None
+        self.code = None
 
     def serialize(self):
         return {
@@ -124,7 +134,8 @@ class Volunteer(db.Model):
             'phone_number': self.phone_number,
             'cellphone': self.cellphone,
             'has_pitched_today': self.has_pitched_today,
-            'extra_shifts_sched': self.extra_shifts_sched
+            'extra_shifts_sched': self.extra_shifts_sched, 
+            'code': self.code
         }
 
     def updated_by_other(self, page_load_time, user):
