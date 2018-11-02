@@ -47,7 +47,7 @@ tr.claimed .phone input, tr.claimed .cellphone input {
     display: none;
 }
 tr.edited, .key .edited, th.editors {
-    background-color: #ffe3e3 !important;
+    background-color: #f3d9fa !important;
 }
 tr.claimed, .key .claimed, th.claims {
     background-color: #ffe8cc !important;
