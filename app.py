@@ -16,7 +16,6 @@ except:
 
 
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # For additional debugging, add:
 # logger=True, engineio_logger=True to SocketIO
@@ -33,6 +32,7 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1800
 db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = os.environ['secret_key']
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 cache_config = {
      'extensions': ['.js', '.css'],
@@ -41,8 +41,7 @@ cache_config = {
 cache_buster = CacheBuster(config=cache_config)
 cache_buster.register_cache_buster(app)
 
-if schema == 'test':
-    app.config['SQLALCHEMY_ECHO'] = True
+
 
 engine = create_engine(os.environ['DATABASE_URL'])
 '''engine = engine.execution_options(
