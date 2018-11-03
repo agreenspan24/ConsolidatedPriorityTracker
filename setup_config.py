@@ -227,6 +227,19 @@ ORDER BY region, office
 
 """
 
+users_query = 
+"""
+
+CREATE VIEW consolidated.users_view AS 
+SELECT users.id, email, first_name, last_name, region, office, rank
+, (current_date + MIN(time)) min_time
+, (current_date + MAX(time)) max_time
+FROM {0}.users
+LEFT JOIN {0}.note
+	ON note.user_id = users.id
+GROUP BY 1, 2, 3, 4, 5, 6, 7
+
+"""
 
 
 
