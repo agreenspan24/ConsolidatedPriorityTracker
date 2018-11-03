@@ -147,8 +147,8 @@ def consolidated():
         office = request.form.get('office')
         page = request.form.get('page')
 
-        office = escape(office)
-        page = escape(page)
+        office = str_sanitize(office)
+        page = str_sanitize(page)
 
         return redirect('/consolidated/' + str(office)[0:3] + '/' + page)
 
@@ -167,8 +167,8 @@ def office(office, page):
     
     date = datetime.today().strftime('%Y-%m-%d')
 
-    office = escape(office)
-    page = escape(page)
+    office = str_sanitize(office)
+    page = str_sanitize(page)
     
     if g.user.rank in [None, 'Intern']:
         locations = Location.query.filter(Location.locationname.like(office + '%'), Location.region == g.user.region).all()
@@ -263,8 +263,8 @@ def add_pass(office, page):
 
     return_var = None
     
-    office = escape(office)
-    page = escape(page)
+    office = str_sanitize(office)
+    page = str_sanitize(page)
     action_type = 'OTHER'
     
     if page == 'kph':
@@ -391,7 +391,7 @@ def add_pass(office, page):
             elif 'note' in keys:
                 note_text = request.form.get('note')
 
-                note_text = escape(note_text)
+                note_text = str_sanitize(note_text)
 
                 return_var = group.add_note(page, note_text, g.user)
                 
@@ -432,7 +432,7 @@ def add_pass(office, page):
 
             elif 'packet_names' in keys:
                 packet_names = request.form.get('packet_names')
-                packet_names = escape(packet_names)
+                packet_names = str_sanitize(packet_names)
 
                 group.packet_names = packet_names
 
@@ -471,7 +471,7 @@ def add_pass(office, page):
         else:
             if 'status' in keys:
                 status = request.form.get('status')
-                status = escape(status)
+                status = str_sanitize(status)
 
                 if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
                     return Response('Invalid status', status=400)
@@ -484,8 +484,16 @@ def add_pass(office, page):
                 if shift.volunteer.updated_by_other(page_load_time, g.user):
                     return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-                first = escape(first)
-                shift.volunteer.first_name = first 
+                first = str_sanitize(first)
+
+                vol = Volunteer.query.filter_by(first_name=first, last_name=shift.volunteer.last_name, phone_number=shift.volunteer.phone_number).order_by(Volunteer.van_id).first()
+
+                if vol:
+                    shift.volunteer = vol
+                    shift.person = vol.id
+
+                else:
+                    shift.volunteer.first_name = first 
 
             elif 'last_name' in keys:
                 last = request.form.get('last_name')
@@ -493,8 +501,16 @@ def add_pass(office, page):
                 if shift.volunteer.updated_by_other(page_load_time, g.user):
                     return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-                last = escape(last)
-                shift.volunteer.last_name = last 
+                last = str_sanitize(last)
+                
+                vol = Volunteer.query.filter_by(first_name=shift.volunteer.first_name, last_name=last, phone_number=shift.volunteer.phone_number).order_by(Volunteer.van_id).first()
+
+                if vol:
+                    shift.volunteer = vol
+                    shift.person = vol.id
+
+                else:
+                    shift.volunteer.last_name = last 
 
             elif 'vanid' in keys:
                 if shift.volunteer.updated_by_other(page_load_time, g.user):
@@ -541,7 +557,14 @@ def add_pass(office, page):
                 if phone_sanitized and not phone_sanitized.isdigit():
                     return Response('Invalid Phone', status=400)
                 
-                shift.volunteer.phone_number = phone_sanitized 
+                vol = Volunteer.query.filter_by(first_name=shift.volunteer.first_name, last_name=shift.volunteer.last_name, phone_number=phone_sanitized).order_by(Volunteer.van_id).first()
+
+                if vol:
+                    shift.volunteer = vol
+                    shift.person = vol.id
+
+                else:
+                    shift.volunteer.phone_number = phone_sanitized 
 
             elif 'cellphone' in keys:
                 cellphone = request.form.get('cellphone')
@@ -561,7 +584,7 @@ def add_pass(office, page):
             elif 'note' in keys:
                 note_text = request.form.get('note')
 
-                note_text = escape(note_text)
+                note_text = str_sanitize(note_text)
 
                 return_var = shift.add_note(page, note_text, g.user)
 
@@ -620,7 +643,7 @@ def add_group(office, page):
         group.packets_given = int(packets_given)
 
     if packet_names:
-        packet_names = escape(packet_names)
+        packet_names = str_sanitize(packet_names)
         
         group.packet_names = packet_names
 
@@ -640,10 +663,10 @@ def add_walk_in(office, page):
     phone_sanitized = ''
 
     if firstname:
-        firstname = escape(firstname)
+        firstname = str_sanitize(firstname)
 
     if lastname: 
-        lastname = escape(lastname)
+        lastname = str_sanitize(lastname)
 
     if phone:
         phone_sanitized = re.sub('[- ().+]', '', phone)
@@ -659,7 +682,7 @@ def add_walk_in(office, page):
 
     eventtype = "Volunteer DVC" if role in ['Canvassing', 'Phonebanking'] else role
 
-    office = escape(office)
+    office = str_sanitize(office)
     location = Location.query.filter(Location.locationname.like(office + '%')).first()
 
     shift = Shift(eventtype, time, datetime.now().date(), 'In', role, None, location.locationid)
@@ -709,48 +732,6 @@ def dashboard(page):
 
     return render_template('dashboard.html', active_tab=page, results=totals)
 
-'''
-@oid.require_login
-@app.route('/consolidated/<office>/<page>/recently_updated', methods=['GET'])
-def get_recently_updated(office, page):
-    page_load_time = datetime.strptime(urllib.parse.unquote(request.args.get('page_load_time')), '%I:%M %p').time()
-
-    office = escape(office)
-    page = escape(page)
-
-    locations = Location.query.filter(Location.locationname.like(office + '%')).all()
-
-    if not locations:
-        return Response('Locations not found', 400)
-
-    location_ids = list(map(lambda l: l.locationid, locations))
-
-    updates = []
-
-    if page == 'kph':
-        all_groups = CanvassGroup.query.join(CanvassGroup.canvass_shifts).filter(CanvassGroup.is_active==True, Shift.shift_location.in_(location_ids)).all()
-
-        for gr in all_groups:
-            updates.append({
-                'id': gr.id,
-                'updated': gr.updated_by_other(page_load_time, g.user),
-                'name': gr.claim_user.claim_name() if gr.claim else 'Claim',
-                'color': gr.claim_user.color if gr.claim else None
-            })
-
-    else:
-        shifts = Shift.query.filter(Shift.is_active == True, Shift.shift_location.in_(location_ids)).all()
-        
-        for shift in shifts:
-            updates.append({
-                'id': shift.id,
-                'updated': shift.updated_by_other(page_load_time, g.user),
-                'name': shift.claim_user.claim_name() if shift.claim else 'Claim',
-                'color': shift.claim_user.color if shift.claim else None
-            })
-
-    return jsonify(updates)
-'''
 
 # Private helper methods
 def __office_to_region(office):
@@ -790,7 +771,7 @@ def __emit_update(topic, office, page, json, propogate=False):
 @authenticated_only
 def on_join(data):
     print('received WS message!!! ' + str(data))
-    room = __room_name(escape(data['office']), escape(data['page']))
+    room = __room_name(str_sanitize(data['office']), str_sanitize(data['page']))
     join_room(room)
     
     join_room('broadcast')
@@ -800,8 +781,8 @@ def on_join(data):
 @authenticated_only
 def on_view(data):
     if 'office' in data and 'page' in data:
-        office = escape(data['office'])
-        page = escape(data['page'])
+        office = str_sanitize(data['office'])
+        page = str_sanitize(data['page'])
     
         # Broadcast the viewers that are looking at this page (the relevant office)
         # User ID, name, and color are passed to show the users that are in 
@@ -850,9 +831,8 @@ def delete_element(office, page):
 def delete_note(office, page):
     shift_id = request.form.get('shift_id')
     text = request.form.get('text')
-    print(shift_id, text)
 
-    page = escape(page)
+    page = str_sanitize(page)
 
     note = Note.query.filter_by(type=page, text=text, note_shift=shift_id).first()
     db.session.delete(note)
@@ -876,18 +856,18 @@ def user():
         if 'firstname' in keys:
             firstname = request.form.get('firstname')
 
-            firstname = escape(firstname)
+            firstname = str_sanitize(firstname)
             user.firstname = firstname
 
         if 'lastname' in keys:
             lastname = request.form.get('lastname')
-            lastname = escape(lastname)
+            lastname = str_sanitize(lastname)
             user.lastname = lastname
 
 
         if 'fullname' in keys:
             fullname = request.form.get('fullname')
-            fullname = escape(fullname)
+            fullname = str_sanitize(fullname)
             user.fullname = fullname
 
         if 'color' in keys:
@@ -925,8 +905,8 @@ def help():
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/backup')
 def backup(office, page):
-    office = escape(office)
-    page = escape(page)
+    office = str_sanitize(office)
+    page = str_sanitize(page)
 
     locations = Location.query.filter(Location.locationname.like(office + '%')).all()
 
@@ -1049,7 +1029,7 @@ def display_users():
             return Response('Invalid User Id', 400)
         
         if g.user.rank == 'DATA':
-            rank = escape(request.form.get('rank'))
+            rank = request.form.get('rank').strip()
             
             if rank in ranks and user.rank != rank:
                 user.rank = rank
@@ -1129,12 +1109,12 @@ def display_users():
 def add_user():
     if request.method == 'POST':
 
-        email = request.form.get('email')
+        email = request.form.get('email').strip()
         rank = request.form.get('rank')
         region = request.form.get('region')
         office = request.form.get('office')
-        firstname = escape(request.form.get('firstname'))
-        lastname = escape(request.form.get('lastname'))
+        firstname = str_sanitize(request.form.get('firstname'))
+        lastname = str_sanitize(request.form.get('lastname'))
 
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             return Response('Invalid Email', 400)
@@ -1196,12 +1176,12 @@ def see_volunteer_history(vol_id):
         volunteer.van_id = van_id
 
         # first name
-        first_name = request.form.get('firstname')
-        volunteer.first_name = escape(first_name)
+        first_name = str_sanitize(request.form.get('firstname'))
+        volunteer.first_name = first_name
 
         # last name
-        last_name = request.form.get('lastname')
-        volunteer.last_name = escape(last_name)
+        last_name = str_sanitize(request.form.get('lastname'))
+        volunteer.last_name = last_name
 
         # phone
         phone_number = request.form.get('phone')
@@ -1233,6 +1213,8 @@ def see_volunteer_history(vol_id):
     
     return render_template('volunteer.html', volunteer=volunteer, past_shifts=past_shifts, future_shifts=future_shifts, past_groups=past_groups)
 
+def str_sanitize(string):
+    return escape(string.strip())
 
 @app.errorhandler(404)
 def page_not_found(e):
