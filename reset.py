@@ -11,6 +11,7 @@ def main():
     
     backup()
 
+    engine.execute('DROP VIEW IF EXISTS {0}.users_view'.format(schema))
     engine.execute('DROP VIEW IF EXISTS {0}.dashboard_totals'.format(schema))
     Note.__table__.drop(engine)
     Shift.__table__.drop(engine)
