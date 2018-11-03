@@ -227,8 +227,7 @@ ORDER BY region, office
 
 """
 
-users_query = 
-"""
+users_query = """
 
 CREATE VIEW consolidated.users_view AS 
 SELECT users.id, email, first_name, last_name, region, office, rank
