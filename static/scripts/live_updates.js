@@ -22,7 +22,7 @@ function configureWebSockets(office, page, userId) {
     };
     
     
-    socket = io(wsScheme + location.host + '/live-updates', {rememberUpgrade: true});
+    socket = io(wsScheme + location.host + '/live-updates', {rememberUpgrade: true, transports: ['websocket']});
     socket.io._reconnectionAttempts = 15;
     
     var json = { office: office, page: page }
