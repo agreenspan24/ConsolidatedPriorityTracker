@@ -3,6 +3,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_oidc import OpenIDConnect
 import os
+from gevent import monkey
 
 from sqlalchemy import create_engine
 from flask_socketio import SocketIO
@@ -16,6 +17,8 @@ except:
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
+
+monkey.patch_all()
 
 # For additional debugging, add:
 # logger=True, engineio_logger=True to SocketIO
