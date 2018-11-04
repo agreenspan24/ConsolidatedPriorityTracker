@@ -43,8 +43,6 @@ cache_config = {
 cache_buster = CacheBuster(config=cache_config)
 cache_buster.register_cache_buster(app)
 
-
-
 engine = create_engine(os.environ['DATABASE_URL'])
 '''engine = engine.execution_options(
     isolation_level="READ UNCOMMITTED"

@@ -28,8 +28,9 @@ function configureWebSockets(office, page, userId) {
     var json = { office: office, page: page }
 
     socket.on('connect', function () {
-      socket.io.engine.transports = ['websocket'];
-      socket.emit('join', json);
+        console.log('Connected to WS!');
+        socket.io.engine.transports = ['websocket'];
+        socket.emit('join', json);
     });
     
     socket.emit('view', json);
