@@ -22,14 +22,15 @@ function configureWebSockets(office, page, userId) {
     };
     
     
-    socket = io(wsScheme + location.host + '/live-updates', {rememberUpgrade: true, transports: ['websocket']});
+    socket = io(wsScheme + location.host + '/live-updates', {rememberUpgrade: true, transports: ['websocket', 'polling']});
     socket.io._reconnectionAttempts = 15;
+    socket.io._reconnectionDelayMax = 20000;
     
     var json = { office: office, page: page }
 
     socket.on('connect', function () {
         console.log('Connected to WS!');
-        socket.io.engine.transports = ['websocket'];
+        //socket.io.opts.transports = ['websocket'];
         socket.emit('join', json);
     });
     
