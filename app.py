@@ -33,6 +33,9 @@ db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = os.environ['secret_key']
 
+if schema == 'test':
+    app.config['SQLALCHEMY_ECHO'] = True
+
 cache_config = {
      'extensions': ['.js', '.css'],
      'hash_size': 10
