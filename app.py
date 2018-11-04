@@ -22,7 +22,7 @@ monkey.patch_all()
 
 # For additional debugging, add:
 # logger=True, engineio_logger=True to SocketIO
-socketio = SocketIO(app)
+socketio = SocketIO(app, ping_timeout=20, ping_interval=10)
 
 app.config['DEBUG'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'] 

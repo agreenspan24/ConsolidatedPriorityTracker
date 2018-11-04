@@ -66,7 +66,7 @@ WITH confirm_attempt_totals AS (
 	, SUM(CASE WHEN NOT is_returned THEN actual ELSE 0 END) actual_out_now
 	, SUM(CASE WHEN NOT is_returned THEN goal ELSE 0 END) goal_out_now
 	, SUM(CASE WHEN NOT is_returned THEN packets_given ELSE 0 END) packets_out_now
-	, SUM(CASE WHEN NOT is_returned AND departure IS NOT NULL AND check_in_time IS NOT NULL AND check_in_time < (current_time - interval '5 hours') THEN 1 ELSE 0 END) overdue_check_in
+	, SUM(CASE WHEN NOT is_returned AND departure IS NOT NULL AND check_in_time IS NOT NULL AND check_in_time < (current_time - interval '6 hours') THEN 1 ELSE 0 END) overdue_check_in
 	FROM canvass_group_totals
 	JOIN {0}.location l
 		ON l.locationid = shift_location
