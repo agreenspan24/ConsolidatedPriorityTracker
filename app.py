@@ -14,7 +14,6 @@ try:
 except:
     schema = 'test'
 
-
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
@@ -34,6 +33,9 @@ db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = os.environ['secret_key']
 
+if schema == 'test':
+    app.config['SQLALCHEMY_ECHO'] = True
+
 cache_config = {
      'extensions': ['.js', '.css'],
      'hash_size': 10
@@ -41,8 +43,7 @@ cache_config = {
 cache_buster = CacheBuster(config=cache_config)
 cache_buster.register_cache_buster(app)
 
-if schema == 'test':
-    app.config['SQLALCHEMY_ECHO'] = True
+
 
 engine = create_engine(os.environ['DATABASE_URL'])
 '''engine = engine.execution_options(

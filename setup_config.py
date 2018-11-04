@@ -227,6 +227,16 @@ ORDER BY region, office
 
 """
 
+users_query = """
+
+CREATE VIEW {0}.users_view AS
+SELECT users.*, (current_date + note.time), note.type
+FROM {0}.users
+LEFT JOIN {0}.note
+	ON note.user_id = users.id
+
+
+"""
 
 
 
