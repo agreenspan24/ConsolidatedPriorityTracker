@@ -29,7 +29,6 @@ app.config['OIDC_CLIENT_SECRETS'] = os.path.join(os.path.dirname(os.path.abspath
 app.config['OIDC_SCOPES'] = ['openid', 'email', 'profile']
 app.config['OIDC_ID_TOKEN_COOKIE_SECURE'] = False
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 1800
-app.config['NEW_RELIC_CONFIG_FILE'] = 'newrelic.ini'
 db = SQLAlchemy(app)
 oid = OpenIDConnect()
 app.secret_key = os.environ['secret_key']

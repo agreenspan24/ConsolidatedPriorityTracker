@@ -1,1 +1,1 @@
-web: newrelic-admin run-program gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -b 0.0.0.0:$PORT -w 1 controller:app
+web: gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -b 0.0.0.0:$PORT -w 1 controller:app
