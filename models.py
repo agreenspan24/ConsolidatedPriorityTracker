@@ -239,7 +239,7 @@ class CanvassGroup(db.Model):
     claim_user = db.relationship(User, lazy='joined')
     is_active = db.Column(db.Boolean)
 
-    def __init__(self):
+    def __init__(self, last_user=None):
         self.actual = 0
         self.goal = 0
         self.packets_given = 0
@@ -249,8 +249,8 @@ class CanvassGroup(db.Model):
         self.last_contact = None
         self.check_in_time = None
         self.check_ins = 0
-        self.last_user = None
-        self.last_update = None
+        self.last_user = last_user
+        self.last_update = datetime.now().time()
         self.claim = None
 
         self.is_active = True
@@ -383,7 +383,7 @@ class Shift(db.Model):
     claim_user = db.relationship(User, lazy='joined')
     is_active = db.Column(db.Boolean)
 
-    def __init__(self, eventtype, time, date, status, role, person, shift_location):
+    def __init__(self, eventtype, time, date, status, role, person, shift_location, last_user=None):
 
         self.eventtype = eventtype
         self.time = time
@@ -396,8 +396,8 @@ class Shift(db.Model):
         self.shift_location = shift_location
         self.call_pass = 0
         self.flake_pass = 0
-        self.last_user = None
-        self.last_update = None
+        self.last_user = last_user
+        self.last_update = datetime.now().time()
         self.shift_flipped = False
         self.is_active = True
 
