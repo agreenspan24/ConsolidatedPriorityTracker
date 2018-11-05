@@ -614,7 +614,7 @@ def add_pass(office, page):
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/add_group', methods=['POST'])
 def add_group(office, page):
-    group = CanvassGroup()
+    group = CanvassGroup(g.user.id)
 
     shift_ids = request.form.getlist('shift_id[]')
     goal = request.form.get('goal')
@@ -685,7 +685,7 @@ def add_walk_in(office, page):
     office = str_sanitize(office)
     location = Location.query.filter(Location.locationname.like(office + '%')).first()
 
-    shift = Shift(eventtype, time, datetime.now().date(), 'In', role, None, location.locationid)
+    shift = Shift(eventtype, time, datetime.now().date(), 'In', role, None, location.locationid, g.user.id)
 
     vol = Volunteer.query.filter_by(first_name=firstname, last_name=lastname, phone_number=phone_sanitized).order_by(Volunteer.van_id).first()
 
