@@ -15,10 +15,10 @@ try:
 except:
     schema = 'test'
 
+monkey.patch_all()
+
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app)
-
-monkey.patch_all()
 
 # For additional debugging, add:
 # logger=True, engineio_logger=True to SocketIO
