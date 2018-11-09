@@ -50,7 +50,8 @@ class VanService:
         return list(events['items'])
     
     def sync_shifts(self, shift_ids):
-        event_type_dict = {}
+        return True
+        '''event_type_dict = {}
 
         for id in shift_ids:
             if not id.isdigit():
@@ -111,12 +112,12 @@ class VanService:
 
         db.session.commit()
 
-        return success
+        return success'''
 
 
     def confirm_shift(self, vanid, date):
-
-        volunteer = Volunteer.query.filter_by(van_id=vanid).first()
+        return True
+        '''volunteer = Volunteer.query.filter_by(van_id=vanid).first()
         
         if not volunteer:
             return Response('Volunteer not found', 400)
@@ -163,5 +164,5 @@ class VanService:
 
         db.session.commit()
 
-        return success
+        return success'''
 

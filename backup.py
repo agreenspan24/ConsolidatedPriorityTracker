@@ -29,10 +29,11 @@ def backup():
         backup_shift = BackupShift(shift)
         db.session.add(backup_shift)
 
-    if schema == 'consolidated':
+    db.session.rollback()
+    '''if schema == 'consolidated':
         db.session.commit()
     else:
-        db.session.rollback()
+        db.session.rollback()'''
         
 
 def main():

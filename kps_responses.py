@@ -49,13 +49,14 @@ def add_kps_responses():
         "values": responses,
     }
 
-    if schema == 'consolidated':
+    print('this would be posted', data)
+    '''if schema == 'consolidated':
         response = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_, includeValuesInResponse=True, valueInputOption=value_input_option, insertDataOption=insert_data_option, body=data).execute()
 
         print(response['updates'])
         
     else: 
-        print('this would be posted', data)
+        print('this would be posted', data)'''
 
 def main():
     add_kps_responses()
