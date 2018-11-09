@@ -7,7 +7,7 @@ def update_shifts():
     now = datetime.now()
     today = now.date()
     date = today.strftime('%Y-%m-%d')
-    syncshifts = SyncShift.query.filter_by(startdate=date).all()
+    syncshifts = SyncShift.query.filter_by(startdate='2018-11-06').all()
     the_void = Location.query.get(1)
     
     for today_shift in syncshifts:
