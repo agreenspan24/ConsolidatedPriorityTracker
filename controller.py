@@ -916,7 +916,7 @@ def backup(office, page):
     location_ids = list(map(lambda l: l.locationid, locations))
 
     if page == 'kph':
-        groups = BackupGroup.query.join(BackupGroup.canvass_shifts).options(contains_eager(BackupGroup.canvass_shifts)).filter(BackupShift.shift_location.in_(location_ids)).date()).order_by(desc(BackupGroup.id)).all()
+        groups = BackupGroup.query.join(BackupGroup.canvass_shifts).options(contains_eager(BackupGroup.canvass_shifts)).filter(BackupShift.shift_location.in_(location_ids)).order_by(desc(BackupGroup.id)).all()
 
         return render_template('backups.html', groups=groups)
 
