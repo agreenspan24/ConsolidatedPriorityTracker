@@ -155,7 +155,7 @@
                 <td id='last_check_in-{{group.id}}'>{{group.last_check_in.strftime('%I:%M %p') if group.last_check_in != None else ''}}</td>
                 <td id='check_ins-{{group.id}}'>{{group.check_ins}}</td>
                 <td>
-                    <a id='out-{{group.id}}' name='out' tabindex="0" href="javascript:updateElem('out-{{group.id}}', 'out', setOut)">
+                    <a id='out-{{group.id}}' name='out' tabindex="0" href="javascript:updateElem('out-{{group.id}}', 'out', beginOrEndCanvassGroup)">
                         {{'Depart' if group.departure == None else ('Not Final' if group.is_returned else 'Final')}}
                     </a>
                 </td>

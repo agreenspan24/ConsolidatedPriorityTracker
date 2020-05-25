@@ -1,21 +1,6 @@
 {% block modals %}
     <div class="modal-wrapper" style="z-index:9999"></div>
-    <script>
-        function open_modal(id){
-            $('.modal-wrapper').addClass('modal-backdrop fade in');
-            $('#' + id).show();
-        }
-
-        function hide_modal() {
-            $('.modal-wrapper').removeClass('modal-backdrop fade in');
-            $('.modal').hide();
-        }
-        function maybe_hide_modal(e) {
-            if (e.target.className.startsWith('modal ')) {
-                hide_modal();
-            }
-        }
-    </script>
+    <script src="{{ url_for('static', filename='scripts/modal_helpers.js') }}" type="text/javascript"></script>
     <div id="add_modal" class="modal fade in" role="dialog" tabindex="-1" aria-hidden="true" onclick="maybe_hide_modal(event)" >
         <div class="modal-dialog">
             <article class="modal-content panel">
@@ -115,18 +100,6 @@
                     </nav>
                 </header>
                 <section class="modal-body panel-content">
-                    <script>
-                        function showModalAlert(type, text) {
-                            hideModalAlert();
-                    
-                            $('#modal-alert').removeClass('hide success info warn error').addClass(type);
-                            $('#modal-alert-text').html(text);
-                        }
-                    
-                        function hideModalAlert() {
-                            $('#modal-alert').addClass('hide');
-                        }
-                    </script>
                     <div class="alert hide" id="modal-alert">
                         <span id="modal-alert-text"></span>
                         <a class="dismiss" onclick="hideModalAlert()">
@@ -137,7 +110,7 @@
                     <div id="group_vol_dropdown" class="input-unit">
                         <div class="input-label">Group Member</div>
                         <div class="input-control">
-                            <select id="vol_options" class="input-element" onchange="get_future_shifts(event, true)">
+                            <select id="vol_options" class="input-element" onchange="show_future_shifts_modal(event, true)">
                             </select>
                         </div>
                     </div>

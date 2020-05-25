@@ -1,4 +1,4 @@
-// helper functions
+// Helper functions
 function getParentIdFromId(id) {
     return id.split('-').pop();
 }
@@ -11,6 +11,7 @@ function getName(parent_id) {
     return getRowElem(parent_id, 'name').text();
 }
 
+// POST the new value of the input to the server and handle its response
 function updateElem(elem_id, elem_name, success_callback) {
     elem = $('#' + elem_id);
     var val = elem.val();
@@ -55,10 +56,12 @@ function updateElem(elem_id, elem_name, success_callback) {
     });
 }
 
-// success callbacks
-function addNote(parent_id, res, elem) {
+// Success callbacks after updating values
+
+// Append note to the end of the row
+function addNote(parent_id, note, elem) {
     var child = document.createElement('td');
-    child.innerText = res;
+    child.innerText = note;
     getRowElem(parent_id, 'row').append(child);
     
     if (elem.attr('name') == 'note') {
@@ -66,12 +69,14 @@ function addNote(parent_id, res, elem) {
     }
 }
 
+// Update the Percent to Goal value
 function updateGoalActual(parent_id, res, elem) {
     var perc = getRowElem(parent_id, 'actual').val() / getRowElem(parent_id, 'goal').val();
     getRowElem(parent_id, 'perc').text(Math.round(perc * 10000) / 100 + '%');
 }
 
-function updateCheckIns(parent_id, res, elem) {
+// Update the check-in times, add a note, and update the PTG
+function updateCheckInTimes(parent_id, res, elem) {
     if (!res.is_returned) {
         getRowElem(parent_id, 'check_in_time').text(res.check_in_time);
         getRowElem(parent_id, 'last_check_in').text(res.last_check_in);
@@ -82,10 +87,12 @@ function updateCheckIns(parent_id, res, elem) {
     addNote(parent_id, res.note, elem);
 }
 
+// Update the shift's number of "passes", i.e. the amount of times they've called them.
 function updatePasses(parent_id, res, elem) {
     getRowElem(parent_id, 'passes').text(res);
 }
 
+// Update the rows of information for the members of a canvass group when a member is added or deleted.
 function updateNames(parent_id, res, elem) {
     var vol_id = '';
     var vanid = '';
@@ -109,7 +116,8 @@ function updateNames(parent_id, res, elem) {
     getRowElem(parent_id, 'cellphone').html(cellphone);
 }
 
-function setOut(parent_id, res, elem) {
+// Mark the canvass operation times as done or not done. Show the future shifts modal if necessary.
+function beginOrEndCanvassGroup(parent_id, res, elem) {
     getRowElem(parent_id, 'out').text(res.is_returned ? 'Not Final' : 'Final');
     getRowElem(parent_id, 'check_in_time').text(res.check_in_time);
     getRowElem(parent_id, 'last_check_in').text(res.last_check_in);
@@ -119,90 +127,59 @@ function setOut(parent_id, res, elem) {
     if (!res.check_in_time) {
         getRowElem(parent_id, 'departure').prop('disabled', 'disabled');
 
-        get_future_shifts(null, false, getRowElem(parent_id, 'vol_id').text().trim().replace(/\s/g, '').split(','));
+        show_future_shifts_modal(null, false, getRowElem(parent_id, 'vol_id').text().trim().replace(/\s/g, '').split(','));
     } else {
         getRowElem(parent_id, 'actual').prop('disabled', false);
         getRowElem(parent_id, 'departure').prop('disabled', false);
     }
 }
  
+// Listen for Enter or Tab to be hit on one of the input values that can be updated on the page.
+// Update the values in the server if necessary and add the proper callback.
 function setUpListener() {
     $('td input').on('keydown', function(e) {
         if (e.target.className == 'input-element') {
             return;
         }
 
+        // Key Codes Enter or Tab
         if (e.keyCode == 13 || e.keyCode == 9) {
             var name = e.target.attributes['name'].nodeValue;
             var id = event.target.id;
 
-            if (name == 'note') {
-                updateElem(id, name, addNote);
-            } else if (name == 'first_name') {
-                updateElem(id, name, null);
-            } else if (name == 'last_name') {
-                updateElem(id, name, null);
-            } else if (name == 'phone') {
-                updateElem(id, name, null);
-            } else if (name == 'cellphone') {
-                updateElem(id, name, null);
-            } else if (name == 'actual') {
-                updateElem(id, name, updateCheckIns);
-            } else if (name == 'goal') {
-                updateElem(id, name, updateGoalActual);
-            } else if (name == 'packets_given') {
-                updateElem(id, name, null);
-            } else if (name == 'packet_names') {
-                updateElem(id, name, null);
-            } else if (name == 'departure') {
-                updateElem(id, name, updateCheckIns);
-            } else if (name == 'vanid') {
-                updateElem(id, name, null);
+            var success_callback = null;
+
+            switch (name) {
+                case 'note':
+                    success_callback = addNote;
+                    break;
+                case 'departure':
+                case 'actual':
+                    success_callback = updateCheckInTimes;
+                    break;
+                case 'goal':
+                    success_callback = updateGoalActual;
+                    break;
+                case 'first_name':
+                case 'last_name':
+                case 'phone':
+                case 'cellphone':
+                case 'packets_given':
+                case 'packet_names':
+                case 'vanid':
+                    break;
+                default:
+                    return;
             }
+
+            updateElem(id, name, success_callback);
         }
     });
 }
 
 $(document).ready(setUpListener);
 
-/*function show_recently_updated(elements) {
-    elements.forEach(function(element) {
-        updateClaim(element.id, element);
-
-        if (element.updated) {
-            getRowElem(element.id, 'row').addClass('bg-red2');
-            $('#row-' + element.id + ' .glyphicons.glyphicons-refresh').removeClass('hide');
-            getRowElem(element.id, 'claim').attr('disabled');
-        }
-        else {
-            getRowElem(element.id, 'claim').removeAttr('disabled');
-        }
-    });
-}
-
-function get_recently_updated() {
-    $.ajax({
-        type: 'GET', 
-        url: window.location.pathname + '/recently_updated',
-        data: {
-            page_load_time: $("#page_load_time").text()
-        }
-    }).done(show_recently_updated)
-    .fail(function(res){
-        var message = 'Could not get recently updated rows. Please refresh the page.';
-
-        if (res.responseText) {
-            message += ' Error message: ' + res.responseText
-        }
-        
-        showAlert('error', message);
-    });
-}
-
-if (!window.location.pathname.endsWith('review')) {
-    setInterval(get_recently_updated, 20000);
-}*/
-
+// Delete the shift or canvass group
 function deleteElement(parent_id) {
     if (confirm('Are you sure you want to delete this row?')) {
         $.ajax({
@@ -255,10 +232,12 @@ function deleteNote(shift_id, text) {
     });
 }
 
+// Used for the Review tab, to remove the person from the values that will be updated in the CRM
 function deleteRow(row) {
     $('#' + row).remove();
 }
 
+// Confirm a shift in the future directly in the CRM
 function confirm_shift(e) {
     vanid = e.target.attributes['vanid'].nodeValue;
     time = e.target.attributes['time'].nodeValue;
@@ -266,7 +245,7 @@ function confirm_shift(e) {
 
     if (!vanid || !date || !time) return;
 
-    if (confirm('Are you sure you want to confirm this person for this shift?')) {
+    if (window.confirm('Are you sure you want to confirm this person for this shift?')) {
         showAlert('info', 'Updating next shift for ' + vanid);
 
         $.ajax({
@@ -294,8 +273,7 @@ function confirm_shift(e) {
     }
 }
 
-function get_future_shifts(event, is_update, vol_ids) {
-
+function show_future_shifts_modal(event, is_update, vol_ids) {
     open_modal('future_shifts_modal');
     hideModalAlert();
 
@@ -344,6 +322,7 @@ function set_future_shifts_for_vol(vol, shifts) {
         $('#has_pitched_today').removeAttr('checked');
         $('#has_pitched_today').prop('checked', false);
     }
+    
     $("#extra_shifts_sched").val(vol.extra_shifts_sched);
     $('#future_shifts_history_link').attr('href', '/consolidated/volunteer_history/' + vol.id);
 
@@ -360,13 +339,13 @@ function set_future_shifts_for_vol(vol, shifts) {
     $('#update_vol_pitch').attr('vol_id', vol.id);
 
     var rowTemplate = 
-    "<tr>" +
-        "<td>{0}</td>" +
-        "<td>{1}</td>" + 
-        "<td vanid='{5}' time='{3}' ondblclick='confirm_shift(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td>" + 
-        "<td>{3}</td>" + 
-        "<td>{4}</td>" + 
-    "</tr>";
+        "<tr>" +
+            "<td>{0}</td>" +
+            "<td>{1}</td>" + 
+            "<td vanid='{5}' time='{3}' ondblclick='confirm_shift(event)' style='cursor:pointer'>{2}&nbsp;<span class='glyphicons glyphicons-ok text-green7 {6}'></span></td>" + 
+            "<td>{3}</td>" + 
+            "<td>{4}</td>" + 
+        "</tr>";
 
     var rows = '';
 
@@ -398,22 +377,4 @@ function set_future_shifts_for_vol(vol, shifts) {
     }
 
     $('#future_shifts_body').html(rows);
-}
-
-function update_vol_pitch(event) {
-    vol_id = event.target.attributes['vol_id'].nodeValue;
-
-    $.ajax({
-        type: 'POST', 
-        url: window.location.pathname + '/vol_pitch',
-        data: {
-            vol_id: vol_id, 
-            has_pitched_today: $('#has_pitched_today:checked').length ? "True" : "False",
-            extra_shifts_sched: $('#extra_shifts_sched').val()
-        }
-    }).done(function() {
-        showModalAlert('success', 'Pitch information updated');
-    }).fail(function(res) {
-        showModalAlert('error', 'Pitch information could not be updated. ' + res);
-    });
 }
