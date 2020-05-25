@@ -1,5 +1,5 @@
 from app import app, db, engine
-from models import db, SyncShift, Volunteer, Shift, Location, SyncVanIdMap
+from models import db, SyncShift, Volunteer, Shift, Location
 from datetime import datetime
 from setup_config import black_list, rural_locations
 
@@ -42,12 +42,6 @@ def update_shifts():
         
             if next_shift.status == 'Confirmed':
                 volunteer.next_shift_confirmed = True
-
-        if not volunteer.code:
-            vanid_map = SyncVanIdMap.query.get(volunteer.van_id)
-
-            if vanid_map:
-                volunteer.code = vanid_map.code
 
         location = the_void
         if today_shift.locationname != None:

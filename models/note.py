@@ -2,6 +2,7 @@ from app import db, schema
 from sqlalchemy import Table, Column
 from datetime import time
 
+# Represents a note on a shift in the database. The type governs where it is shown: kph, flake, or sdc.
 class Note(db.Model):
     __table_args__ = {'schema':schema}
 

@@ -1,14 +1,16 @@
 from flask import request, g, Response, jsonify
-from services.SocketIoService import SocketIoService
+from services import SocketIoService
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 from models import db, Volunteer, Shift, CanvassGroup, SyncShift
 from sqlalchemy.orm import joinedload
-from utility import Utility
+from utility import str_sanitize
 import urllib
 import time
 import re
 
+# PassService updates values in the database as they're edited by users. 
+# It does a good bit of data sanitization as it comes in. 
 class PassService:
     def add_pass(self, office, page):
         keys = list(request.form.keys())
@@ -20,8 +22,8 @@ class PassService:
 
         return_var = None
         
-        office = Utility.str_sanitize(office)
-        page = Utility.str_sanitize(page)
+        office = str_sanitize(office)
+        page = str_sanitize(page)
         action_type = 'OTHER'
         
         if page == 'kph':
@@ -148,7 +150,7 @@ class PassService:
                 elif 'note' in keys:
                     note_text = request.form.get('note')
 
-                    note_text = Utility.str_sanitize(note_text)
+                    note_text = str_sanitize(note_text)
 
                     return_var = group.add_note(page, note_text, g.user)
                     
@@ -189,7 +191,7 @@ class PassService:
 
                 elif 'packet_names' in keys:
                     packet_names = request.form.get('packet_names')
-                    packet_names = Utility.str_sanitize(packet_names)
+                    packet_names = str_sanitize(packet_names)
 
                     group.packet_names = packet_names
 
@@ -228,7 +230,7 @@ class PassService:
             else:
                 if 'status' in keys:
                     status = request.form.get('status')
-                    status = Utility.str_sanitize(status)
+                    status = str_sanitize(status)
 
                     if not status in ['Completed', 'Declined', 'No Show', 'Resched', 'Same Day Confirmed', 'In', 'Scheduled', 'Invited', 'Left Message']:
                         return Response('Invalid status', status=400)
@@ -241,7 +243,7 @@ class PassService:
                     if shift.volunteer.updated_by_other(page_load_time, g.user):
                         return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-                    first = Utility.str_sanitize(first)
+                    first = str_sanitize(first)
 
                     vol = Volunteer.query.filter_by(first_name=first, last_name=shift.volunteer.last_name, phone_number=shift.volunteer.phone_number).order_by(Volunteer.van_id).first()
 
@@ -258,7 +260,7 @@ class PassService:
                     if shift.volunteer.updated_by_other(page_load_time, g.user):
                         return Response('This volunteer has been updated by ' + g.user.email + ' since you last loaded the page. Please refresh and try again.', 400)
 
-                    last = Utility.str_sanitize(last)
+                    last = str_sanitize(last)
                     
                     vol = Volunteer.query.filter_by(first_name=shift.volunteer.first_name, last_name=last, phone_number=shift.volunteer.phone_number).order_by(Volunteer.van_id).first()
 
@@ -341,7 +343,7 @@ class PassService:
                 elif 'note' in keys:
                     note_text = request.form.get('note')
 
-                    note_text = Utility.str_sanitize(note_text)
+                    note_text = str_sanitize(note_text)
 
                     return_var = shift.add_note(page, note_text, g.user)
 
@@ -359,7 +361,7 @@ class PassService:
                 'user_color': g.user.color, 'user_short_name': g.user.claim_name(), \
                 'action_type': action_type, 'keys': keys, 'viewed_at': int(time.time()) }
 
-        socketIoService = SocketIoService()
+        socketIoService = SocketIoService.SocketIoService()
         socketIoService.emit_update('updates', office, page, json, propogate=True)
 
         print('JSON blog {}'.format(json))

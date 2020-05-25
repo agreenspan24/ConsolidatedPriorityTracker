@@ -3,9 +3,7 @@ from sqlalchemy import Table, Column
 from models import volunteer, canvassgroup, location, user, note
 from datetime import datetime, timedelta
 
-'''
-Object representing an individual event signup or shift. References the volunteer, canvass groups, etc.
-'''
+# Object representing an individual event signup or shift. References the volunteer, canvass groups, etc.
 class Shift(db.Model):
     __table_args__ = {'schema':schema}
 

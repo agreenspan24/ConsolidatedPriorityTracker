@@ -1,6 +1,8 @@
 from app import db, schema
 from sqlalchemy import Table, Column
+from utility import van_obfuscate
 
+# This represents an outside volunteer, corresponding to their VAN record with the VAN id.
 class Volunteer(db.Model):
     __table_args__ = {'schema':schema}
 
@@ -18,7 +20,6 @@ class Volunteer(db.Model):
     next_shift_confirmed = db.Column(db.Boolean)
     has_pitched_today = db.Column(db.Boolean)
     extra_shifts_sched = db.Column(db.Integer)
-    code = db.Column(db.String(20))
 
     def __init__(self, van_id, first_name, last_name, phone_number, cellphone, is_intern=False, knocks=0):
         
@@ -36,7 +37,6 @@ class Volunteer(db.Model):
         self.next_shift_confirmed = False
         self.has_pitched_today = False
         self.extra_shifts_sched = None
-        self.code = None
 
     def serialize(self):
         return {
@@ -48,7 +48,7 @@ class Volunteer(db.Model):
             'cellphone': self.cellphone,
             'has_pitched_today': self.has_pitched_today,
             'extra_shifts_sched': self.extra_shifts_sched, 
-            'code': self.code
+            'code': van_obfuscate(self.van_id)
         }
 
     def updated_by_other(self, page_load_time, user):

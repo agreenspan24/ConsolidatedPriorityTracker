@@ -2,9 +2,7 @@ from app import db, schema
 from sqlalchemy import Table, Column
 from models import volunteer, backupgroup, location
 
-'''
-Represents the backup of a shift, pointed to its volunteer record and location
-'''
+# Represents the backup of a shift, pointed to its volunteer record and location
 class BackupShift(db.Model):
     __table_args__ = {'schema':'backup'}
     __tablename__ = 'backup_shift'

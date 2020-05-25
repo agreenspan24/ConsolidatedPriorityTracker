@@ -2,6 +2,7 @@ from app import engine, db, app, schema
 from sqlalchemy import Table, MetaData, Column
 import os
 
+# Represents a View in the database with all the details desired for admins on the dashboard.
 class DashboardTotal(db.Model):
     __table__ = Table('dashboard_totals', MetaData(),
         Column('region', db.String(2)),

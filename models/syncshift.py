@@ -1,10 +1,8 @@
 from app import db
 from sqlalchemy import Table, Column
 
-'''
-This is the table that covers direct VAN imports from Event Participant List or Report. 
-Export must include these fields. Should be completely independent from rest of app.
-'''
+# This is the table that covers direct VAN imports from Event Participant List or Report. 
+# Export must include these fields. Should be completely independent from rest of app.
 class SyncShift(db.Model):
     __table_args__ = {'schema':'sync'}
     __tablename__ = 'shifts'

@@ -2,9 +2,7 @@ from app import db
 from sqlalchemy import Table, Column
 from models import backupshift
 
-'''
-Represents a Canvass Group that has been backed up from a previous day
-'''
+# Represents a Canvass Group that has been backed up from a previous day
 class BackupGroup(db.Model):
     __table_args__ = {'schema':'backup'}
     __tablename__ = 'backup_group'

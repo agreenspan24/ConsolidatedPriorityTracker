@@ -1,5 +1,4 @@
-
-
+# Object representing the stats for the office on the Review page. Not stored in the db
 class ShiftStats:
     def __init__(self, shifts, groups):
         self.vol_confirmed = 0

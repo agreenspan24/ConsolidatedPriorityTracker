@@ -2,6 +2,7 @@ from app import db, schema
 from sqlalchemy import Table, Column
 from models import note
 
+# Internal definition of users, with their name, contact details, rank in the organization, and some personal details.
 class User(db.Model):
     __table_args__ = {'schema':schema}
     __tablename__ = 'users'

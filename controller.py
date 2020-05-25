@@ -1,6 +1,6 @@
 import functools
 
-from flask import flash, g, redirect, render_template, request, session, jsonify, escape, json, Response, send_from_directory
+from flask import flash, g, redirect, render_template, request, session, jsonify, json, Response, send_from_directory
 
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import contains_eager, joinedload
@@ -8,21 +8,19 @@ from sqlalchemy.sql import func
 
 import re
 import urllib
+import os
 
 from app import app, oid, schema, socketio
 from setup_config import ranks, regions
 
 from flask_socketio import send, emit, join_room, leave_room, disconnect
 from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
+from models.dashboard_totals import DashboardTotal
 import time
 from datetime import datetime, timedelta
 from dateutil.parser import parse
-from vanservice import VanService
-from dashboard_totals import DashboardTotal
-from services.PassService import PassService
-from services.SocketIoService import SocketIoService
-
-import os
+from services import PassService, SocketIoService, VanService
+from utility import str_sanitize
 
 try:
     vanservice = VanService()
@@ -258,6 +256,7 @@ def add_pass(office, page):
     passservice = PassService()
     return passservice.add_pass(office, page)
 
+
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/add_group', methods=['POST'])
 def add_group(office, page):
@@ -298,6 +297,7 @@ def add_group(office, page):
     db.session.commit()
 
     return redirect('/consolidated/' + office + '/kph')
+
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/walk_in', methods=['POST'])
@@ -348,6 +348,7 @@ def add_walk_in(office, page):
 
     return redirect('/consolidated/' + office + '/' + page)
 
+
 @oid.require_login
 @app.route('/consolidated/<office>/sync_to_van', methods=['POST'])
 def sync_to_van(office):
@@ -360,6 +361,7 @@ def sync_to_van(office):
     else: 
         return Response('The remaining shifts could not be found. Please flip them manually in VAN.', 400)
 
+
 @oid.require_login
 @app.route('/dashboard/<page>', methods=['GET'])
 def dashboard(page):
@@ -371,7 +373,6 @@ def dashboard(page):
     totals = DashboardTotal.query.all()
 
     if page == 'prod':
-
         return render_template('dashboard_production.html', active_tab=page, results=totals)
 
     elif page == 'top':
@@ -379,15 +380,18 @@ def dashboard(page):
 
     return render_template('dashboard.html', active_tab=page, results=totals)
 
+
 @socketio.on('join', namespace='/live-updates')
 @authenticated_only
 def on_join(data):
     print('received WS message!!! ' + str(data))
-    room = __room_name(str_sanitize(data['office']), str_sanitize(data['page']))
+    socketIoService = SocketIoService()
+    room = socketIoService.room_name(str_sanitize(data['office']), str_sanitize(data['page']))
+
     join_room(room)
     
     join_room('broadcast')
-    # send(username + ' has entered the room.', room=room)
+
     
 @socketio.on('view', namespace='/live-updates')
 @authenticated_only
@@ -404,14 +408,7 @@ def on_view(data):
 
         socektIoService = SocketIoService()
         socektIoService.emit_update('viewers', office, page, json)
-    
-'''
-@socketio.on('echo', namespace='/live-updates')
-@authenticated_only
-def handle_echo(message):
-    print('You sent (broadcasting): ' + str(message))
-    emit('echo', 'You sent: ' + str(message), room='broadcast')
-'''
+
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/delete_element', methods=['DELETE'])
@@ -439,6 +436,7 @@ def delete_element(office, page):
 
     db.session.commit()
     return name
+
 
 @oid.require_login
 @app.route('/consolidated/<office>/<page>/delete_note', methods=['DELETE'])
@@ -825,9 +823,6 @@ def see_volunteer_history(vol_id):
     past_groups = BackupGroup.query.join(BackupGroup.canvass_shifts).join(BackupShift.volunteer).options(contains_eager(BackupGroup.canvass_shifts)).filter(Volunteer.id == vol_id).all()
     
     return render_template('volunteer.html', volunteer=volunteer, past_shifts=past_shifts, future_shifts=future_shifts, past_groups=past_groups)
-
-def str_sanitize(string):
-    return escape(string.strip())
 
 @app.errorhandler(404)
 def page_not_found(e):

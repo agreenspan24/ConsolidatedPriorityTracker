@@ -3,9 +3,7 @@ from sqlalchemy import Table, Column
 from models import shift, user
 from datetime import datetime, timedelta
 
-'''
-Represents a group of shifts canvassing, including doors knocked and check-in information
-'''  
+# Represents a group of shifts canvassing, including doors knocked and check-in information 
 class CanvassGroup(db.Model):
     __table_args__ = {'schema':schema}
 
