@@ -1,26 +1,26 @@
-import functools
-
-from flask import flash, g, redirect, render_template, request, session, jsonify, json, Response, send_from_directory
-
+from flask import flash, g, redirect, render_template, \
+    request, session, jsonify, json, Response, send_from_directory
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import contains_eager, joinedload
 from sqlalchemy.sql import func
+from flask_socketio import send, emit, join_room, leave_room, disconnect
+from datetime import datetime, timedelta
+from dateutil.parser import parse
+from utility import str_sanitize
 
 import re
 import urllib
 import os
+import functools
+import time
+
+from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, \
+    CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
+from models.dashboard_totals import DashboardTotal
+from setup_config import ranks, regions
+from services import PassService, SocketIoService, VanService
 
 from app import app, oid, schema, socketio
-from setup_config import ranks, regions
-
-from flask_socketio import send, emit, join_room, leave_room, disconnect
-from models import db, Volunteer, Location, Shift, Note, User, ShiftStats, CanvassGroup, HeaderStats, SyncShift, BackupGroup, BackupShift
-from models.dashboard_totals import DashboardTotal
-import time
-from datetime import datetime, timedelta
-from dateutil.parser import parse
-from services import PassService, SocketIoService, VanService
-from utility import str_sanitize
 
 try:
     vanservice = VanService()

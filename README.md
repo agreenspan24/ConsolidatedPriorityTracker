@@ -12,6 +12,7 @@ In addition, there were many features that wound up being helpful for this featu
 - The Dashboard, which gives live metrics to admins
 - User management, to allow managers to add new users more easily
 - Further integrations with the CRM.
+- Scheduled nightly jobs to send data to Google Sheets and to back up previous day's data.
 
 
 Setup
@@ -98,3 +99,14 @@ Stack
 - Javascript/JQuery: Most of the client-side page interactions without a framework.
 - Heroku: This service hosts this online and provides the basis for scheduled jobs, metrics, and logging.
 - Loader.io: Used for load tests
+
+
+VAN Integrations
+====
+In order to integrate with VAN, you will need to obtain a VAN api key from NGP VAN. Once you do, those values can be set as config. You can then uncomment some of the code here. You will also need to populate the ShiftStatus and EventType tables with their corresponding values.
+
+
+Data Flow
+====
+
+Data flow went as follows: periodically throughout the day, we exported the Event Participant List in VAN of to the SyncShift table. The `helpers.py` functionality could run to put the latest data from SyncShifts into an accessible form for users. Nightly, the reset functionality would back up the previous day's shift, canvass group, and note data and import the next day's data into the shift and canvass group tables.
