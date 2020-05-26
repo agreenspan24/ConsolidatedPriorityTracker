@@ -11,7 +11,7 @@ from flask_cache_buster import CacheBuster
 from werkzeug.contrib.fixers import ProxyFix
 
 try:
-    schema = os.environ['schema']
+    schema = 'test'
 except:
     schema = 'test'
 
